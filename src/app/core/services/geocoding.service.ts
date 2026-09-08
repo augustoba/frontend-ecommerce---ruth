@@ -14,6 +14,7 @@ export interface GeoAddress {
 }
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
+const NOMINATIM_REVERSE_URL = 'https://nominatim.openstreetmap.org/reverse';
 /** Bounding box de la provincia de Tucumán: left,top,right,bottom (para sesgar la búsqueda). */
 const TUCUMAN_VIEWBOX = '-66.2,-26.0,-64.4,-28.1';
 
@@ -48,6 +49,28 @@ export class GeocodingService {
 
     const merged = (await Promise.all(queries)).flat();
     return dedupe(merged);
+  }
+
+  /**
+   * Reverse geocoding: qué dirección hay en un punto (para cuando el cliente
+   * arrastra el pin). Devuelve el texto normalizado; las coordenadas las decide
+   * el pin, no este resultado.
+   */
+  async reverse(lat: number, lng: number): Promise<GeoAddress | null> {
+    const url =
+      `${NOMINATIM_REVERSE_URL}?format=jsonv2&lat=${lat}&lon=${lng}` +
+      `&addressdetails=1&accept-language=es&zoom=18`;
+    try {
+      const res = await fetch(url, { headers: { Accept: 'application/json' } });
+      if (!res.ok) return null;
+      const p = (await res.json()) as RawPlace & { error?: unknown };
+      if (p.error || !p.address?.road) return null;
+      const g = toGeoAddress(p, null);
+      // el pin manda: mantenemos las coordenadas que eligió el cliente
+      return { ...g, lat, lng };
+    } catch {
+      return null;
+    }
   }
 
   private async query(text: string, expectedNumber: number | null): Promise<GeoAddress[]> {

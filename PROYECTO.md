@@ -682,6 +682,9 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
     alturas ("San Juan 354" → 0 resultados). Nominatim las ubica exactas.
     `GeocodingService` sesga por bbox de Tucumán y filtra `address.state`; el
     debounce del address-picker subió a 600ms (límite ~1 req/s de Nominatim).
+    Hace **dos búsquedas** (con altura → dirección exacta; sólo calle → la misma
+    calle en Yerba Buena, Tafí Viejo, Concepción…). Al **arrastrar el pin** en el
+    mapa, `reverse()` re-resuelve la dirección y actualiza el texto de arriba.
     Sólo frontend, sin cambios de modelo.
 
 ## 12. Backend (`../backend/`) — resumen

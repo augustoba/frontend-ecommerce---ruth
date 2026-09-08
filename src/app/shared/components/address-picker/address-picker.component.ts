@@ -24,8 +24,9 @@ export interface PickedAddress {
 }
 
 /**
- * Busca una dirección de Tucumán (autocompletado con georef-ar) y deja
- * ajustar el pin exacto en un mapa. Emite `{ address, lat, lng }` o `null`.
+ * Busca una dirección de Tucumán (autocompletado con Nominatim/OSM) y deja
+ * ajustar el pin exacto en un mapa; al arrastrarlo, re-resuelve la dirección
+ * (reverse geocoding). Emite `{ address, lat, lng }` o `null`.
  */
 @Component({
   selector: 'app-address-picker',
@@ -45,6 +46,8 @@ export class AddressPickerComponent {
   readonly query = signal('');
   readonly results = signal<GeoAddress[]>([]);
   readonly searching = signal(false);
+  /** Re-resolviendo la dirección después de arrastrar el pin. */
+  readonly locating = signal(false);
   readonly selected = signal<GeoAddress | null>(null);
   /** Coordenadas del pin (arranca en las de la dirección, se mueve al arrastrar). */
   readonly pin = signal<{ lat: number; lng: number } | null>(null);
@@ -89,6 +92,26 @@ export class AddressPickerComponent {
 
   private emit(): void {
     this.addressPicked.emit(this.picked());
+  }
+
+  /** Después de mover el pin: buscar qué dirección hay ahí y actualizar el texto. */
+  private async resolvePin(lat: number, lng: number): Promise<void> {
+    this.locating.set(true);
+    const found = await this.geocoding.reverse(lat, lng);
+    this.locating.set(false);
+    // ignorar si el cliente movió el pin otra vez mientras tanto
+    const p = this.pin();
+    if (!p || p.lat !== lat || p.lng !== lng || !this.selected()) return;
+    if (found) {
+      this.selected.set({ ...found, lat, lng });
+    } else {
+      // sin dirección conocida en ese punto
+      this.selected.update((s) =>
+        s ? { ...s, number: null, approximate: true, label: `${s.street} (ubicación marcada en el mapa)` } : s
+      );
+    }
+    this.query.set(this.selected()!.label);
+    this.emit();
   }
 
   onQueryChange(value: string): void {
@@ -137,6 +160,7 @@ export class AddressPickerComponent {
       this.zone.run(() => {
         this.pin.set({ lat: p.lat, lng: p.lng });
         this.emit();
+        this.resolvePin(p.lat, p.lng);
       });
     });
 
