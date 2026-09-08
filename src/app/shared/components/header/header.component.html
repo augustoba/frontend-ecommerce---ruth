@@ -9,9 +9,9 @@
 
     <nav class="hidden sm:flex items-center gap-6 font-semibold text-stone-600">
       <a
-        routerLink="/"
-        routerLinkActive="text-brand-600"
-        [routerLinkActiveOptions]="{ exact: true }"
+        href="/"
+        (click)="goToCatalog($event)"
+        [class.text-brand-600]="onHome()"
         class="hover:text-brand-600 transition-colors"
       >
         Catálogo
