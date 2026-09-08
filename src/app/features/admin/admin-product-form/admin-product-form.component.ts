@@ -8,6 +8,7 @@ import { SupplierService } from '../../../core/services/supplier.service';
 import { SizeScaleService } from '../../../core/services/size-scale.service';
 import { Product, ProductSize, margin } from '../../../core/models/product.model';
 import { ProductParams } from '../../../core/models/param.model';
+import { resizeImageFile } from '../../../core/utils/image-resize';
 
 /** Precio de venta = costo + markup%. null si falta el costo o el %. */
 function priceFromMarkup(cost: number, markupPercent: number): number | null {
@@ -55,6 +56,19 @@ export class AdminProductFormComponent {
     structuredClone(this.editingProduct?.params ?? {})
   );
 
+  /** Fotos del producto, en orden. La primera es la portada. */
+  readonly images = signal<string[]>(
+    this.editingProduct?.images?.length
+      ? [...this.editingProduct.images]
+      : this.editingProduct?.imageUrl
+        ? [this.editingProduct.imageUrl]
+        : []
+  );
+  /** URL suelta que se está por agregar a mano */
+  readonly newImageUrl = signal('');
+  readonly uploadingImage = signal(false);
+  readonly imageError = signal<string | null>(null);
+
   readonly totalStockPreview = computed(() =>
     Array.from(this.sizeStocks().values()).reduce((sum, n) => sum + n, 0)
   );
@@ -64,7 +78,6 @@ export class AdminProductFormComponent {
     description: [this.editingProduct?.description ?? '', [Validators.required, Validators.minLength(5)]],
     price: [this.editingProduct?.price ?? 0, [Validators.required, Validators.min(1)]],
     ageRange: [this.editingProduct?.ageRange ?? '', Validators.required],
-    imageUrl: [this.editingProduct?.imageUrl ?? '', [Validators.required]],
     active: [this.editingProduct?.active ?? true],
     sizeScaleId: [this.editingProduct?.sizeScaleId ?? ''],
     supplierId: [this.editingProduct?.supplierId ?? ''],
@@ -138,6 +151,53 @@ export class AdminProductFormComponent {
     () => this.submitted() && !this.formValue().sizeScaleId
   );
   readonly sizesInvalid = computed(() => this.submitted() && this.sizeStocks().size === 0);
+  readonly imagesInvalid = computed(() => this.submitted() && this.images().length === 0);
+
+  // --- Fotos ---
+
+  /** Agrega la URL escrita a mano al final de la lista. */
+  addImageUrl(): void {
+    const url = this.newImageUrl().trim();
+    if (!url) return;
+    this.images.update((list) => [...list, url]);
+    this.newImageUrl.set('');
+    this.imageError.set(null);
+  }
+
+  /** Sube archivos del disco: se redimensionan y se guardan como data URI. */
+  async onImageFilesSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    if (!files.length) return;
+
+    this.imageError.set(null);
+    this.uploadingImage.set(true);
+    try {
+      for (const file of files) {
+        const dataUrl = await resizeImageFile(file);
+        this.images.update((list) => [...list, dataUrl]);
+      }
+    } catch {
+      this.imageError.set('No se pudo procesar alguna imagen. Probá con otro archivo (JPG o PNG).');
+    } finally {
+      this.uploadingImage.set(false);
+      input.value = '';
+    }
+  }
+
+  removeImage(index: number): void {
+    this.images.update((list) => list.filter((_, i) => i !== index));
+  }
+
+  moveImage(index: number, dir: -1 | 1): void {
+    this.images.update((list) => {
+      const next = [...list];
+      const target = index + dir;
+      if (target < 0 || target >= next.length) return list;
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  }
 
   /** Al cambiar la escala de talle, se quedan sólo los talles que existen en la nueva */
   onSizeScaleChange(event: Event): void {
@@ -235,6 +295,7 @@ export class AdminProductFormComponent {
       this.form.invalid ||
       !this.form.controls.sizeScaleId.value ||
       this.sizeStocks().size === 0 ||
+      this.images().length === 0 ||
       this.missingRequiredParams().length > 0
     ) {
       this.form.markAllAsTouched();
@@ -247,6 +308,7 @@ export class AdminProductFormComponent {
       sizeScaleId: value.sizeScaleId || undefined,
       supplierId: value.supplierId || undefined,
       costPrice: value.costPrice > 0 ? value.costPrice : undefined,
+      images: this.images(),
       params: this.selectedParams(),
       sizeStocks: Array.from(this.sizeStocks(), ([size, stock]) => ({ size, stock })),
     };

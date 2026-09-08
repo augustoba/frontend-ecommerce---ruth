@@ -2,8 +2,8 @@
  * Fotos de ejemplo para productos y para el carrusel de bienvenida,
  * generadas como SVG en el momento (sin archivos externos ni conexión a
  * internet): un emoji grande de la prenda sobre un fondo de color pastel.
- * Cuando el dueño/a suba fotos reales, alcanza con cambiar el `imageUrl`
- * del producto por la ruta de la foto (ver `public/`).
+ * Cuando el dueño/a suba fotos reales, se cargan desde el form de producto
+ * (galería `images[]`) o el panel de carrusel — sin tocar código.
  */
 
 export type ClothingIcon = 'tshirt' | 'onesie' | 'hoodie' | 'dress' | 'pants' | 'skirt' | 'shoes';

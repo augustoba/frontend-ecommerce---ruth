@@ -38,6 +38,17 @@ export class ProductDetailPageComponent {
   readonly quantity = signal(1);
   readonly justAdded = signal(false);
 
+  /** Galería de fotos */
+  readonly selectedImageIndex = signal(0);
+  readonly images = computed(() => this.product()?.images ?? []);
+  readonly mainImage = computed(
+    () => this.images()[this.selectedImageIndex()] ?? this.product()?.imageUrl ?? ''
+  );
+
+  selectImage(index: number): void {
+    this.selectedImageIndex.set(index);
+  }
+
   readonly categoryLabel = computed(() => {
     const p = this.product();
     const opt = p ? (p.params?.['grp-publico'] ?? [])[0] : undefined;
@@ -78,6 +89,7 @@ export class ProductDetailPageComponent {
       this.selectedSize.set(null);
       this.quantity.set(1);
       this.justAdded.set(false);
+      this.selectedImageIndex.set(0);
     });
   }
 

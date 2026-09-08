@@ -48,8 +48,10 @@ si conviene tocar también este archivo o el `README.md`).
   rosa/celeste/durazno) está en `public/logo.jpeg` — lo pasó el cliente,
   coincide con su marca real de WhatsApp/redes.
 - Las imágenes de productos y del carrusel de la home son **íconos SVG
-  generados por código** (`src/app/core/assets/clothing-icons.ts`), no
-  fotos reales. El cliente todavía no mandó fotos de sus productos.
+  generados por código** (backend `DataSeeder` / `clothing-icons.ts`), no
+  fotos reales. El cliente todavía no mandó fotos de sus productos. Cada
+  producto tiene **galería** (`images[]`, la 1ra es portada) editable desde
+  el form de producto; el carrusel desde `/admin/carrusel`.
 - La paleta de colores del sitio (naranja/celeste/menta, en `src/styles.css`)
   quedó como **posible ajuste pendiente** para acercarla a los tonos
   exactos del logo — ofrecido, no confirmado.

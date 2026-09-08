@@ -112,13 +112,15 @@ Valores por defecto (fallback si el backend no responde) en
 - Hero grande arriba: carrusel automático de imágenes (cada 4.5s, con
   flechas y puntos de navegación) + logo grande superpuesto + nombre +
   bajada + botón "Ver catálogo" que baja con scroll suave.
-- **Imágenes de productos y del carrusel:** hoy son ilustraciones
-  generadas por código (SVG con emoji de la prenda sobre círculo de
-  color — ver `src/app/core/assets/clothing-icons.ts`), **no son fotos
-  reales**. No dependen de internet.
-  - Para poner fotos reales: copiarlas a `public/` y cambiar el
-    `imageUrl` correspondiente en `src/app/core/services/product.service.ts`
-    (productos) o `HERO_SLIDES` en `catalog-page.component.ts` (carrusel).
+- **Imágenes de productos y del carrusel:** las del catálogo de ejemplo son
+  ilustraciones generadas por el backend (SVG con emoji de la prenda sobre
+  círculo de color — el frontend tiene equivalentes en
+  `src/app/core/assets/clothing-icons.ts`), **no son fotos reales**.
+  - Cada producto tiene una **galería** (`images[]`, la primera es la portada).
+    Se administra desde el form de producto (`/admin/productos/:id/editar`):
+    agregar por URL o subir del disco (se redimensiona a data URI), reordenar,
+    quitar. La ficha de producto muestra la galería con miniaturas.
+  - El carrusel de la home se administra desde `/admin/carrusel`.
 - Debajo: buscador + filtros dinámicos generados desde las parametrías
   marcadas como "filtro en la tienda" (Público como botones, el resto como
   selectores) + filtro por talle, y la grilla de productos.
@@ -178,8 +180,9 @@ src/app/
   (descuenta stock) o cancelar el pedido completo. Avisa si el stock
   actual de un talle ya no alcanza para lo pedido.
 - `/admin/productos` y `/admin/productos/nuevo` / `:id/editar` — CRUD de
-  productos con stock por talle. El form de edición usa un *resolver* que trae
-  el producto del backend antes de entrar.
+  productos con stock por talle y **galería de fotos** (agregar por URL o subir
+  del disco, reordenar, quitar; la primera es la portada). El form de edición
+  usa un *resolver* que trae el producto del backend antes de entrar.
 - `/admin/carrusel` — fotos del carrusel de la home: subir foto (se redimensiona
   sola a máx. 1600px de ancho antes de mandarla), editar descripción, reordenar,
   eliminar.
@@ -419,6 +422,12 @@ src/app/
     Se sumó el bloque **Comparativas** (`/metrics/comparison`): este mes vs. los
     meses anteriores del año, y la semana en curso vs. el mismo tramo de días de
     los meses anteriores.
+25. **Galería de fotos por producto** (2026-09-08): el producto pasó de una sola
+    `imageUrl` a `images[]` (la primera es la portada). El form de producto tiene
+    un administrador de fotos (agregar por URL o subir del disco → data URI,
+    reordenar, quitar) y la ficha muestra la galería con miniaturas. Backend:
+    `Product.images` (tabla `product_image`); la respuesta mantiene `imageUrl`
+    (portada) para las tarjetas y el carrito.
 
 ## 12. Backend (`../backend/`) — resumen
 

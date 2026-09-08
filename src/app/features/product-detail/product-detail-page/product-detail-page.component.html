@@ -3,14 +3,34 @@
     <a routerLink="/" class="text-sm font-semibold text-brand-600 hover:underline">← Volver al catálogo</a>
 
     <div class="mt-4 grid md:grid-cols-2 gap-8">
-      <div class="relative rounded-2xl overflow-hidden bg-brand-100 aspect-[4/5]">
-        <img [src]="p.imageUrl" [alt]="p.name" class="w-full h-full object-cover" />
-        @if (outOfStock()) {
-          <span
-            class="absolute inset-0 bg-stone-900/50 flex items-center justify-center text-white font-bold"
-          >
-            Sin stock
-          </span>
+      <div>
+        <div class="relative rounded-2xl overflow-hidden bg-brand-100 aspect-[4/5]">
+          <img [src]="mainImage()" [alt]="p.name" class="w-full h-full object-cover" />
+          @if (outOfStock()) {
+            <span
+              class="absolute inset-0 bg-stone-900/50 flex items-center justify-center text-white font-bold"
+            >
+              Sin stock
+            </span>
+          }
+        </div>
+
+        @if (images().length > 1) {
+          <div class="flex gap-2 mt-3 overflow-x-auto pb-1">
+            @for (img of images(); track $index) {
+              <button
+                type="button"
+                (click)="selectImage($index)"
+                [attr.aria-label]="'Ver foto ' + ($index + 1)"
+                [attr.aria-current]="$index === selectedImageIndex()"
+                class="shrink-0 w-16 h-20 rounded-lg overflow-hidden bg-brand-50 ring-2 transition-colors"
+                [class.ring-brand-500]="$index === selectedImageIndex()"
+                [class.ring-transparent]="$index !== selectedImageIndex()"
+              >
+                <img [src]="img" alt="" class="w-full h-full object-cover" />
+              </button>
+            }
+          </div>
         }
       </div>
 

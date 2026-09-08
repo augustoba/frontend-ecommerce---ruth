@@ -29,6 +29,9 @@ export interface Product {
   sizeScaleId?: string;
   /** Talles en los que viene el producto, cada uno con su propio stock */
   sizeStocks: SizeStock[];
+  /** Fotos del producto, en orden. La primera es la portada. Siempre hay al menos una. */
+  images: string[];
+  /** Portada (primera de `images`). La calcula el backend; sirve para tarjetas y carrito. */
   imageUrl: string;
   active: boolean;
   createdAt: string;
@@ -42,8 +45,11 @@ export interface Product {
   costPrice?: number;
 }
 
-/** Datos con los que se crea/edita un producto desde el panel de administración */
-export type ProductInput = Omit<Product, 'id' | 'createdAt'>;
+/**
+ * Datos con los que se crea/edita un producto desde el panel. `imageUrl` no se
+ * manda: el backend lo deriva de `images[0]`.
+ */
+export type ProductInput = Omit<Product, 'id' | 'createdAt' | 'imageUrl'>;
 
 /** Stock total del producto sumando todos los talles */
 export function totalStock(product: Pick<Product, 'sizeStocks'>): number {
