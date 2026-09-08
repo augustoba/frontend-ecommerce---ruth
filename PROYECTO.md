@@ -101,10 +101,11 @@ src/app/
     config/site-config.ts       # nombre, WhatsApp, credenciales admin, redes (ver sección 4)
     assets/clothing-icons.ts    # generador de imágenes SVG de ejemplo
     utils/image-resize.ts       # redimensiona fotos subidas antes de guardarlas
-    models/                     # Product (params + supplierId/costPrice opc.), CartItem, Order, ParamGroup, Discount, Supplier
+    models/                     # Product (params + sizeScaleId + supplierId/costPrice opc.), CartItem, Order, ParamGroup, Discount, Supplier, SizeScale
     services/
-      product.service.ts        # catálogo (mock + localStorage), CRUD admin, migra `category` viejo → params
+      product.service.ts        # catálogo (mock + localStorage), CRUD admin, migra `category`→params y talles→sizeScaleId
       param.service.ts          # parametrías (grupos + opciones) editables — localStorage
+      size-scale.service.ts     # escalas de talle editables (ropa bebé/niños/adultos, calzado…) — localStorage
       supplier.service.ts       # proveedores del local (info interna admin) — localStorage
       cart.service.ts           # carrito (signals + localStorage)
       whatsapp.service.ts       # arma el mensaje (código + subtotal/descuento/total) y el link wa.me
@@ -154,6 +155,7 @@ src/app/
   de guardarla, para no llenar el `localStorage`), editar descripción,
   reordenar, eliminar, o restaurar las ilustraciones de ejemplo.
 - `/admin/parametrias` — grupos de clasificación de prendas (ver sección 9ter).
+- `/admin/talles` — escalas de talle editables (ver sección 9quinquies).
 - `/admin/proveedores` — proveedores del local (ver sección 9quater).
 - `/admin/promociones` — descuentos automáticos: por **monto de compra** y por
   **parametría** (ej: "todo lo de bebé 15% off"), con un **modo de combinación**
@@ -204,6 +206,26 @@ src/app/
   guarda el precio de venta). Al borrar un proveedor, las prendas quedan sin
   proveedor pero conservan el `costPrice`.
 
+## 9quinquies. Escalas de talle
+
+- **Qué son:** `/admin/talles` — conjuntos de talles con nombre (`SizeScale` +
+  `SizeScaleService`, localStorage `pp_size_scales`). Vienen 5 de ejemplo con
+  IDs fijos: `escala-bebe` (RN, 0-3M…24M), `escala-ninos` (1-16),
+  `escala-adultos` (XS-XXL), `escala-calzado-ninos` (17-34),
+  `escala-calzado-adultos` (34-46). Los seed no se pueden borrar (sí editar
+  sus valores); se pueden crear escalas nuevas.
+- `ProductSize` dejó de ser un tipo fijo → es `string`. El producto guarda
+  `sizeScaleId` y su `sizeStocks[].size` sale de esa escala.
+- **Alta de producto:** primero se elige la escala (obligatorio), y la grilla
+  de talles se arma con los valores de esa escala. Al cambiar de escala se
+  descartan los talles que no existen en la nueva.
+- **Migración:** productos sin `sizeScaleId` (mocks y datos viejos de
+  localStorage) → se infiere con `inferSizeScaleId()` (la escala seed más chica
+  que contiene todos sus talles). Los pedidos/carrito guardan el talle como
+  string → no hay migración ahí.
+- **Catálogo:** el filtro de talle lista sólo los talles presentes en el
+  catálogo, ordenados según el orden de las escalas.
+
 ## 10. Pendientes / próximos pasos conocidos
 
 - [ ] Reemplazar `whatsappNumber` por el número real antes de publicar.
@@ -217,6 +239,9 @@ src/app/
       `AuthService` ya están aislados del resto de la app para poder
       cambiarlos por llamadas HTTP sin tocar las pantallas.
 - [ ] Evaluar deploy/hosting del frontend cuando esté listo para publicar.
+- [ ] Pantalla de métricas (`/admin/metricas`): con talles, proveedores y
+      parametrías ya estructurados, se puede armar un panel de ventas por talle
+      / proveedor / estación leyendo los pedidos procesados. Pedido a futuro.
 
 ## 11. Historial de pedidos/decisiones relevantes (cronológico)
 
@@ -280,3 +305,8 @@ src/app/
 18. Calculadora de precio de venta en el form de producto: se pone el costo y
     el "% que le querés ganar" y el precio de venta se completa solo
     (costo × (1 + %/100)). El % no se persiste, el precio queda editable.
+19. **Escalas de talle** (`/admin/talles`, sección 9quinquies): los talles
+    dejaron de estar fijos en el código. `ProductSize` pasó a ser `string`, el
+    producto tiene `sizeScaleId`, y en el alta se elige la escala (ropa bebé,
+    niños, adultos, calzado…). El filtro de talle del catálogo se volvió
+    dinámico. Se dejó anotado un pendiente de pantalla de métricas.

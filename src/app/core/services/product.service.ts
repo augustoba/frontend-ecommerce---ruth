@@ -1,6 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { Product, ProductInput, SizeStock, stockForSize } from '../models/product.model';
 import { ProductParams } from '../models/param.model';
+import { inferSizeScaleId } from '../models/size-scale.model';
 import { clothingIconDataUri } from '../assets/clothing-icons';
 
 /** Atajo para armar los params de los productos de ejemplo */
@@ -144,8 +145,8 @@ const MOCK_PRODUCTS: Product[] = [
     sizeStocks: [
       { size: '3-6M', stock: 5 },
       { size: '6-12M', stock: 6 },
-      { size: '1', stock: 3 },
-      { size: '2', stock: 2 },
+      { size: '12-18M', stock: 3 },
+      { size: '18-24M', stock: 2 },
     ],
     imageUrl: clothingIconDataUri('onesie', { bg: '#fef2f2', fill: '#fca5a5' }),
     active: true,
@@ -197,23 +198,28 @@ const MOCK_PRODUCTS: Product[] = [
     params: params('unisex', 'calzado', ['todo']),
     ageRange: '1 a 8 años',
     sizeStocks: [
-      { size: '1', stock: 1 },
-      { size: '2', stock: 2 },
-      { size: '3', stock: 2 },
-      { size: '4', stock: 1 },
-      { size: '6', stock: 1 },
-      { size: '8', stock: 1 },
+      { size: '22', stock: 1 },
+      { size: '24', stock: 2 },
+      { size: '26', stock: 2 },
+      { size: '28', stock: 1 },
+      { size: '30', stock: 1 },
+      { size: '32', stock: 1 },
     ],
     imageUrl: clothingIconDataUri('shoes', { bg: '#faf5ff', fill: '#d8b4fe' }),
     active: true,
     createdAt: new Date().toISOString(),
   },
-];
+].map((p) => ({
+  ...p,
+  sizeScaleId: inferSizeScaleId(p.sizeStocks.map((s) => s.size)),
+}));
 
 /**
- * Adapta un producto guardado en localStorage al modelo actual. Los datos
- * viejos traían `category: 'bebe' | 'nena' | ...` en vez de `params`; acá se
- * convierte a la parametría "Público" para no romper el catálogo existente.
+ * Adapta un producto guardado en localStorage al modelo actual:
+ * - datos viejos con `category: 'bebe' | ...` → parametría "Público".
+ * - productos sin `sizeScaleId` → se infiere de sus talles (ver
+ *   inferSizeScaleId); si no matchea ninguna escala queda undefined y el form
+ *   pide elegir una.
  */
 function migrateProduct(raw: Record<string, unknown>): Product {
   const p = { ...raw } as Record<string, unknown>;
@@ -222,6 +228,11 @@ function migrateProduct(raw: Record<string, unknown>): Product {
     p['params'] = legacy ? { 'grp-publico': [`publico-${legacy}`] } : {};
   }
   delete p['category'];
+  if (!p['sizeScaleId'] && Array.isArray(p['sizeStocks'])) {
+    const sizes = (p['sizeStocks'] as SizeStock[]).map((s) => s.size);
+    const inferred = inferSizeScaleId(sizes);
+    if (inferred) p['sizeScaleId'] = inferred;
+  }
   return p as unknown as Product;
 }
 

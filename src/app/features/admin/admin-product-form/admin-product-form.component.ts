@@ -5,12 +5,9 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
 import { SupplierService } from '../../../core/services/supplier.service';
+import { SizeScaleService } from '../../../core/services/size-scale.service';
 import { Product, ProductSize, margin } from '../../../core/models/product.model';
 import { ProductParams } from '../../../core/models/param.model';
-
-const ALL_SIZES: ProductSize[] = [
-  'RN', '0-3M', '3-6M', '6-12M', '1', '2', '3', '4', '6', '8', '10', '12', '14', '16',
-];
 
 /** Precio de venta = costo + markup%. null si falta el costo o el %. */
 function priceFromMarkup(cost: number, markupPercent: number): number | null {
@@ -32,10 +29,11 @@ export class AdminProductFormComponent {
   private readonly productService = inject(ProductService);
   private readonly paramService = inject(ParamService);
   private readonly supplierService = inject(SupplierService);
+  private readonly sizeScaleService = inject(SizeScaleService);
 
-  readonly allSizes = ALL_SIZES;
   readonly paramGroups = this.paramService.groups;
   readonly suppliers = this.supplierService.suppliers;
+  readonly sizeScales = this.sizeScaleService.scales;
 
   private readonly editingId = this.route.snapshot.paramMap.get('id');
   readonly isEditMode = !!this.editingId;
@@ -67,6 +65,7 @@ export class AdminProductFormComponent {
     ageRange: [this.editingProduct?.ageRange ?? '', Validators.required],
     imageUrl: [this.editingProduct?.imageUrl ?? '', [Validators.required]],
     active: [this.editingProduct?.active ?? true],
+    sizeScaleId: [this.editingProduct?.sizeScaleId ?? ''],
     supplierId: [this.editingProduct?.supplierId ?? ''],
     costPrice: [this.editingProduct?.costPrice ?? 0, [Validators.min(0)]],
   });
@@ -74,6 +73,11 @@ export class AdminProductFormComponent {
   private readonly formValue = toSignal(this.form.valueChanges, {
     initialValue: this.form.getRawValue(),
   });
+
+  /** Talles de la escala elegida (o [] si todavía no se eligió ninguna) */
+  readonly scaleSizes = computed(() =>
+    this.sizeScaleService.valuesFor(this.formValue().sizeScaleId || undefined)
+  );
 
   /** Ganancia estimada según lo cargado en el form (precio de venta − costo) */
   readonly marginPreview = computed(() => {
@@ -122,7 +126,23 @@ export class AdminProductFormComponent {
 
   readonly submitted = signal(false);
 
+  readonly sizeScaleInvalid = computed(
+    () => this.submitted() && !this.formValue().sizeScaleId
+  );
   readonly sizesInvalid = computed(() => this.submitted() && this.sizeStocks().size === 0);
+
+  /** Al cambiar la escala de talle, se quedan sólo los talles que existen en la nueva */
+  onSizeScaleChange(event: Event): void {
+    const newId = (event.target as HTMLSelectElement).value;
+    const allowed = new Set(this.sizeScaleService.valuesFor(newId || undefined));
+    this.sizeStocks.update((current) => {
+      const next = new Map<string, number>();
+      for (const [size, stock] of current) {
+        if (allowed.has(size)) next.set(size, stock);
+      }
+      return next;
+    });
+  }
 
   /** Los grupos "de sistema" (ej: Público) son obligatorios */
   readonly missingRequiredParams = computed(() =>
@@ -205,6 +225,7 @@ export class AdminProductFormComponent {
     this.submitted.set(true);
     if (
       this.form.invalid ||
+      !this.form.controls.sizeScaleId.value ||
       this.sizeStocks().size === 0 ||
       this.missingRequiredParams().length > 0
     ) {
@@ -215,6 +236,7 @@ export class AdminProductFormComponent {
     const value = this.form.getRawValue();
     const input = {
       ...value,
+      sizeScaleId: value.sizeScaleId || undefined,
       supplierId: value.supplierId || undefined,
       costPrice: value.costPrice > 0 ? value.costPrice : undefined,
       params: this.selectedParams(),

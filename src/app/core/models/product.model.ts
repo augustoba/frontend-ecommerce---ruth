@@ -1,10 +1,15 @@
 import { ProductParams } from './param.model';
 
-export type ProductSize = 'RN' | '0-3M' | '3-6M' | '6-12M' | '1' | '2' | '3' | '4' | '6' | '8' | '10' | '12' | '14' | '16';
+/**
+ * Un talle, como texto libre. Los valores posibles ya no están fijos en el
+ * código: salen de la "escala de talle" elegida en el producto (ver
+ * SizeScaleService y `sizeScaleId`). Se mantiene el alias por legibilidad.
+ */
+export type ProductSize = string;
 
 /** Stock disponible para un talle puntual de un producto */
 export interface SizeStock {
-  size: ProductSize;
+  size: string;
   stock: number;
 }
 
@@ -20,6 +25,8 @@ export interface Product {
   params: ProductParams;
   /** Edad orientativa, ej: "2 a 4 años" — se muestra en la ficha del producto */
   ageRange: string;
+  /** Escala de talle elegida (id de SizeScale). De acá salen los talles válidos. */
+  sizeScaleId?: string;
   /** Talles en los que viene el producto, cada uno con su propio stock */
   sizeStocks: SizeStock[];
   imageUrl: string;

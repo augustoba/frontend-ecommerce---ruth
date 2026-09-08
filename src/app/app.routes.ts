@@ -106,6 +106,14 @@ export const routes: Routes = [
         title: 'Proveedores | Admin',
       },
       {
+        path: 'talles',
+        loadComponent: () =>
+          import('./features/admin/admin-size-scales/admin-size-scales.component').then(
+            (m) => m.AdminSizeScalesComponent
+          ),
+        title: 'Talles | Admin',
+      },
+      {
         path: 'promociones',
         loadComponent: () =>
           import('./features/admin/admin-promos/admin-promos.component').then(

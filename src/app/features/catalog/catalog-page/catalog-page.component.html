@@ -42,7 +42,7 @@
         class="w-full sm:w-auto rounded-full border border-stone-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
       >
         <option value="todos">Todos los talles</option>
-        @for (size of sizes; track size) {
+        @for (size of availableSizes(); track size) {
           <option [value]="size">Talle {{ size }}</option>
         }
       </select>

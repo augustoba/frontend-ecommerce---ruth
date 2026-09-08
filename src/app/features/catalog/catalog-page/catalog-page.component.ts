@@ -4,8 +4,9 @@ import { ProductCardComponent } from '../../../shared/components/product-card/pr
 import { HeroCarouselComponent } from '../../../shared/components/hero-carousel/hero-carousel.component';
 import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
+import { SizeScaleService } from '../../../core/services/size-scale.service';
 import { HeroSlidesService } from '../../../core/services/hero-slides.service';
-import { ProductSize, productHasParam } from '../../../core/models/product.model';
+import { productHasParam } from '../../../core/models/product.model';
 
 @Component({
   selector: 'app-catalog-page',
@@ -16,6 +17,7 @@ import { ProductSize, productHasParam } from '../../../core/models/product.model
 export class CatalogPageComponent {
   private readonly productService = inject(ProductService);
   private readonly paramService = inject(ParamService);
+  private readonly sizeScaleService = inject(SizeScaleService);
   private readonly heroSlidesService = inject(HeroSlidesService);
 
   /** Fotos del carrusel de bienvenida — administrables desde /admin/carrusel */
@@ -31,12 +33,29 @@ export class CatalogPageComponent {
     this.filterGroups().filter((g) => g.id !== 'grp-publico')
   );
 
-  readonly sizes: ProductSize[] = [
-    'RN', '0-3M', '3-6M', '6-12M', '1', '2', '3', '4', '6', '8', '10', '12', '14', '16',
-  ];
+  /**
+   * Talles que existen en el catálogo, ordenados según el orden en que aparecen
+   * en las escalas de talle (y al final los que no están en ninguna).
+   */
+  readonly availableSizes = computed(() => {
+    const present = new Set<string>();
+    for (const p of this.productService.availableProducts()) {
+      for (const s of p.sizeStocks) present.add(s.size);
+    }
+    const ordered: string[] = [];
+    for (const scale of this.sizeScaleService.scales()) {
+      for (const v of scale.values) {
+        if (present.has(v) && !ordered.includes(v)) ordered.push(v);
+      }
+    }
+    for (const v of present) {
+      if (!ordered.includes(v)) ordered.push(v);
+    }
+    return ordered;
+  });
 
   readonly searchTerm = signal('');
-  readonly selectedSize = signal<ProductSize | 'todos'>('todos');
+  readonly selectedSize = signal<string>('todos');
   /** { [groupId]: optionId } — sin entrada o '' significa "todas" */
   readonly selectedParams = signal<Record<string, string>>({});
 
