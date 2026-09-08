@@ -55,6 +55,8 @@ export class AdminPromosComponent {
 
   readonly newStartsAt = signal<string>('');
   readonly newEndsAt = signal<string>('');
+  /** "Acumulable" para el descuento que se está por agregar (compartido entre los forms). */
+  readonly newStackable = signal<boolean>(false);
 
   readonly optionsForNewGroup = computed(
     () => this.groups().find((g) => g.id === this.newGroupId())?.options ?? []
@@ -109,12 +111,12 @@ export class AdminPromosComponent {
       minAmount: this.newMinAmount(),
       discountPercent: clampPct(this.newAmountPercent()),
       enabled: true,
-      stackable: false,
+      stackable: this.newStackable(),
       ...this.vigenciaPatch(),
     });
     this.newMinAmount.set(0);
     this.newAmountPercent.set(0);
-    this.clearVigencia();
+    this.clearNew();
   }
 
   // --- por parámetro ---
@@ -148,13 +150,13 @@ export class AdminPromosComponent {
       optionId: this.newOptionId(),
       discountPercent: clampPct(this.newParamPercent()),
       enabled: true,
-      stackable: false,
+      stackable: this.newStackable(),
       ...this.vigenciaPatch(),
     });
     this.newGroupId.set('');
     this.newOptionId.set('');
     this.newParamPercent.set(0);
-    this.clearVigencia();
+    this.clearNew();
   }
 
   // --- por medio de pago ---
@@ -189,12 +191,12 @@ export class AdminPromosComponent {
       discountPercent: clampPct(this.newPagoPercent()),
       paymentMethods: [...this.newPagoMethods()],
       enabled: true,
-      stackable: false,
+      stackable: this.newStackable(),
       ...this.vigenciaPatch(),
     });
     this.newPagoPercent.set(0);
     this.newPagoMethods.set(new Set());
-    this.clearVigencia();
+    this.clearNew();
   }
 
   // --- envío gratis ---
@@ -215,17 +217,18 @@ export class AdminPromosComponent {
     });
     this.newFreeMin.set(0);
     this.newFreeDetail.set('');
-    this.clearVigencia();
+    this.clearNew();
   }
 
-  // --- vigencia compartida ---
+  // --- campos compartidos entre los forms ---
   private vigenciaPatch(): { startsAt: string | null; endsAt: string | null } {
     return { startsAt: this.newStartsAt() || null, endsAt: this.newEndsAt() || null };
   }
 
-  private clearVigencia(): void {
+  private clearNew(): void {
     this.newStartsAt.set('');
     this.newEndsAt.set('');
+    this.newStackable.set(false);
   }
 }
 
