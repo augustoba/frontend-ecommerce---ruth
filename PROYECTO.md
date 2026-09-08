@@ -179,8 +179,10 @@ src/app/
   conteo de productos, últimos pedidos) + **lista de productos por reponer**
   (talles con stock ≤ umbral). El menú lateral muestra un badge rojo con la
   cantidad de talles en alerta (como el de pedidos pendientes).
-- `/admin/pedidos` — listado de pedidos **paginado** (20 por página), con
-  contador de pendientes en el menú (de `/api/admin/orders/pending-count`).
+- `/admin/pedidos` — listado de pedidos **paginado** (20 por página) con
+  **filtros** (server-side): buscar por código o nombre del cliente, estado
+  (pendientes / confirmados / cancelados), y rango de fechas. Contador de
+  pendientes en el menú (de `/api/admin/orders/pending-count`).
 - `/admin/pedidos/:id` — detalle: tildar/destildar ítems, confirmar
   (descuenta stock) o cancelar el pedido completo. **No deja confirmar** si
   algún ítem tildado no tiene stock suficiente (muestra qué falta y el backend
@@ -460,6 +462,10 @@ src/app/
     filtra por `activeNow()` y expone `status`; el front usa `status` para el
     cálculo del carrito). En `/admin/promociones`: dos date inputs por fila +
     en los "agregar", y un pill de estado (Programado / Vencido / Vigente).
+31. **Filtros en el listado de pedidos** (2026-09-08): `/admin/pedidos` tiene una
+    barra de filtros (buscar por código/nombre, estado, rango de fechas) que se
+    resuelve **server-side** (`GET /api/admin/orders?search&status&from&to`).
+    `CollectionStore` sumó `setQuery()` para llevar query params en el paginado.
 
 ## 12. Backend (`../backend/`) — resumen
 

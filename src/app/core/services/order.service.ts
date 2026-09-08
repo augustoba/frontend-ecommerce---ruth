@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { CartItem } from '../models/cart-item.model';
-import { Order } from '../models/order.model';
+import { Order, OrderStatus } from '../models/order.model';
 import { CollectionStore } from '../state/collection-store';
 import { apiUrl } from '../config/site-config';
 
@@ -45,6 +45,22 @@ export class OrderService {
 
   loadPage(n: number): void {
     this.store.loadPage(n);
+  }
+
+  /** Filtros del listado del panel. Recarga desde la página 0. */
+  setFilters(f: {
+    search?: string;
+    status?: OrderStatus | '';
+    from?: string;
+    to?: string;
+  }): void {
+    this.store.setQuery({
+      search: f.search?.trim() || undefined,
+      status: f.status || undefined,
+      from: f.from || undefined,
+      to: f.to || undefined,
+    });
+    this.loadPendingCount();
   }
 
   loadPendingCount(): void {

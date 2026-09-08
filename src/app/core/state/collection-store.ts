@@ -45,6 +45,9 @@ export class CollectionStore<T> {
   /** Reejecuta la última carga (página actual si está paginado). */
   private lastLoad: () => void = () => this.load();
 
+  /** Filtros extra que se agregan como query params en `loadPage` (sólo paginado). */
+  private queryParams: Record<string, string | number> = {};
+
   /**
    * @param path      ruta relativa, ej '/products' → GET /api/products
    * @param pick      opcional: extrae el array de la respuesta (si viene envuelto)
@@ -85,7 +88,7 @@ export class CollectionStore<T> {
     this.statusSignal.set('loading');
     this.http
       .get<PagedRaw>(apiUrl(this.path), {
-        params: { page: target, size: this.pageSize },
+        params: { page: target, size: this.pageSize, ...this.queryParams },
       })
       .subscribe({
         next: (raw) => {
@@ -100,6 +103,18 @@ export class CollectionStore<T> {
   }
 
   reload = (): void => this.lastLoad();
+
+  /**
+   * Fija los filtros (query params) del listado paginado y recarga desde la
+   * página 0. Los valores null/undefined/'' se omiten.
+   */
+  setQuery(params: Record<string, string | number | null | undefined>): void {
+    this.queryParams = {};
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== null && v !== undefined && v !== '') this.queryParams[k] = v;
+    }
+    this.loadPage(0);
+  }
 
   /**
    * Ejecuta una mutación (POST/PUT/DELETE), marca `saving`, y al terminar bien
