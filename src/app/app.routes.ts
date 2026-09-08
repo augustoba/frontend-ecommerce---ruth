@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { adminGuard } from './core/guards/admin.guard';
 import { productResolver } from './features/admin/admin-product-form/product.resolver';
+import { orderResolver } from './features/admin/admin-order-detail/order.resolver';
 
 export const routes: Routes = [
   {
@@ -97,6 +98,7 @@ export const routes: Routes = [
           import('./features/admin/admin-order-detail/admin-order-detail.component').then(
             (m) => m.AdminOrderDetailComponent
           ),
+        resolve: { order: orderResolver },
         title: 'Pedido | Admin',
       },
       {

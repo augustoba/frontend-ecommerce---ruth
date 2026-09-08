@@ -179,16 +179,16 @@ src/app/
   conteo de productos, últimos pedidos) + **lista de productos por reponer**
   (talles con stock ≤ umbral). El menú lateral muestra un badge rojo con la
   cantidad de talles en alerta (como el de pedidos pendientes).
-- `/admin/pedidos` — listado de pedidos (código, cliente, fecha, total,
-  estado). Muestra un contador de pedidos pendientes en el menú lateral.
+- `/admin/pedidos` — listado de pedidos **paginado** (20 por página), con
+  contador de pendientes en el menú (de `/api/admin/orders/pending-count`).
 - `/admin/pedidos/:id` — detalle: tildar/destildar ítems, confirmar
   (descuenta stock) o cancelar el pedido completo. Avisa si el stock
-  actual de un talle ya no alcanza para lo pedido.
-- `/admin/productos` y `/admin/productos/nuevo` / `:id/editar` — CRUD de
-  productos con stock por talle, **galería de fotos** (agregar por URL o subir
-  del disco, reordenar, quitar; la primera es la portada) y **umbral de stock
-  bajo** propio (vacío = default global 3). El form de edición usa un *resolver*
-  que trae el producto del backend antes de entrar.
+  actual de un talle ya no alcanza. Usa un *resolver* (`orderResolver`) —
+  no depende de que el pedido esté en la página cargada del listado.
+- `/admin/productos` — listado **paginado** (20 por página). `nuevo` / `:id/editar`
+  — CRUD con stock por talle, **galería de fotos** (agregar por URL o subir del
+  disco, reordenar, quitar; la primera es la portada) y **umbral de stock bajo**
+  propio (vacío = default global 3). El form de edición usa un *resolver*.
 - `/admin/carrusel` — fotos del carrusel de la home: subir foto (se redimensiona
   sola a máx. 1600px de ancho antes de mandarla), editar descripción, reordenar,
   eliminar.
@@ -442,6 +442,12 @@ src/app/
     (vacío = default 3). Backend: `GET /api/admin/dashboard` + `/low-stock`.
 27. **Ordenar el catálogo por precio** (2026-09-08): selector en la home
     (novedades / precio ↑ / precio ↓). Client-side, sobre `filteredProducts`.
+28. **Paginación de los listados del panel** (2026-09-08): `/admin/productos` y
+    `/admin/pedidos` traen 20 por página (`CollectionStore` sumó `loadPage` /
+    `page` / `totalPages`; `<app-pagination>` reusable). El detalle de pedido
+    pasó a `orderResolver` + señal local (las mutaciones devuelven el pedido
+    nuevo); `OrderService.pendingCount` sale de `/pending-count`. El catálogo
+    público NO se pagina (sigue client-side para no romper filtros/orden).
 
 ## 12. Backend (`../backend/`) — resumen
 

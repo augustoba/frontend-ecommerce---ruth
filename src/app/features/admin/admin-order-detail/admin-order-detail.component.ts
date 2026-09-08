@@ -1,8 +1,9 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { OrderService } from '../../../core/services/order.service';
 import { ProductService } from '../../../core/services/product.service';
+import { Order } from '../../../core/models/order.model';
 import { ProductSize, stockForSize } from '../../../core/models/product.model';
 
 @Component({
@@ -19,17 +20,16 @@ export class AdminOrderDetailComponent {
 
   private readonly orderId = this.route.snapshot.paramMap.get('id') ?? '';
 
-  readonly ordersStatus = this.orderService.status;
-  readonly saving = this.orderService.saving;
+  /** El pedido lo trae el `orderResolver`; las mutaciones devuelven la versión nueva. */
+  readonly order = signal<Order | null>(
+    (this.route.snapshot.data['order'] as Order | null) ?? null
+  );
+  readonly notFound = !this.order();
+  readonly saving = signal(false);
 
   constructor() {
-    this.orderService.ensureLoaded();
     this.productService.ensureAdminLoaded();
   }
-
-  // Se lee del signal de la lista completa (no getById) para que la vista
-  // se actualice sola al tildar/destildar o confirmar, sin recargar.
-  readonly order = computed(() => this.orderService.orders().find((o) => o.id === this.orderId));
 
   readonly acceptedTotal = computed(() => {
     const order = this.order();
@@ -51,15 +51,28 @@ export class AdminOrderDetailComponent {
   }
 
   toggleLine(index: number): void {
-    this.orderService.toggleLine(this.orderId, index);
+    const order = this.order();
+    if (!order || order.status !== 'PENDIENTE') return;
+    const lines = order.lines.map((l, i) => ({
+      lineId: l.id,
+      accepted: i === index ? !l.accepted : l.accepted,
+    }));
+    this.run(this.orderService.setLines(this.orderId, lines));
   }
 
   acceptAll(): void {
-    this.orderService.setAllLines(this.orderId, true);
+    this.setAll(true);
   }
 
   rejectAll(): void {
-    this.orderService.setAllLines(this.orderId, false);
+    this.setAll(false);
+  }
+
+  private setAll(accepted: boolean): void {
+    const order = this.order();
+    if (!order || order.status !== 'PENDIENTE') return;
+    const lines = order.lines.map((l) => ({ lineId: l.id, accepted }));
+    this.run(this.orderService.setLines(this.orderId, lines));
   }
 
   confirmOrder(): void {
@@ -68,9 +81,7 @@ export class AdminOrderDetailComponent {
     const confirmed = window.confirm(
       `¿Confirmar el pedido ${order.code}? Se va a descontar el stock de los ${this.acceptedCount()} ítems tildados.`
     );
-    if (confirmed) {
-      this.orderService.confirm(this.orderId);
-    }
+    if (confirmed) this.run(this.orderService.confirm(this.orderId));
   }
 
   cancelOrder(): void {
@@ -78,8 +89,19 @@ export class AdminOrderDetailComponent {
     if (!order) return;
     const confirmed = window.confirm(`¿Cancelar el pedido ${order.code} completo? No se va a tocar el stock.`);
     if (confirmed) {
-      this.orderService.cancel(this.orderId);
-      this.router.navigate(['/admin/pedidos']);
+      this.run(this.orderService.cancel(this.orderId), () => this.router.navigate(['/admin/pedidos']));
     }
+  }
+
+  private run(obs: import('rxjs').Observable<Order>, onSuccess?: () => void): void {
+    this.saving.set(true);
+    obs.subscribe({
+      next: (updated) => {
+        this.order.set(updated);
+        this.saving.set(false);
+        onSuccess?.();
+      },
+      error: () => this.saving.set(false),
+    });
   }
 }

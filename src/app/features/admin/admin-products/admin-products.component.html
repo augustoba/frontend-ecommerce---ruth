@@ -101,6 +101,10 @@
       </tbody>
     </table>
   </div>
+  <app-pagination
+    [page]="page()" [totalPages]="totalPages()" [totalElements]="totalElements()"
+    (pageChange)="goToPage($event)"
+  />
 } @else {
   <div class="text-center py-20 text-stone-400 bg-white rounded-2xl ring-1 ring-black/5">
     <p class="text-4xl mb-3">📦</p>

@@ -16,7 +16,13 @@ export class ProductService {
   private readonly http = inject(HttpClient);
 
   private readonly publicStore = new CollectionStore<Product>(this.http, '/products');
-  private readonly adminStore = new CollectionStore<Product>(this.http, '/admin/products');
+  /** Listado del panel, paginado (20 por página). */
+  private readonly adminStore = new CollectionStore<Product>(
+    this.http,
+    '/admin/products',
+    (raw) => raw as Product[],
+    20
+  );
 
   /** Solo activos — para el catálogo público */
   readonly availableProducts = this.publicStore.items;
@@ -25,13 +31,19 @@ export class ProductService {
   readonly catalogErrored = this.publicStore.errored;
   readonly reloadCatalog = this.publicStore.reload;
 
-  /** Todos, incluidos inactivos — para el panel de admin */
+  /** Página actual del panel (incluye inactivos) */
   readonly products = this.adminStore.items;
   readonly adminStatus = this.adminStore.status;
   readonly adminLoading = this.adminStore.loading;
   readonly adminErrored = this.adminStore.errored;
   readonly saving = this.adminStore.saving;
   readonly reloadAdmin = this.adminStore.reload;
+  readonly adminPage = this.adminStore.page;
+  readonly adminTotalPages = this.adminStore.totalPages;
+  readonly adminTotalElements = this.adminStore.totalElements;
+  loadAdminPage(n: number): void {
+    this.adminStore.loadPage(n);
+  }
 
   /** Unión de ambas listas, sin duplicados (para getById desde cualquier contexto) */
   private readonly all = computed(() => {

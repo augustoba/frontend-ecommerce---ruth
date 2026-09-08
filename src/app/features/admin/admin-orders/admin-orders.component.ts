@@ -3,10 +3,11 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { OrderService } from '../../../core/services/order.service';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-admin-orders',
-  imports: [CurrencyPipe, DatePipe, RouterLink, SkeletonComponent],
+  imports: [CurrencyPipe, DatePipe, RouterLink, SkeletonComponent, PaginationComponent],
   templateUrl: './admin-orders.component.html',
   styleUrl: './admin-orders.component.css',
 })
@@ -15,7 +16,11 @@ export class AdminOrdersComponent {
 
   readonly orders = this.orderService.orders;
   readonly status = this.orderService.status;
+  readonly page = this.orderService.page;
+  readonly totalPages = this.orderService.totalPages;
+  readonly totalElements = this.orderService.totalElements;
   readonly reload = () => this.orderService.reload();
+  readonly goToPage = (n: number) => this.orderService.loadPage(n);
 
   constructor() {
     this.orderService.ensureLoaded();

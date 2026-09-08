@@ -1,20 +1,29 @@
-import { Injectable, computed, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { CartItem } from '../models/cart-item.model';
 import { Order } from '../models/order.model';
 import { CollectionStore } from '../state/collection-store';
 import { apiUrl } from '../config/site-config';
 
 /**
- * Pedidos. El listado del panel viene de `/api/admin/orders`. La creación
- * (`POST /api/orders`) es pública (checkout) y el backend calcula código,
- * descuentos y totales. Confirmar descuenta stock en el backend.
+ * Pedidos. El listado del panel viene de `/api/admin/orders` **paginado**
+ * (20 por página). La creación (`POST /api/orders`) es pública (checkout) y el
+ * backend calcula código, descuentos y totales. Confirmar descuenta stock.
+ *
+ * El detalle de un pedido se trae puntual (`fetchOne`, vía resolver) para no
+ * depender de que esté en la página cargada; las mutaciones devuelven el pedido
+ * actualizado.
  */
 @Injectable({ providedIn: 'root' })
 export class OrderService {
   private readonly http = inject(HttpClient);
-  private readonly store = new CollectionStore<Order>(this.http, '/admin/orders');
+  private readonly store = new CollectionStore<Order>(
+    this.http,
+    '/admin/orders',
+    (raw) => raw as Order[],
+    20
+  );
 
   readonly orders = this.store.items;
   readonly status = this.store.status;
@@ -22,17 +31,31 @@ export class OrderService {
   readonly errored = this.store.errored;
   readonly saving = this.store.saving;
   readonly reload = this.store.reload;
+  readonly page = this.store.page;
+  readonly totalPages = this.store.totalPages;
+  readonly totalElements = this.store.totalElements;
 
-  readonly pendingCount = computed(
-    () => this.store.items().filter((o) => o.status === 'PENDIENTE').length
-  );
+  private readonly pendingCountSignal = signal(0);
+  readonly pendingCount = this.pendingCountSignal.asReadonly();
 
   ensureLoaded(): void {
     this.store.ensureLoaded();
+    this.loadPendingCount();
   }
 
-  getById(id: string): Order | undefined {
-    return this.store.items().find((o) => o.id === id);
+  loadPage(n: number): void {
+    this.store.loadPage(n);
+  }
+
+  loadPendingCount(): void {
+    this.http
+      .get<{ pending: number }>(apiUrl('/admin/orders/pending-count'))
+      .subscribe({ next: (r) => this.pendingCountSignal.set(r.pending ?? 0), error: () => {} });
+  }
+
+  /** Trae un pedido puntual del backend (para el resolver del detalle). */
+  fetchOne(id: string): Observable<Order> {
+    return this.http.get<Order>(apiUrl(`/admin/orders/${id}`));
   }
 
   /** Crea el pedido desde el carrito (público). Devuelve el pedido con totales. */
@@ -47,29 +70,27 @@ export class OrderService {
     });
   }
 
-  /** Tilda/destilda un ítem puntual (por índice, para no cambiar la plantilla). */
-  toggleLine(orderId: string, lineIndex: number): void {
-    const order = this.getById(orderId);
-    if (!order || order.status !== 'PENDIENTE') return;
-    const lines = order.lines.map((l, i) => ({
-      lineId: l.id,
-      accepted: i === lineIndex ? !l.accepted : l.accepted,
-    }));
-    this.store.mutate(this.http.put(apiUrl(`/admin/orders/${orderId}/lines`), { lines }));
+  /** Manda el array completo de aceptaciones y devuelve el pedido actualizado. */
+  setLines(orderId: string, lines: { lineId: string; accepted: boolean }[]): Observable<Order> {
+    return this.http
+      .put<Order>(apiUrl(`/admin/orders/${orderId}/lines`), { lines })
+      .pipe(tap(() => this.afterMutation()));
   }
 
-  setAllLines(orderId: string, accepted: boolean): void {
-    const order = this.getById(orderId);
-    if (!order || order.status !== 'PENDIENTE') return;
-    const lines = order.lines.map((l) => ({ lineId: l.id, accepted }));
-    this.store.mutate(this.http.put(apiUrl(`/admin/orders/${orderId}/lines`), { lines }));
+  confirm(orderId: string): Observable<Order> {
+    return this.http
+      .post<Order>(apiUrl(`/admin/orders/${orderId}/confirm`), {})
+      .pipe(tap(() => this.afterMutation()));
   }
 
-  confirm(orderId: string): void {
-    this.store.mutate(this.http.post(apiUrl(`/admin/orders/${orderId}/confirm`), {}));
+  cancel(orderId: string): Observable<Order> {
+    return this.http
+      .post<Order>(apiUrl(`/admin/orders/${orderId}/cancel`), {})
+      .pipe(tap(() => this.afterMutation()));
   }
 
-  cancel(orderId: string): void {
-    this.store.mutate(this.http.post(apiUrl(`/admin/orders/${orderId}/cancel`), {}));
+  private afterMutation(): void {
+    this.store.reload();
+    this.loadPendingCount();
   }
 }
