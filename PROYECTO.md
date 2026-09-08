@@ -366,6 +366,21 @@ Propuestas de la 2ª revisión (2026-09-08):
 - [ ] Técnicos: `/actuator/health` · `decrementStock` que lance en vez de clampear ·
       sincronizar el carrito entre pestañas.
 
+Propuestas de la 3ª revisión (2026-09-08):
+- [ ] Vender más: cupones/códigos de descuento · "lo más vendido" en la home ·
+      productos relacionados en la ficha · colecciones curadas a mano.
+- [ ] Operación: registro de ingreso de mercadería (suma stock + historial de
+      compras por proveedor) · ajuste de precios masivo · hoja de armado del
+      pedido (imprimible) · exportar pedidos/productos a CSV.
+- [ ] UX cliente: zoom en la foto · "mis pedidos" (estado por código) · filtro por
+      rango de precio · recordar el nombre en el checkout · página "cómo comprar"
+      + FAQ editable.
+- [ ] Confianza: sellos configurables en checkout/footer.
+- [ ] Técnico/seguridad: invalidar el JWT al cambiar la contraseña (`tokenVersion`)
+      + logout global · headers de seguridad (CSP/HSTS/X-Frame-Options) ·
+      `<img onerror>` placeholder · toast con "deshacer" en borrados ·
+      auditoría de acciones del admin.
+
 ## 11. Historial de pedidos/decisiones relevantes (cronológico)
 
 1. Pedido inicial: frontend Angular + backend Java, sin pasarela de
