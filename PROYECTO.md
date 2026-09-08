@@ -341,6 +341,8 @@ src/app/
   (MySQL) y `JWT_SECRET` en el entorno (o `application-local.yml`). Detalle en
   `../backend/README.md`.
 - **DB:** `spring.jpa.hibernate.ddl-auto=update` (Hibernate crea/actualiza el
-  esquema). Flyway queda pendiente.
+  esquema). En `backend/database/` hay scripts SQL a mano (`schema.sql`,
+  `seed.sql`, `reset.sql`) para armar la base sin depender de `ddl-auto` (para
+  prod, correr `schema.sql` y usar `ddl-auto=validate`). Flyway queda pendiente.
 - **Pendientes backend:** Flyway, hashear la clave del admin, perfil de
   producción/deploy, y **conectar el frontend Angular**.
