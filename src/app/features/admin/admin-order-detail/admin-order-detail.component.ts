@@ -1,10 +1,12 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { OrderService } from '../../../core/services/order.service';
 import { ProductService } from '../../../core/services/product.service';
 import { Order } from '../../../core/models/order.model';
-import { ProductSize, stockForSize } from '../../../core/models/product.model';
+import { Product, ProductSize, stockForSize } from '../../../core/models/product.model';
 
 @Component({
   selector: 'app-admin-order-detail',
@@ -26,9 +28,22 @@ export class AdminOrderDetailComponent {
   );
   readonly notFound = !this.order();
   readonly saving = signal(false);
+  readonly confirmError = signal<string | null>(null);
+
+  /** Productos referenciados por las líneas del pedido (para el stock actual real). */
+  private readonly lineProducts = signal<Record<string, Product>>({});
 
   constructor() {
-    this.productService.ensureAdminLoaded();
+    const order = this.order();
+    if (order) {
+      const ids = [...new Set(order.lines.map((l) => l.productId))];
+      for (const id of ids) {
+        this.productService.fetchOne(id).subscribe({
+          next: (p) => this.lineProducts.update((m) => ({ ...m, [id]: p })),
+          error: () => {},
+        });
+      }
+    }
   }
 
   readonly acceptedTotal = computed(() => {
@@ -43,9 +58,22 @@ export class AdminOrderDetailComponent {
     () => this.order()?.lines.filter((l) => l.accepted).length ?? 0
   );
 
-  /** Stock actual disponible para el talle de esa línea (para avisar si ya no alcanza) */
+  /**
+   * Ítems aceptados cuyo stock actual no alcanza para lo pedido. Vacío mientras
+   * los productos no terminaron de cargar (no bloquea de más).
+   */
+  readonly stockIssues = computed(() => {
+    const order = this.order();
+    if (!order || order.status !== 'PENDIENTE') return [];
+    return order.lines
+      .filter((l) => l.accepted)
+      .map((l) => ({ line: l, available: this.currentStock(l.productId, l.size) }))
+      .filter((x) => x.available !== null && x.available < x.line.quantity);
+  });
+
+  /** Stock actual disponible para el talle de esa línea; null si el producto no cargó todavía. */
   currentStock(productId: string, size: ProductSize): number | null {
-    const product = this.productService.getById(productId);
+    const product = this.lineProducts()[productId];
     if (!product) return null;
     return stockForSize(product, size);
   }
@@ -77,7 +105,7 @@ export class AdminOrderDetailComponent {
 
   confirmOrder(): void {
     const order = this.order();
-    if (!order) return;
+    if (!order || this.stockIssues().length > 0) return;
     const confirmed = window.confirm(
       `¿Confirmar el pedido ${order.code}? Se va a descontar el stock de los ${this.acceptedCount()} ítems tildados.`
     );
@@ -93,15 +121,27 @@ export class AdminOrderDetailComponent {
     }
   }
 
-  private run(obs: import('rxjs').Observable<Order>, onSuccess?: () => void): void {
+  private run(obs: Observable<Order>, onSuccess?: () => void): void {
     this.saving.set(true);
+    this.confirmError.set(null);
     obs.subscribe({
       next: (updated) => {
         this.order.set(updated);
+        // refrescar el stock de los productos del pedido
+        for (const id of new Set(updated.lines.map((l) => l.productId))) {
+          this.productService.fetchOne(id).subscribe({
+            next: (p) => this.lineProducts.update((m) => ({ ...m, [id]: p })),
+            error: () => {},
+          });
+        }
         this.saving.set(false);
         onSuccess?.();
       },
-      error: () => this.saving.set(false),
+      error: (err: HttpErrorResponse) => {
+        this.saving.set(false);
+        const msg = (err?.error as { message?: string })?.message;
+        if (msg) this.confirmError.set(msg);
+      },
     });
   }
 }

@@ -182,9 +182,10 @@ src/app/
 - `/admin/pedidos` — listado de pedidos **paginado** (20 por página), con
   contador de pendientes en el menú (de `/api/admin/orders/pending-count`).
 - `/admin/pedidos/:id` — detalle: tildar/destildar ítems, confirmar
-  (descuenta stock) o cancelar el pedido completo. Avisa si el stock
-  actual de un talle ya no alcanza. Usa un *resolver* (`orderResolver`) —
-  no depende de que el pedido esté en la página cargada del listado.
+  (descuenta stock) o cancelar el pedido completo. **No deja confirmar** si
+  algún ítem tildado no tiene stock suficiente (muestra qué falta y el backend
+  también lo rechaza). Usa un *resolver* (`orderResolver`) — no depende de que
+  el pedido esté en la página cargada del listado.
 - `/admin/productos` — listado **paginado** (20 por página). `nuevo` / `:id/editar`
   — CRUD con stock por talle, **galería de fotos** (agregar por URL o subir del
   disco, reordenar, quitar; la primera es la portada) y **umbral de stock bajo**
@@ -323,6 +324,8 @@ src/app/
 - [ ] En prod: definir `JWT_SECRET` (≥32 chars) y `apiBaseUrl` si el backend
       va en otro dominio.
 - [ ] Sumar fotos reales de los productos y del carrusel (hoy son íconos SVG).
+- [ ] Vigencia por fechas en los descuentos (hoy hay que habilitar/deshabilitar
+      a mano). Ver lista de mejoras — punto 5.
 - [ ] Definir si se ajusta la paleta de colores del sitio a los tonos del logo.
 - [ ] Deploy/hosting: front (estático) + backend (Java + MySQL). Ver
       `../backend/PROYECTO.md` §9 y §11.
@@ -448,6 +451,10 @@ src/app/
     pasó a `orderResolver` + señal local (las mutaciones devuelven el pedido
     nuevo); `OrderService.pendingCount` sale de `/pending-count`. El catálogo
     público NO se pagina (sigue client-side para no romper filtros/orden).
+29. **Confirmación de pedido estricta** (2026-09-08): el detalle no deja
+    confirmar si algún ítem tildado no tiene stock (recuadro rojo con el detalle,
+    botón deshabilitado); el backend además lo rechaza con 400. El detalle
+    ahora trae el stock real de los productos del pedido (`fetchOne` por línea).
 
 ## 12. Backend (`../backend/`) — resumen
 
