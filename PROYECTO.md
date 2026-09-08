@@ -355,6 +355,17 @@ Pendientes, por prioridad:
 - [ ] Técnico: rate-limiting en login · tests del frontend · PWA · página 404 real ·
       analytics · backups · encoding UTF-8 al compilar `DataSeeder.java`.
 
+Propuestas de la 2ª revisión (2026-09-08):
+- [ ] Quick wins: nombre editable en descuentos (`label`) · "últimas X unidades"
+      en la tienda · validar cantidad vs stock en el carrito + `@Max` en el pedido ·
+      duplicar producto · buscador/filtros en `/admin/productos` · soft-delete de
+      productos · copiar/re-enviar el resumen del pedido desde el admin.
+- [ ] Medianos: editar un pedido pendiente (cantidades / agregar-quitar líneas) ·
+      registrar el pago en el pedido · guía de talles (cm por escala) ·
+      confirmaciones con modal propio · limpiar pedidos pendientes viejos.
+- [ ] Técnicos: `/actuator/health` · `decrementStock` que lance en vez de clampear ·
+      sincronizar el carrito entre pestañas.
+
 ## 11. Historial de pedidos/decisiones relevantes (cronológico)
 
 1. Pedido inicial: frontend Angular + backend Java, sin pasarela de
