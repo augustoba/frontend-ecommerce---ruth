@@ -1,5 +1,12 @@
 <section class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-  <h1 class="font-display font-extrabold text-2xl sm:text-3xl text-stone-800 mb-6">Tu carrito 🛒</h1>
+  <a
+    routerLink="/"
+    class="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700 hover:underline"
+  >
+    <span aria-hidden="true">←</span> Seguir comprando
+  </a>
+
+  <h1 class="font-display font-extrabold text-2xl sm:text-3xl text-stone-800 mt-3 mb-6">Tu carrito 🛒</h1>
 
   @if (isEmpty()) {
     <div class="text-center py-20 text-stone-500">
