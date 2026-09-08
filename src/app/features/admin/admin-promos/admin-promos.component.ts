@@ -1,12 +1,13 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NgTemplateOutlet } from '@angular/common';
 import { DiscountService } from '../../../core/services/discount.service';
 import { ParamService } from '../../../core/services/param.service';
-import { DiscountCombineMode } from '../../../core/models/discount.model';
+import { Discount, DiscountCombineMode } from '../../../core/models/discount.model';
 
 @Component({
   selector: 'app-admin-promos',
-  imports: [FormsModule],
+  imports: [FormsModule, NgTemplateOutlet],
   templateUrl: './admin-promos.component.html',
   styleUrl: './admin-promos.component.css',
 })
@@ -41,6 +42,28 @@ export class AdminPromosComponent {
   readonly optionsForNewGroup = computed(
     () => this.groups().find((g) => g.id === this.newGroupId())?.options ?? []
   );
+
+  // --- vigencia por fechas ---
+  readonly newStartsAt = signal<string>('');
+  readonly newEndsAt = signal<string>('');
+
+  /** Etiqueta legible del estado de vigencia. */
+  statusLabel(d: Discount): string {
+    switch (d.status) {
+      case 'PROGRAMADO':
+        return 'Programado';
+      case 'VENCIDO':
+        return 'Vencido';
+      case 'DESHABILITADO':
+        return 'Deshabilitado';
+      default:
+        return 'Activo';
+    }
+  }
+
+  updateDate(id: string, which: 'startsAt' | 'endsAt', value: string): void {
+    this.discountService.update(id, { [which]: value || null });
+  }
 
   setCombineMode(mode: DiscountCombineMode): void {
     this.discountService.setCombineMode(mode);
@@ -81,9 +104,13 @@ export class AdminPromosComponent {
       minAmount: this.newMinAmount(),
       discountPercent: this.newAmountPercent(),
       enabled: true,
+      startsAt: this.newStartsAt() || null,
+      endsAt: this.newEndsAt() || null,
     });
     this.newMinAmount.set(0);
     this.newAmountPercent.set(0);
+    this.newStartsAt.set('');
+    this.newEndsAt.set('');
   }
 
   // --- por parámetro ---
@@ -124,9 +151,13 @@ export class AdminPromosComponent {
       optionId: this.newOptionId(),
       discountPercent: this.newParamPercent(),
       enabled: true,
+      startsAt: this.newStartsAt() || null,
+      endsAt: this.newEndsAt() || null,
     });
     this.newGroupId.set('');
     this.newOptionId.set('');
     this.newParamPercent.set(0);
+    this.newStartsAt.set('');
+    this.newEndsAt.set('');
   }
 }

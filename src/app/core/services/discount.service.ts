@@ -52,9 +52,14 @@ export class DiscountService {
     this.discountsSignal().filter((d) => d.kind === 'PARAMETRO')
   );
 
-  private readonly enabledAmountTiers = computed(() =>
+  /** Vigente ahora: habilitado y dentro del rango de fechas (según el backend). */
+  private isActive(d: Discount): boolean {
+    return d.status ? d.status === 'ACTIVO' : d.enabled;
+  }
+
+  private readonly activeAmountTiers = computed(() =>
     this.discountsSignal()
-      .filter((d) => d.kind === 'MONTO' && d.enabled && (d.minAmount ?? 0) > 0)
+      .filter((d) => d.kind === 'MONTO' && this.isActive(d) && (d.minAmount ?? 0) > 0)
       .sort((a, b) => (b.minAmount ?? 0) - (a.minAmount ?? 0))
   );
 
@@ -82,11 +87,11 @@ export class DiscountService {
   // --- Consultas para el banner del carrito (solo descuentos por monto) ---
 
   bestAmountTierFor(subtotal: number): Discount | null {
-    return this.enabledAmountTiers().find((t) => subtotal >= (t.minAmount ?? 0)) ?? null;
+    return this.activeAmountTiers().find((t) => subtotal >= (t.minAmount ?? 0)) ?? null;
   }
 
   nextAmountTierFor(subtotal: number): Discount | null {
-    const notReached = this.enabledAmountTiers()
+    const notReached = this.activeAmountTiers()
       .filter((t) => subtotal < (t.minAmount ?? 0))
       .sort((a, b) => (a.minAmount ?? 0) - (b.minAmount ?? 0));
     return notReached[0] ?? null;
@@ -101,7 +106,7 @@ export class DiscountService {
     }
 
     const activeParamDiscounts = this.paramDiscounts().filter(
-      (d) => d.enabled && d.groupId && d.optionId
+      (d) => this.isActive(d) && d.groupId && d.optionId
     );
 
     const paramByDiscountId = new Map<string, number>();

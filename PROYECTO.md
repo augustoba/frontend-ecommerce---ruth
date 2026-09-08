@@ -198,7 +198,9 @@ src/app/
 - `/admin/proveedores` — proveedores del local (ver sección 9quater).
 - `/admin/promociones` — descuentos automáticos: por **monto de compra** y por
   **parametría** (ej: "todo lo de bebé 15% off"), con un **modo de combinación**
-  ("aplicar el mayor" / "combinar"). Se aplican solo en el carrito.
+  ("aplicar el mayor" / "combinar"). Cada descuento admite **fechas de vigencia**
+  (desde / hasta) — fuera del rango no se aplica; el panel muestra un indicador
+  (Programado / Vencido / Vigente). Se aplican solo en el carrito.
 - `/admin/cuenta` — cambiar contraseña y frase de recuperación.
 - `/admin/recuperar` — recuperar la cuenta con la frase de recuperación (ruta
   pública, fuera del layout del admin).
@@ -324,8 +326,6 @@ src/app/
 - [ ] En prod: definir `JWT_SECRET` (≥32 chars) y `apiBaseUrl` si el backend
       va en otro dominio.
 - [ ] Sumar fotos reales de los productos y del carrusel (hoy son íconos SVG).
-- [ ] Vigencia por fechas en los descuentos (hoy hay que habilitar/deshabilitar
-      a mano). Ver lista de mejoras — punto 5.
 - [ ] Definir si se ajusta la paleta de colores del sitio a los tonos del logo.
 - [ ] Deploy/hosting: front (estático) + backend (Java + MySQL). Ver
       `../backend/PROYECTO.md` §9 y §11.
@@ -455,6 +455,11 @@ src/app/
     confirmar si algún ítem tildado no tiene stock (recuadro rojo con el detalle,
     botón deshabilitado); el backend además lo rechaza con 400. El detalle
     ahora trae el stock real de los productos del pedido (`fetchOne` por línea).
+30. **Vigencia por fechas en descuentos** (2026-09-08): cada descuento tiene
+    `startsAt` / `endsAt` opcionales. Fuera del rango no se aplica (el backend
+    filtra por `activeNow()` y expone `status`; el front usa `status` para el
+    cálculo del carrito). En `/admin/promociones`: dos date inputs por fila +
+    en los "agregar", y un pill de estado (Programado / Vencido / Vigente).
 
 ## 12. Backend (`../backend/`) — resumen
 

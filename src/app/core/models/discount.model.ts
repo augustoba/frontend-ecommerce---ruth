@@ -7,6 +7,9 @@
  */
 export type DiscountKind = 'MONTO' | 'PARAMETRO';
 
+/** Estado de vigencia que calcula el backend (con la fecha del servidor). */
+export type DiscountStatus = 'ACTIVO' | 'PROGRAMADO' | 'VENCIDO' | 'DESHABILITADO';
+
 export interface Discount {
   id: string;
   kind: DiscountKind;
@@ -15,6 +18,12 @@ export interface Discount {
   enabled: boolean;
   /** Texto libre opcional para identificarlo en el panel */
   label?: string;
+
+  /** Vigencia opcional (YYYY-MM-DD, inclusive). Vacío = sin límite. */
+  startsAt?: string | null;
+  endsAt?: string | null;
+  /** Lo calcula el backend; el front lo usa para el cálculo del carrito y el indicador. */
+  status?: DiscountStatus;
 
   /** kind === 'monto': monto mínimo de compra (subtotal) para que aplique */
   minAmount?: number;
