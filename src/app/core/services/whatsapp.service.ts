@@ -1,11 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { Order } from '../models/order.model';
-import { SITE_CONFIG } from '../config/site-config';
+import { SettingsService } from './settings.service';
 
 @Injectable({ providedIn: 'root' })
 export class WhatsappService {
   private readonly currencyPipe = inject(CurrencyPipe);
+  private readonly settingsService = inject(SettingsService);
 
   /**
    * Arma el link de WhatsApp (wa.me) con el pedido ya redactado en el mensaje,
@@ -16,7 +17,7 @@ export class WhatsappService {
   buildOrderLink(order: Order): string {
     const message = this.buildOrderMessage(order);
     const encoded = encodeURIComponent(message);
-    return `https://wa.me/${SITE_CONFIG.whatsappNumber}?text=${encoded}`;
+    return `https://wa.me/${this.settingsService.settings().whatsappNumber}?text=${encoded}`;
   }
 
   openOrderChat(order: Order): void {
@@ -43,7 +44,7 @@ export class WhatsappService {
         : [`💰 Total: ${this.formatCurrency(order.total)}`];
 
     return [
-      `¡Hola! Quiero hacer un pedido en *${SITE_CONFIG.storeName}* 🧸`,
+      `¡Hola! Quiero hacer un pedido en *${this.settingsService.settings().storeName}* 🧸`,
       `Código de pedido: *${order.code}*`,
       '',
       nameLine.trimEnd(),

@@ -133,6 +133,14 @@ export const routes: Routes = [
         title: 'Descuentos | Admin',
       },
       {
+        path: 'ajustes',
+        loadComponent: () =>
+          import('./features/admin/admin-settings/admin-settings.component').then(
+            (m) => m.AdminSettingsComponent
+          ),
+        title: 'Datos del local | Admin',
+      },
+      {
         path: 'cuenta',
         loadComponent: () =>
           import('./features/admin/admin-account/admin-account.component').then(

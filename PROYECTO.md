@@ -60,17 +60,19 @@ otro dominio.
 
 ## 4. Configuración clave — `src/app/core/config/site-config.ts`
 
-**Todo lo que hay que tocar antes de publicar el sitio de verdad vive en
-este único archivo.**
+Este archivo quedó reducido a **una sola cosa**: la base de la API.
 
 | Campo | Valor actual | Qué es |
 |---|---|---|
-| `storeName` | `Estilos Pequeños` | Nombre que se muestra en toda la app |
 | `apiBaseUrl` | `''` (vacío) | Base del backend. Vacío = usa el proxy del dev-server. En prod, la URL del backend si va en otro dominio. |
-| `whatsappNumber` | `5491122334455` | ⚠️ **Placeholder, no es un número real.** Formato: país+área+número sin `+`, espacios ni `15`. Hay que reemplazarlo por el número real del dueño/a antes de publicar. |
-| `about` | texto "Somos Estilos Pequeños... hace 5 años..." | Texto del "Sobre nosotros" del pie de página |
-| `redes.instagram` | `estilospequenos_` | Usuario de Instagram (sin @) — real, confirmado por el cliente |
-| `redes.facebookUrl` | `https://www.facebook.com/share/1NZXdYgick/` | Link de Facebook — real, confirmado por el cliente |
+
+También exporta `apiUrl(path)` → `` `${apiBaseUrl}/api${path}` ``.
+
+**El nombre de la tienda, el número de WhatsApp, el texto de "sobre nosotros"
+y las redes ya NO viven en el código.** Son configurables desde
+`/admin/ajustes` y los guarda el backend (`site_settings`). Ver sección 9sexies.
+Valores por defecto (fallback si el backend no responde) en
+`src/app/core/services/settings.service.ts` → `DEFAULTS`.
 
 ## 5. Panel de administración
 
@@ -82,6 +84,8 @@ este único archivo.**
 - `/admin/cuenta` — cambiar la contraseña y la frase de recuperación (piden la
   contraseña actual). ⚠️ **La frase de recuperación inicial es
   `frase-de-recuperacion-cambiar` — cambiala.**
+- `/admin/ajustes` ("🏬 Datos del local") — nombre de la tienda, número de
+  WhatsApp, texto de "sobre nosotros" y redes. Sin redesplegar nada (sección 9sexies).
 - Permite: crear/editar/ocultar/eliminar productos, con **stock por talle** y
   **clasificación por parametrías** (ver sección 9ter), + proveedores,
   descuentos, escalas de talle, carrusel y gestión de pedidos.
@@ -185,6 +189,8 @@ src/app/
 - `/admin/cuenta` — cambiar contraseña y frase de recuperación.
 - `/admin/recuperar` — recuperar la cuenta con la frase de recuperación (ruta
   pública, fuera del layout del admin).
+- `/admin/ajustes` — datos del local: nombre de la tienda, WhatsApp, "sobre
+  nosotros", Instagram y Facebook (ver sección 9sexies).
 
 ## 9ter. Parametrías (clasificación de prendas)
 
@@ -251,9 +257,30 @@ src/app/
 - **Catálogo:** el filtro de talle lista sólo los talles presentes en el
   catálogo, ordenados según el orden de las escalas.
 
+## 9sexies. Datos del local (configurables sin desplegar)
+
+- **Qué es:** `/admin/ajustes` — un formulario para editar el **nombre de la
+  tienda**, el **número de WhatsApp**, el texto de **"sobre nosotros"** (pie de
+  página), el **usuario de Instagram** y el **link de Facebook**. Los cambios se
+  aplican al instante para todos, sin redesplegar backend ni frontend.
+- **Backend:** tabla `site_settings` (una sola fila, id fijo `config`).
+  `GET /api/settings` (público — lo usan header, footer, home y el armado del
+  mensaje de WhatsApp), `GET`/`PUT /api/admin/settings` (con token).
+- **Frontend:** `SettingsService` (signal-based, `providedIn: 'root'`) carga
+  `/api/settings` al arrancar la app y expone `settings()`, `whatsappUrl()`,
+  `instagramUrl()`. Si el backend no responde, usa `DEFAULTS` (los valores
+  reales actuales) para no romper la tienda. `FooterComponent`,
+  `HeaderComponent`, `CatalogPageComponent`, `AdminLayoutComponent` y
+  `WhatsappService` leen de ahí.
+- **Validación** del número: solo dígitos, 8 a 15 (sin `+`, espacios ni `15`).
+  Mismo `@Pattern` en el DTO del backend y en el form.
+- Sigue **pendiente** cargar el número de WhatsApp real: ahora se hace desde
+  `/admin/ajustes`, no tocando código.
+
 ## 10. Pendientes / próximos pasos conocidos
 
-- [ ] Reemplazar `whatsappNumber` (site-config.ts) por el número real antes de publicar.
+- [ ] Cargar el número de WhatsApp real desde `/admin/ajustes` antes de publicar
+      (hoy hay un placeholder, `5491122334455`).
 - [ ] Cambiar la contraseña (`ruth123`) y la **frase de recuperación**
       (`frase-de-recuperacion-cambiar`) del admin — desde `/admin/cuenta`.
 - [ ] En prod: definir `JWT_SECRET` (≥32 chars) y `apiBaseUrl` si el backend
@@ -349,6 +376,12 @@ src/app/
     `recoveryHash` en `AdminUser`, `POST /api/auth/recover`,
     `PUT /api/admin/account/password` y `/recovery`. Frase inicial
     `frase-de-recuperacion-cambiar`.
+23. **Datos del local configurables** (2026-09-08, sección 9sexies): el nombre
+    de la tienda, el número de WhatsApp, el "sobre nosotros" y las redes salieron
+    de `site-config.ts` y se editan desde `/admin/ajustes`. Backend: tabla
+    `site_settings` (fila única), `GET /api/settings` (público) +
+    `GET`/`PUT /api/admin/settings`. Frontend: `SettingsService` con fallback a
+    `DEFAULTS`. `site-config.ts` quedó sólo con `apiBaseUrl`.
 
 ## 12. Backend (`../backend/`) — resumen
 
@@ -360,10 +393,11 @@ src/app/
   `admin_user` (contraseña **BCrypt**) → **JWT** para `Authorization: Bearer` en
   `/api/admin/**`. Recuperación por frase (`POST /api/auth/recover`), cambio de
   clave/frase en `/api/admin/account/**`. Endpoints públicos: catálogo,
-  `GET /api/discounts`, `POST /api/orders`.
-- **Entidades:** AdminUser, Product (con `params`, `sizeStocks`, `sizeScaleId`,
-  `supplierId`, `costPrice`), ParamGroup/ParamOption, SizeScale, Supplier,
-  Discount + DiscountConfig, Order/OrderLine, HeroSlide.
+  `GET /api/discounts`, `GET /api/settings`, `POST /api/orders`.
+- **Entidades:** AdminUser, SiteSettings (fila única), Product (con `params`,
+  `sizeStocks`, `sizeScaleId`, `supplierId`, `costPrice`),
+  ParamGroup/ParamOption, SizeScale, Supplier, Discount + DiscountConfig,
+  Order/OrderLine, HeroSlide.
 - **Estructura del código:** package-by-layer (`model/`, `repository/`,
   `service/`, `controller/`, `dto/`, + `common/`, `config/`).
 - **Descuentos:** `DiscountService.computeForLines` es el port de

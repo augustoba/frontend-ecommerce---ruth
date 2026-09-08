@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { OrderService } from '../../../core/services/order.service';
-import { SITE_CONFIG } from '../../../core/config/site-config';
+import { SettingsService } from '../../../core/services/settings.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -14,8 +14,9 @@ export class AdminLayoutComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly orderService = inject(OrderService);
+  private readonly settingsService = inject(SettingsService);
 
-  readonly storeName = SITE_CONFIG.storeName;
+  readonly storeName = computed(() => this.settingsService.settings().storeName);
   readonly pendingOrders = this.orderService.pendingCount;
 
   constructor() {

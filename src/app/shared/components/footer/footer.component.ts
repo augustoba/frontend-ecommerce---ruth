@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { SITE_CONFIG } from '../../../core/config/site-config';
+import { SettingsService } from '../../../core/services/settings.service';
 
 @Component({
   selector: 'app-footer',
@@ -9,11 +9,11 @@ import { SITE_CONFIG } from '../../../core/config/site-config';
   styleUrl: './footer.component.css',
 })
 export class FooterComponent {
-  readonly storeName = SITE_CONFIG.storeName;
-  readonly about = SITE_CONFIG.about;
+  private readonly settingsService = inject(SettingsService);
+
+  readonly settings = this.settingsService.settings;
   readonly currentYear = new Date().getFullYear();
-  readonly whatsappContactUrl = `https://wa.me/${SITE_CONFIG.whatsappNumber}`;
-  readonly instagramHandle = SITE_CONFIG.redes.instagram;
-  readonly instagramUrl = `https://instagram.com/${SITE_CONFIG.redes.instagram}`;
-  readonly facebookUrl = SITE_CONFIG.redes.facebookUrl;
+  readonly whatsappContactUrl = this.settingsService.whatsappUrl;
+  readonly instagramUrl = this.settingsService.instagramUrl;
+  readonly instagramLabel = computed(() => '@' + (this.settings().instagram ?? ''));
 }

@@ -6,6 +6,7 @@ import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.
 import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
 import { SizeScaleService } from '../../../core/services/size-scale.service';
+import { SettingsService } from '../../../core/services/settings.service';
 import { HeroSlidesService } from '../../../core/services/hero-slides.service';
 import { productHasParam } from '../../../core/models/product.model';
 
@@ -19,7 +20,10 @@ export class CatalogPageComponent {
   private readonly productService = inject(ProductService);
   private readonly paramService = inject(ParamService);
   private readonly sizeScaleService = inject(SizeScaleService);
+  private readonly settingsService = inject(SettingsService);
   private readonly heroSlidesService = inject(HeroSlidesService);
+
+  readonly storeName = computed(() => this.settingsService.settings().storeName);
 
   /** Fotos del carrusel de bienvenida — administrables desde /admin/carrusel */
   readonly heroSlides = this.heroSlidesService.slides;

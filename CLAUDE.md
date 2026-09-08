@@ -53,8 +53,12 @@ si conviene tocar también este archivo o el `README.md`).
 - La paleta de colores del sitio (naranja/celeste/menta, en `src/styles.css`)
   quedó como **posible ajuste pendiente** para acercarla a los tonos
   exactos del logo — ofrecido, no confirmado.
-- `whatsappNumber` y `admin.username`/`admin.password` en `site-config.ts`
-  son **placeholders** — hay que reemplazarlos antes de publicar.
+- El nombre de la tienda, el número de WhatsApp, el "sobre nosotros" y las
+  redes se editan desde **`/admin/ajustes`** (tabla `site_settings` del
+  backend, `GET /api/settings` público). Ya NO están en `site-config.ts`, que
+  quedó sólo con `apiBaseUrl`. El número actual (`5491122334455`) sigue siendo
+  un **placeholder** — cargarlo real desde el panel antes de publicar.
+  Fallback si el backend no responde: `settings.service.ts` → `DEFAULTS`.
 - Redes del footer: Instagram `@estilospequenos_` y Facebook (links reales
-  confirmados, en `site-config.ts` → `redes`), con íconos de marca SVG
-  propios (no emoji — el cliente lo pidió explícitamente).
+  confirmados, hoy en `site_settings`), con íconos de marca SVG propios (no
+  emoji — el cliente lo pidió explícitamente).

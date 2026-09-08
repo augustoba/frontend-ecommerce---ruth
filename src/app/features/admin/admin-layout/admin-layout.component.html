@@ -2,7 +2,7 @@
   <aside class="sm:w-56 shrink-0 bg-stone-900 text-stone-100 flex sm:flex-col sm:min-h-screen">
     <div class="p-5 hidden sm:block">
       <img src="logo.jpeg" alt="Estilos Pequeños" class="h-9 w-9 rounded-full object-cover" />
-      <p class="font-display font-extrabold mt-1">{{ storeName }}</p>
+      <p class="font-display font-extrabold mt-1">{{ storeName() }}</p>
       <p class="text-xs text-stone-400">Panel de administración</p>
     </div>
 
@@ -69,6 +69,13 @@
         class="shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
       >
         🏷️ Descuentos
+      </a>
+      <a
+        routerLink="/admin/ajustes"
+        routerLinkActive="bg-stone-700 text-white"
+        class="shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
+      >
+        🏬 Datos del local
       </a>
       <a
         routerLink="/admin/cuenta"

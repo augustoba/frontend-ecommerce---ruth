@@ -2,11 +2,11 @@
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid sm:grid-cols-3 gap-8">
     <div>
       <div class="flex items-center gap-2 font-display font-bold text-lg">
-        <img src="logo.jpeg" [alt]="storeName" class="h-9 w-9 rounded-full object-cover" />
-        <span>{{ storeName }}</span>
+        <img src="logo.jpeg" [alt]="settings().storeName" class="h-9 w-9 rounded-full object-cover" />
+        <span>{{ settings().storeName }}</span>
       </div>
       <p class="text-sm text-brand-100 mt-3 leading-relaxed">
-        {{ about }}
+        {{ settings().aboutText }}
       </p>
     </div>
 
@@ -22,7 +22,7 @@
       <p class="font-display font-bold mb-3">Contacto y redes</p>
       <div class="flex flex-col gap-3 text-sm">
         <a
-          [href]="whatsappContactUrl"
+          [href]="whatsappContactUrl()"
           target="_blank"
           rel="noopener"
           class="inline-flex items-center gap-2 font-semibold hover:text-mint-300 transition-colors w-fit"
@@ -36,8 +36,9 @@
           </svg>
           Escribinos por WhatsApp
         </a>
+        @if (instagramUrl()) {
         <a
-          [href]="instagramUrl"
+          [href]="instagramUrl()"
           target="_blank"
           rel="noopener"
           class="inline-flex items-center gap-2 font-semibold hover:text-mint-300 transition-colors w-fit"
@@ -55,10 +56,12 @@
             <circle cx="12" cy="12" r="5" fill="none" stroke="white" stroke-width="1.8" />
             <circle cx="17.3" cy="6.7" r="1.2" fill="white" />
           </svg>
-          {{ '@' + instagramHandle }}
+          {{ instagramLabel() }}
         </a>
+        }
+        @if (settings().facebookUrl) {
         <a
-          [href]="facebookUrl"
+          [href]="settings().facebookUrl"
           target="_blank"
           rel="noopener"
           class="inline-flex items-center gap-2 font-semibold hover:text-mint-300 transition-colors w-fit"
@@ -71,6 +74,7 @@
           </svg>
           Facebook
         </a>
+        }
         <a routerLink="/admin" class="text-brand-200/70 hover:text-brand-100 transition-colors w-fit mt-2">
           Administrador
         </a>
@@ -78,5 +82,5 @@
     </div>
   </div>
 
-  <p class="text-center text-xs text-brand-200/60 pb-4">© {{ currentYear }} {{ storeName }}</p>
+  <p class="text-center text-xs text-brand-200/60 pb-4">© {{ currentYear }} {{ settings().storeName }}</p>
 </footer>
