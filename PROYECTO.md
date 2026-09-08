@@ -101,10 +101,11 @@ src/app/
     config/site-config.ts       # nombre, WhatsApp, credenciales admin, redes (ver sección 4)
     assets/clothing-icons.ts    # generador de imágenes SVG de ejemplo
     utils/image-resize.ts       # redimensiona fotos subidas antes de guardarlas
-    models/                     # Product (sizeStocks por talle + params), CartItem, Order, ParamGroup, Discount
+    models/                     # Product (params + supplierId/costPrice opc.), CartItem, Order, ParamGroup, Discount, Supplier
     services/
       product.service.ts        # catálogo (mock + localStorage), CRUD admin, migra `category` viejo → params
       param.service.ts          # parametrías (grupos + opciones) editables — localStorage
+      supplier.service.ts       # proveedores del local (info interna admin) — localStorage
       cart.service.ts           # carrito (signals + localStorage)
       whatsapp.service.ts       # arma el mensaje (código + subtotal/descuento/total) y el link wa.me
       order.service.ts          # pedidos con código, confirmar/cancelar, descuenta stock, aplica descuentos
@@ -153,6 +154,7 @@ src/app/
   de guardarla, para no llenar el `localStorage`), editar descripción,
   reordenar, eliminar, o restaurar las ilustraciones de ejemplo.
 - `/admin/parametrias` — grupos de clasificación de prendas (ver sección 9ter).
+- `/admin/proveedores` — proveedores del local (ver sección 9quater).
 - `/admin/promociones` — descuentos automáticos: por **monto de compra** y por
   **parametría** (ej: "todo lo de bebé 15% off"), con un **modo de combinación**
   ("aplicar el mayor" / "combinar"). Se aplican solo en el carrito.
@@ -177,6 +179,24 @@ src/app/
   cargar (`ProductService.migrateProduct`).
 - Los IDs de grupos/opciones por defecto son fijos (no aleatorios) para que
   la migración y los productos de ejemplo sean deterministas.
+
+## 9quater. Proveedores (info interna del admin)
+
+- **Qué es:** `/admin/proveedores` — alta/edición de proveedores (nombre,
+  teléfono, dirección, notas). `Supplier` + `SupplierService` (localStorage
+  `pp_suppliers`, arranca vacío).
+- El producto tiene dos campos **opcionales**: `supplierId` y `costPrice`
+  (precio de compra). Se cargan en la sección "Compra / proveedor" del form de
+  producto, que muestra la **ganancia** estimada (`margin()` en
+  `product.model.ts`: venta − costo, y % de markup sobre el costo).
+- El listado `/admin/productos` tiene una columna "Compra" con proveedor,
+  costo y margen (verde/rojo).
+- La ficha del proveedor (entrar a editarlo) lista las prendas que le
+  compraste, con su margen y link a editarlas.
+- **Nada de esto se muestra al público**: ni en la ficha, ni el catálogo, ni
+  el carrito, ni el mensaje de WhatsApp, ni en el pedido (`OrderLine` solo
+  guarda el precio de venta). Al borrar un proveedor, las prendas quedan sin
+  proveedor pero conservan el `costPrice`.
 
 ## 10. Pendientes / próximos pasos conocidos
 
@@ -244,3 +264,10 @@ src/app/
     Hay un **modo de combinación** configurable: "aplicar el mayor" (no
     acumula) o "combinar". `PromoService` → `DiscountService`, `PromoTier` →
     `Discount`. El carrito muestra el detalle de cada descuento aplicado.
+16. Se agregó, en el carrito, un link "← Seguir comprando" (antes desde mobile
+    no había forma visible de volver al catálogo). Ajustes de responsive en
+    parametrías/descuentos y el nav del admin (scrollea horizontal en mobile).
+17. Se agregaron **proveedores** (`/admin/proveedores`, sección 9quater): alta
+    de proveedores con datos de contacto + campos opcionales `supplierId` y
+    `costPrice` en el producto, con cálculo de ganancia. Todo info interna del
+    admin, no se muestra al público.

@@ -98,6 +98,14 @@ export const routes: Routes = [
         title: 'Parametrías | Admin',
       },
       {
+        path: 'proveedores',
+        loadComponent: () =>
+          import('./features/admin/admin-suppliers/admin-suppliers.component').then(
+            (m) => m.AdminSuppliersComponent
+          ),
+        title: 'Proveedores | Admin',
+      },
+      {
         path: 'promociones',
         loadComponent: () =>
           import('./features/admin/admin-promos/admin-promos.component').then(

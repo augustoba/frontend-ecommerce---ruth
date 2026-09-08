@@ -10,12 +10,13 @@
 
 @if (products().length) {
   <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-x-auto">
-    <table class="w-full text-sm min-w-[720px]">
+    <table class="w-full text-sm min-w-[900px]">
       <thead>
         <tr class="text-left text-stone-500 border-b border-stone-100">
           <th class="p-4 font-semibold">Producto</th>
           <th class="p-4 font-semibold">Parametrías</th>
           <th class="p-4 font-semibold">Precio</th>
+          <th class="p-4 font-semibold">Compra</th>
           <th class="p-4 font-semibold">Stock</th>
           <th class="p-4 font-semibold">Estado</th>
           <th class="p-4 font-semibold text-right">Acciones</th>
@@ -32,6 +33,19 @@
             </td>
             <td class="p-4 text-stone-600 text-xs max-w-[200px]">{{ paramLabels(product) || '—' }}</td>
             <td class="p-4 text-stone-600">{{ product.price | currency: 'ARS' : 'symbol' : '1.0-0' }}</td>
+            <td class="p-4 text-xs">
+              <p class="text-stone-600">{{ supplierName(product) || '—' }}</p>
+              @if (product.costPrice) {
+                <p class="text-stone-400">
+                  costo {{ product.costPrice | currency: 'ARS' : 'symbol' : '1.0-0' }}
+                </p>
+                @if (marginOf(product); as m) {
+                  <p class="font-semibold" [class.text-mint-600]="m.amount >= 0" [class.text-red-500]="m.amount < 0">
+                    {{ m.amount >= 0 ? '+' : '' }}{{ m.amount | currency: 'ARS' : 'symbol' : '1.0-0' }} ({{ m.percent }}%)
+                  </p>
+                }
+              }
+            </td>
             <td class="p-4">
               <span [class.text-red-500]="stockTotal(product) === 0" class="font-semibold">{{ stockTotal(product) }}</span>
               <div class="flex flex-wrap gap-1 mt-1 max-w-[220px]">

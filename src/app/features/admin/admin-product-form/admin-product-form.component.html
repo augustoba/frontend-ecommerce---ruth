@@ -173,6 +173,47 @@
         <input id="active" type="checkbox" formControlName="active" class="w-4 h-4 accent-brand-500" />
         <label for="active" class="text-sm font-semibold text-stone-700">Publicado (visible en la tienda)</label>
       </div>
+
+      <!-- Compra / proveedor: datos internos, NO se muestran en la tienda -->
+      <div class="sm:col-span-2 rounded-xl bg-stone-50 ring-1 ring-black/5 p-4 mt-2">
+        <p class="text-sm font-semibold text-stone-700">Compra / proveedor</p>
+        <p class="text-xs text-stone-400 mb-3">
+          Datos internos para tu control. No se muestran en la tienda ni en el pedido. Opcional.
+        </p>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-stone-500 mb-1" for="supplierId">Proveedor</label>
+            <select
+              id="supplierId"
+              formControlName="supplierId"
+              class="w-full rounded-lg border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+            >
+              <option value="">— Sin proveedor —</option>
+              @for (s of suppliers(); track s.id) {
+                <option [value]="s.id">{{ s.name }}</option>
+              }
+            </select>
+            <a routerLink="/admin/proveedores" class="inline-block mt-1 text-xs font-semibold text-brand-600 hover:underline">
+              ＋ Administrar proveedores
+            </a>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-stone-500 mb-1" for="costPrice">Precio de costo (ARS)</label>
+            <input
+              id="costPrice"
+              type="number"
+              min="0"
+              formControlName="costPrice"
+              class="w-full rounded-lg border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+            />
+            @if (marginPreview(); as m) {
+              <p class="text-xs mt-1 font-semibold" [class.text-mint-600]="m.amount >= 0" [class.text-red-500]="m.amount < 0">
+                Ganancia: {{ m.amount >= 0 ? '+' : '−' }}${{ absMargin(m.amount) }} ({{ m.percent }}%)
+              </p>
+            }
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="flex gap-3 mt-8">

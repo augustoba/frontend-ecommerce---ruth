@@ -1,9 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
-import { Product, ProductSize } from '../../../core/models/product.model';
+import { SupplierService } from '../../../core/services/supplier.service';
+import { Product, ProductSize, margin } from '../../../core/models/product.model';
 import { ProductParams } from '../../../core/models/param.model';
 
 const ALL_SIZES: ProductSize[] = [
@@ -22,9 +24,11 @@ export class AdminProductFormComponent {
   private readonly router = inject(Router);
   private readonly productService = inject(ProductService);
   private readonly paramService = inject(ParamService);
+  private readonly supplierService = inject(SupplierService);
 
   readonly allSizes = ALL_SIZES;
   readonly paramGroups = this.paramService.groups;
+  readonly suppliers = this.supplierService.suppliers;
 
   private readonly editingId = this.route.snapshot.paramMap.get('id');
   readonly isEditMode = !!this.editingId;
@@ -56,6 +60,18 @@ export class AdminProductFormComponent {
     ageRange: [this.editingProduct?.ageRange ?? '', Validators.required],
     imageUrl: [this.editingProduct?.imageUrl ?? '', [Validators.required]],
     active: [this.editingProduct?.active ?? true],
+    supplierId: [this.editingProduct?.supplierId ?? ''],
+    costPrice: [this.editingProduct?.costPrice ?? 0, [Validators.min(0)]],
+  });
+
+  private readonly formValue = toSignal(this.form.valueChanges, {
+    initialValue: this.form.getRawValue(),
+  });
+
+  /** Ganancia estimada según lo cargado en el form (precio de venta − costo) */
+  readonly marginPreview = computed(() => {
+    const v = this.formValue();
+    return margin({ price: Number(v.price) || 0, costPrice: Number(v.costPrice) || 0 });
   });
 
   readonly submitted = signal(false);
@@ -135,6 +151,10 @@ export class AdminProductFormComponent {
     return (this.selectedParams()[groupId] ?? [])[0] ?? '';
   }
 
+  absMargin(amount: number): string {
+    return Math.abs(amount).toLocaleString('es-AR');
+  }
+
   save(): void {
     this.submitted.set(true);
     if (
@@ -149,6 +169,8 @@ export class AdminProductFormComponent {
     const value = this.form.getRawValue();
     const input = {
       ...value,
+      supplierId: value.supplierId || undefined,
+      costPrice: value.costPrice > 0 ? value.costPrice : undefined,
       params: this.selectedParams(),
       sizeStocks: Array.from(this.sizeStocks(), ([size, stock]) => ({ size, stock })),
     };

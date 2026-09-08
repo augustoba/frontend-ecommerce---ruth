@@ -25,6 +25,14 @@ export interface Product {
   imageUrl: string;
   active: boolean;
   createdAt: string;
+
+  /**
+   * Proveedor al que se le compró la prenda (id de Supplier). Info interna del
+   * admin, opcional — NO se muestra en la tienda ni en el pedido.
+   */
+  supplierId?: string;
+  /** Precio de compra al proveedor, en ARS. Info interna del admin, opcional. */
+  costPrice?: number;
 }
 
 /** Datos con los que se crea/edita un producto desde el panel de administración */
@@ -38,6 +46,19 @@ export function totalStock(product: Pick<Product, 'sizeStocks'>): number {
 /** Stock disponible para un talle específico (0 si el producto no viene en ese talle) */
 export function stockForSize(product: Pick<Product, 'sizeStocks'>, size: ProductSize): number {
   return product.sizeStocks.find((s) => s.size === size)?.stock ?? 0;
+}
+
+/**
+ * Ganancia del producto (precio de venta − precio de costo). Devuelve null si
+ * no hay `costPrice` cargado. `percent` es el markup sobre el costo.
+ */
+export function margin(
+  product: Pick<Product, 'price' | 'costPrice'>
+): { amount: number; percent: number } | null {
+  const cost = product.costPrice;
+  if (!cost || cost <= 0) return null;
+  const amount = product.price - cost;
+  return { amount, percent: Math.round((amount / cost) * 100) };
 }
 
 /** true si el producto tiene elegida esa opción de parametría */
