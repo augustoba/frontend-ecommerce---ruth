@@ -66,6 +66,8 @@ export class CatalogPageComponent {
   readonly selectedSize = signal<string>('todos');
   /** { [groupId]: optionId } — sin entrada o '' significa "todas" */
   readonly selectedParams = signal<Record<string, string>>({});
+  /** Orden de la grilla: 'novedades' respeta el orden del backend (más nuevos primero). */
+  readonly sortBy = signal<'novedades' | 'precio-asc' | 'precio-desc'>('novedades');
 
   readonly hasActiveFilters = computed(
     () =>
@@ -79,7 +81,7 @@ export class CatalogPageComponent {
     const size = this.selectedSize();
     const params = this.selectedParams();
 
-    return this.productService.availableProducts().filter((product) => {
+    const list = this.productService.availableProducts().filter((product) => {
       const matchesTerm = !term || product.name.toLowerCase().includes(term);
       const matchesSize = size === 'todos' || product.sizeStocks.some((s) => s.size === size);
       const matchesParams = Object.entries(params).every(
@@ -87,6 +89,11 @@ export class CatalogPageComponent {
       );
       return matchesTerm && matchesSize && matchesParams;
     });
+
+    const sort = this.sortBy();
+    if (sort === 'precio-asc') return [...list].sort((a, b) => a.price - b.price);
+    if (sort === 'precio-desc') return [...list].sort((a, b) => b.price - a.price);
+    return list;
   });
 
   paramValue(groupId: string): string {

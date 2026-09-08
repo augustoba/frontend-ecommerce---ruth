@@ -123,7 +123,8 @@ Valores por defecto (fallback si el backend no responde) en
   - El carrusel de la home se administra desde `/admin/carrusel`.
 - Debajo: buscador + filtros dinámicos generados desde las parametrías
   marcadas como "filtro en la tienda" (Público como botones, el resto como
-  selectores) + filtro por talle, y la grilla de productos.
+  selectores) + filtro por talle + **orden** (novedades / precio ascendente /
+  precio descendente), y la grilla de productos.
 
 ## 8. Estructura del código
 
@@ -439,6 +440,8 @@ src/app/
     pedidos y **lista de productos por reponer** (talles con stock ≤ umbral).
     Badge rojo en el menú. El producto tiene un `lowStockThreshold` propio
     (vacío = default 3). Backend: `GET /api/admin/dashboard` + `/low-stock`.
+27. **Ordenar el catálogo por precio** (2026-09-08): selector en la home
+    (novedades / precio ↑ / precio ↓). Client-side, sobre `filteredProducts`.
 
 ## 12. Backend (`../backend/`) — resumen
 
