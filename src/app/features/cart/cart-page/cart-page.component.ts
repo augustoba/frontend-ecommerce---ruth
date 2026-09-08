@@ -83,8 +83,15 @@ export class CartPageComponent {
   readonly shippingAddressMissing = computed(
     () => this.deliveryMethod() === 'SHIPPING' && !this.shippingAddr()
   );
+  /** Si la dirección no se ubicó exacta, la referencia (entre qué calles) es obligatoria. */
+  readonly referenceRequired = computed(
+    () => this.deliveryMethod() === 'SHIPPING' && !!this.shippingAddr()?.approximate
+  );
+  readonly referenceMissing = computed(
+    () => this.referenceRequired() && !this.shippingReference().trim()
+  );
   readonly canSend = computed(() => {
-    if (!this.deliveryMethod() || this.shippingAddressMissing()) return false;
+    if (!this.deliveryMethod() || this.shippingAddressMissing() || this.referenceMissing()) return false;
     // si el negocio todavía no cargó medios de pago, se coordina por WhatsApp
     if (this.paymentOptions().length === 0) return true;
     return !!this.paymentMethod() && this.paymentOptions().includes(this.paymentMethod()!);

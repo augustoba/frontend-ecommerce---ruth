@@ -685,6 +685,10 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
     Hace **dos búsquedas** (con altura → dirección exacta; sólo calle → la misma
     calle en Yerba Buena, Tafí Viejo, Concepción…). Al **arrastrar el pin** en el
     mapa, `reverse()` re-resuelve la dirección y actualiza el texto de arriba.
+    Si el mapa no encuentra la dirección hay un botón "Cargarla igual" (pin en el
+    centro de San Miguel, se ajusta a mano). Cuando la dirección es **aproximada**
+    (no se ubicó la puerta), el campo **"entre qué calles está" pasa a ser
+    obligatorio** en el carrito (`referenceRequired` bloquea el botón de comprar).
     Sólo frontend, sin cambios de modelo.
 
 ## 12. Backend (`../backend/`) — resumen

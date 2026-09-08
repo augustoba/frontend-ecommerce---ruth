@@ -21,7 +21,12 @@ export interface PickedAddress {
   address: string;
   lat: number;
   lng: number;
+  /** true si no se ubicó la altura/puerta exacta (hace falta pedir referencia). */
+  approximate: boolean;
 }
+
+/** Centro de San Miguel de Tucumán — punto de partida si el cliente carga la dirección a mano. */
+const SMT_CENTER = { lat: -26.8306, lng: -65.2038 };
 
 /**
  * Busca una dirección de Tucumán (autocompletado con Nominatim/OSM) y deja
@@ -56,7 +61,7 @@ export class AddressPickerComponent {
     const sel = this.selected();
     const p = this.pin();
     if (!sel || !p) return null;
-    return { address: sel.label, lat: p.lat, lng: p.lng };
+    return { address: sel.label, lat: p.lat, lng: p.lng, approximate: sel.approximate };
   });
 
   private readonly query$ = new Subject<string>();
@@ -124,6 +129,24 @@ export class AddressPickerComponent {
     this.pin.set({ lat: addr.lat, lng: addr.lng });
     this.results.set([]);
     this.query.set(addr.label);
+    this.emit();
+  }
+
+  /** El cliente escribió una dirección que el mapa no encuentra: la carga igual y la ubica a mano. */
+  useTyped(): void {
+    const text = this.query().trim();
+    if (text.length < 4) return;
+    this.selected.set({
+      label: text,
+      street: text,
+      number: null,
+      locality: '',
+      lat: SMT_CENTER.lat,
+      lng: SMT_CENTER.lng,
+      approximate: true,
+    });
+    this.pin.set({ ...SMT_CENTER });
+    this.results.set([]);
     this.emit();
   }
 

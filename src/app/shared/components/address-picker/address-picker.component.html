@@ -12,8 +12,12 @@
     @if (searching()) {
       <p class="text-xs text-stone-400 mt-1">Buscando…</p>
     } @else if (query().length >= 4 && !results().length) {
-      <p class="text-xs text-stone-400 mt-1">
-        No encontramos esa dirección. Revisá la calle y el número, o cargá una referencia abajo.
+      <p class="text-xs text-stone-500 mt-1.5">
+        No encontramos esa dirección en el mapa.
+        <button type="button" (click)="useTyped()" class="font-semibold text-brand-600 hover:underline">
+          Cargarla igual
+        </button>
+        y ubicarla en el mapa (te vamos a pedir entre qué calles está).
       </p>
     }
 
