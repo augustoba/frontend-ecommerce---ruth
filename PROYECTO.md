@@ -324,14 +324,17 @@ src/app/
 
 - **Qué es:** API REST en Java 21 / Spring Boot 3.3 / MySQL 8. Proyecto
   separado, con su propio git. Docs interactivas en `/swagger-ui.html`.
-- **Auth:** `POST /api/auth/login` (usuario/clave del admin, por defecto los
-  mismos que el front: `admin` / `cambiar-esta-clave`) devuelve un **JWT** que
-  hay que mandar como `Authorization: Bearer <token>` en todos los
-  `/api/admin/**`. Los endpoints públicos (`/api/products`, `/api/param-groups`,
-  `/api/size-scales`, `/api/hero-slides`, `POST /api/orders`) no piden token.
-- **Entidades:** Product (con `params`, `sizeStocks`, `sizeScaleId`, `supplierId`,
-  `costPrice`), ParamGroup/ParamOption, SizeScale, Supplier, Discount +
-  DiscountConfig, Order/OrderLine, HeroSlide. Reflejan 1:1 los modelos del front.
+- **Auth:** `POST /api/auth/login` valida contra la tabla **`admin_user`**
+  (contraseña **hasheada con BCrypt**) y devuelve un **JWT** que hay que mandar
+  como `Authorization: Bearer <token>` en todos los `/api/admin/**`. Admin
+  inicial sembrado: **`admin` / `ruth123`**. Los endpoints públicos
+  (`/api/products`, `/api/param-groups`, `/api/size-scales`, `/api/hero-slides`,
+  `POST /api/orders`) no piden token.
+- **Entidades:** AdminUser, Product (con `params`, `sizeStocks`, `sizeScaleId`,
+  `supplierId`, `costPrice`), ParamGroup/ParamOption, SizeScale, Supplier,
+  Discount + DiscountConfig, Order/OrderLine, HeroSlide.
+- **Estructura del código:** package-by-layer (`model/`, `repository/`,
+  `service/`, `controller/`, `dto/`, + `common/`, `config/`).
 - **Descuentos:** `DiscountService.computeForLines` es el port de
   `discount.service.ts` (`computeCartDiscount`) — se aplica al crear el pedido.
 - **Código de pedido:** `PED-0001`… derivado de un correlativo `number`.
