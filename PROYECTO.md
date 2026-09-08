@@ -381,6 +381,18 @@ Propuestas de la 3ª revisión (2026-09-08):
       `<img onerror>` placeholder · toast con "deshacer" en borrados ·
       auditoría de acciones del admin.
 
+Propuestas de la 4ª revisión (2026-09-08, más de nicho):
+- [ ] Rubro: lista de nacimiento/baby shower · combos/packs · buscador de talle
+      por edad/peso · reserva/seña · precio mayorista.
+- [ ] Stock/operación: **stock reservado al crear el pedido** (hoy sólo baja al
+      confirmar → se puede sobre-vender la última unidad) · devoluciones/cambios ·
+      modo "tienda cerrada".
+- [ ] Analítica: contador de vistas por producto (vistos vs vendidos) · ranking de
+      clientes · tasa de conversión de pedidos · mes vs mismo mes del año pasado.
+- [ ] Ficha: descripción con bullets · cuidados de la prenda · video corto.
+- [ ] Marketing: cuenta regresiva de oferta (usa `endsAt`) · recordatorio de
+      carrito abandonado (banner) · programa de referidos.
+
 ## 11. Historial de pedidos/decisiones relevantes (cronológico)
 
 1. Pedido inicial: frontend Angular + backend Java, sin pasarela de
