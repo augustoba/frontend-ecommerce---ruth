@@ -34,6 +34,12 @@ export interface Product {
   /** Portada (primera de `images`). La calcula el backend; sirve para tarjetas y carrito. */
   imageUrl: string;
   active: boolean;
+  /**
+   * true = el dueño/a decidió no reponer más este producto. Se sigue vendiendo
+   * mientras tenga stock (no cambia `active`), pero deja de aparecer en las
+   * alertas de "por reponer" del panel.
+   */
+  discontinued: boolean;
   createdAt: string;
 
   /**

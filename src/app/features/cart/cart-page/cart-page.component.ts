@@ -6,13 +6,18 @@ import { CartService } from '../../../core/services/cart.service';
 import { WhatsappService } from '../../../core/services/whatsapp.service';
 import { OrderService } from '../../../core/services/order.service';
 import { DiscountService } from '../../../core/services/discount.service';
+import { SettingsService } from '../../../core/services/settings.service';
 import { QuantityStepperComponent } from '../../../shared/components/quantity-stepper/quantity-stepper.component';
+import {
+  AddressPickerComponent,
+  PickedAddress,
+} from '../../../shared/components/address-picker/address-picker.component';
 import { Product, ProductSize, stockForSize } from '../../../core/models/product.model';
-import { Order } from '../../../core/models/order.model';
+import { DeliveryMethod, Order, PaymentMethod, PAYMENT_LABELS } from '../../../core/models/order.model';
 
 @Component({
   selector: 'app-cart-page',
-  imports: [CurrencyPipe, FormsModule, RouterLink, QuantityStepperComponent],
+  imports: [CurrencyPipe, FormsModule, RouterLink, QuantityStepperComponent, AddressPickerComponent],
   templateUrl: './cart-page.component.html',
   styleUrl: './cart-page.component.css',
 })
@@ -21,22 +26,29 @@ export class CartPageComponent {
   private readonly whatsappService = inject(WhatsappService);
   private readonly orderService = inject(OrderService);
   private readonly discountService = inject(DiscountService);
+  private readonly settingsService = inject(SettingsService);
 
   readonly items = this.cartService.items;
   readonly totalItems = this.cartService.totalItems;
   readonly subtotal = this.cartService.totalPrice;
   readonly isEmpty = this.cartService.isEmpty;
 
-  /** Descuento total del carrito (por monto y/o por parametría) con su detalle */
+  readonly paymentLabels = PAYMENT_LABELS;
+  readonly storeAddress = computed(() => this.settingsService.settings().storeAddress?.trim() || null);
+  readonly paymentOptions = this.settingsService.availablePaymentMethods;
+
+  /** Descuento total del carrito (monto / parametría / medio de pago) con su detalle */
   readonly discount = computed(() =>
     this.discountService.computeCartDiscount(
-      this.items().map((i) => ({ product: i.product, quantity: i.quantity }))
+      this.items().map((i) => ({ product: i.product, quantity: i.quantity })),
+      { paymentMethod: this.paymentMethod(), deliveryMethod: this.deliveryMethod() }
     )
   );
 
   readonly discountAmount = computed(() => this.discount().discountAmount);
   readonly discountPercent = computed(() => this.discount().discountPercent);
   readonly discountBreakdown = computed(() => this.discount().breakdown);
+  readonly freeShipping = computed(() => this.discount().freeShipping);
   readonly finalTotal = computed(() => this.subtotal() - this.discountAmount());
 
   /** Próximo escalón por monto todavía no alcanzado, para mostrar "te faltan $X" */
@@ -46,11 +58,37 @@ export class CartPageComponent {
     return next ? (next.minAmount ?? 0) - this.subtotal() : 0;
   });
 
+  /** Próximo escalón de "envío gratis" — para "te faltan $X para envío gratis" */
+  readonly nextFreeShipping = computed(() =>
+    this.discountService.nextFreeShippingTierFor(this.subtotal())
+  );
+  readonly amountToFreeShipping = computed(() => {
+    const next = this.nextFreeShipping();
+    return next ? (next.minAmount ?? 0) - this.subtotal() : 0;
+  });
+
   readonly customerName = signal('');
+  readonly deliveryMethod = signal<DeliveryMethod | null>(null);
+  readonly shippingAddr = signal<PickedAddress | null>(null);
+  readonly shippingReference = signal('');
+  readonly paymentMethod = signal<PaymentMethod | null>(null);
+  readonly submitted = signal(false);
+
   readonly orderSent = signal(false);
   readonly sending = signal(false);
   /** Pedido ya creado para este carrito (se reusa si el cliente reabre WhatsApp) */
   readonly currentOrder = signal<Order | null>(null);
+
+  /** Falta la dirección cuando eligió envío pero todavía no confirmó una. */
+  readonly shippingAddressMissing = computed(
+    () => this.deliveryMethod() === 'SHIPPING' && !this.shippingAddr()
+  );
+  readonly canSend = computed(() => {
+    if (!this.deliveryMethod() || this.shippingAddressMissing()) return false;
+    // si el negocio todavía no cargó medios de pago, se coordina por WhatsApp
+    if (this.paymentOptions().length === 0) return true;
+    return !!this.paymentMethod() && this.paymentOptions().includes(this.paymentMethod()!);
+  });
 
   updateQuantity(productId: string, size: ProductSize, quantity: number): void {
     this.cartService.updateQuantity(productId, size, quantity);
@@ -68,6 +106,11 @@ export class CartPageComponent {
     this.cartService.clear();
     this.orderSent.set(false);
     this.currentOrder.set(null);
+    this.submitted.set(false);
+  }
+
+  onAddressPicked(addr: PickedAddress | null): void {
+    this.shippingAddr.set(addr);
   }
 
   sendOrder(): void {
@@ -75,21 +118,35 @@ export class CartPageComponent {
 
     const existing = this.currentOrder();
     if (existing) {
-      // ya se creó: solo reabrir WhatsApp
       this.whatsappService.openOrderChat(existing);
       this.orderSent.set(true);
       return;
     }
 
+    this.submitted.set(true);
+    if (!this.canSend()) return;
+
+    const isShipping = this.deliveryMethod() === 'SHIPPING';
+    const addr = this.shippingAddr();
+
     this.sending.set(true);
-    this.orderService.create(this.customerName(), this.items()).subscribe({
-      next: (order) => {
-        this.sending.set(false);
-        this.currentOrder.set(order);
-        this.orderSent.set(true);
-        this.whatsappService.openOrderChat(order);
-      },
-      error: () => this.sending.set(false),
-    });
+    this.orderService
+      .create(this.customerName(), this.items(), {
+        deliveryMethod: this.deliveryMethod()!,
+        shippingAddress: isShipping ? (addr?.address ?? null) : null,
+        shippingReference: isShipping ? this.shippingReference().trim() || null : null,
+        shippingLat: isShipping ? (addr?.lat ?? null) : null,
+        shippingLng: isShipping ? (addr?.lng ?? null) : null,
+        paymentMethod: this.paymentMethod()!,
+      })
+      .subscribe({
+        next: (order) => {
+          this.sending.set(false);
+          this.currentOrder.set(order);
+          this.orderSent.set(true);
+          this.whatsappService.openOrderChat(order);
+        },
+        error: () => this.sending.set(false),
+      });
   }
 }

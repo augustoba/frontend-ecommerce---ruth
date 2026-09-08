@@ -1,7 +1,17 @@
 import { Injectable, inject } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { Order } from '../models/order.model';
-import { SettingsService } from './settings.service';
+import {
+  SettingsService,
+  SiteSettings,
+  WHATSAPP_INTRO_DEFAULT,
+  WHATSAPP_CLOSING_DEFAULT,
+} from './settings.service';
+
+/** Reemplaza los tokens {tienda} y {codigo} en los textos configurables del mensaje. */
+export function applyWhatsappTokens(text: string, storeName: string, code: string): string {
+  return text.replace(/\{tienda\}/g, storeName).replace(/\{codigo\}/g, code);
+}
 
 @Injectable({ providedIn: 'root' })
 export class WhatsappService {
@@ -26,6 +36,7 @@ export class WhatsappService {
   }
 
   private buildOrderMessage(order: Order): string {
+    const settings = this.settingsService.settings();
     const lines = order.lines.map((line, index) => {
       const subtotal = this.formatCurrency(line.unitPrice * line.quantity);
       return `${index + 1}. ${line.productName} — Talle ${line.size} x${line.quantity} = ${subtotal}`;
@@ -39,12 +50,27 @@ export class WhatsappService {
         ? [
             `Subtotal: ${this.formatCurrency(order.subtotal)}`,
             `🎉 Descuento (${order.discountPercent}%): -${this.formatCurrency(order.discountAmount)}`,
+            ...(order.discountNote ? [`   (${order.discountNote})`] : []),
             `💰 Total: ${this.formatCurrency(order.total)}`,
           ]
         : [`💰 Total: ${this.formatCurrency(order.total)}`];
 
+    const deliveryLines = this.deliveryLines(order, settings);
+    const paymentLines = this.paymentLines(order, settings);
+
+    const intro = applyWhatsappTokens(
+      settings.whatsappIntro?.trim() || WHATSAPP_INTRO_DEFAULT,
+      settings.storeName,
+      order.code
+    );
+    const closing = applyWhatsappTokens(
+      settings.whatsappClosing?.trim() || WHATSAPP_CLOSING_DEFAULT,
+      settings.storeName,
+      order.code
+    );
+
     return [
-      `¡Hola! Quiero hacer un pedido en *${this.settingsService.settings().storeName}* 🧸`,
+      intro,
       `Código de pedido: *${order.code}*`,
       '',
       nameLine.trimEnd(),
@@ -53,10 +79,51 @@ export class WhatsappService {
       '',
       ...totalsLines,
       '',
-      'Quedo atento/a a que me pases el alias o el link de Mercado Pago para coordinar el pago. ¡Gracias!',
+      ...deliveryLines,
+      ...paymentLines,
+      '',
+      closing,
     ]
       .filter((line, i, arr) => !(line === '' && arr[i - 1] === ''))
       .join('\n');
+  }
+
+  private deliveryLines(order: Order, settings: SiteSettings): string[] {
+    if (order.deliveryMethod === 'SHIPPING') {
+      const out = [`📦 Entrega: Envío a domicilio`];
+      if (order.shippingAddress) out.push(`   📍 ${order.shippingAddress}`);
+      if (order.shippingReference) out.push(`   📝 ${order.shippingReference}`);
+      if (order.shippingLat != null && order.shippingLng != null) {
+        out.push(`   🗺️ https://www.google.com/maps?q=${order.shippingLat},${order.shippingLng}`);
+      }
+      out.push(order.freeShippingNote ? `   🚚 ${order.freeShippingNote}` : '   (el costo del envío lo coordinamos)');
+      return out;
+    }
+    const where = settings.storeAddress?.trim();
+    return [`🏬 Entrega: Retiro en el local${where ? ` (${where})` : ''}`];
+  }
+
+  private paymentLines(order: Order, settings: SiteSettings): string[] {
+    switch (order.paymentMethod) {
+      case 'TRANSFER': {
+        const alias = settings.paymentTransferAlias?.trim();
+        return alias
+          ? [`💳 Pago: Transferencia — alias/CBU: *${alias}*`]
+          : ['💳 Pago: Transferencia'];
+      }
+      case 'QR_TRANSFER':
+        return ['💳 Pago: QR de transferencia (te paso el QR)'];
+      case 'QR_CARD': {
+        const link = settings.paymentCardLink?.trim();
+        return link
+          ? [`💳 Pago: Tarjeta — link de pago: ${link}`]
+          : ['💳 Pago: Tarjeta (te paso el QR de pago)'];
+      }
+      case 'CASH':
+        return ['💳 Pago: Efectivo al recibir/retirar'];
+      default:
+        return [];
+    }
   }
 
   private formatCurrency(value: number): string {

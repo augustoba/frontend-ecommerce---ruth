@@ -1,10 +1,17 @@
 /**
  * Redimensiona una imagen elegida por el usuario (input type="file") y la
- * devuelve como data URL (JPEG). Así se puede guardar la foto directamente
- * en `localStorage` sin necesitar un backend/servidor de archivos, y sin
- * que una foto de 10-20MB de un celular llene el storage del navegador.
+ * devuelve como data URL. Así se puede guardar la foto directamente sin un
+ * servidor de archivos, y sin que una foto de 10-20MB de un celular pese de más.
+ *
+ * Por defecto exporta JPEG. Para un logo con transparencia pasá
+ * `type: 'image/png'` (más pesado, pero conserva el fondo transparente).
  */
-export function resizeImageFile(file: File, maxWidth = 1600, quality = 0.82): Promise<string> {
+export function resizeImageFile(
+  file: File,
+  maxWidth = 1600,
+  quality = 0.82,
+  type: 'image/jpeg' | 'image/png' = 'image/jpeg'
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
@@ -25,7 +32,7 @@ export function resizeImageFile(file: File, maxWidth = 1600, quality = 0.82): Pr
           return;
         }
         ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        resolve(canvas.toDataURL(type, quality));
       };
       img.src = reader.result as string;
     };

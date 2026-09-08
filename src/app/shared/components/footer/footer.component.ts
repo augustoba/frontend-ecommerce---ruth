@@ -12,6 +12,7 @@ export class FooterComponent {
   private readonly settingsService = inject(SettingsService);
 
   readonly settings = this.settingsService.settings;
+  readonly logoSrc = this.settingsService.logoSrc;
   readonly currentYear = new Date().getFullYear();
   readonly whatsappContactUrl = this.settingsService.whatsappUrl;
   readonly instagramUrl = this.settingsService.instagramUrl;

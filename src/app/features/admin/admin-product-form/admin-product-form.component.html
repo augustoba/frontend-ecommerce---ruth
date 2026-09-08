@@ -266,6 +266,16 @@
         <label for="active" class="text-sm font-semibold text-stone-700">Publicado (visible en la tienda)</label>
       </div>
 
+      <div class="sm:col-span-2">
+        <div class="flex items-center gap-2">
+          <input id="discontinued" type="checkbox" formControlName="discontinued" class="w-4 h-4 accent-brand-500" />
+          <label for="discontinued" class="text-sm font-semibold text-stone-700">No reponer</label>
+        </div>
+        <p class="text-xs text-stone-400 mt-1">
+          Se sigue vendiendo mientras tenga stock, pero deja de aparecer en "Productos por reponer" del inicio.
+        </p>
+      </div>
+
       <!-- Compra / proveedor: datos internos, NO se muestran en la tienda -->
       <div class="sm:col-span-2 rounded-xl bg-stone-50 ring-1 ring-black/5 p-4 mt-2">
         <p class="text-sm font-semibold text-stone-700">Compra / proveedor</p>

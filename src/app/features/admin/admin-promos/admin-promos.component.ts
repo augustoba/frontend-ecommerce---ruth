@@ -3,7 +3,10 @@ import { FormsModule } from '@angular/forms';
 import { NgTemplateOutlet } from '@angular/common';
 import { DiscountService } from '../../../core/services/discount.service';
 import { ParamService } from '../../../core/services/param.service';
-import { Discount, DiscountCombineMode } from '../../../core/models/discount.model';
+import { Discount } from '../../../core/models/discount.model';
+import { PAYMENT_LABELS, PaymentMethod } from '../../../core/models/order.model';
+
+const PAYMENT_METHODS: PaymentMethod[] = ['TRANSFER', 'QR_TRANSFER', 'QR_CARD', 'CASH'];
 
 @Component({
   selector: 'app-admin-promos',
@@ -17,47 +20,52 @@ export class AdminPromosComponent {
 
   readonly amountDiscounts = this.discountService.amountDiscounts;
   readonly paramDiscounts = this.discountService.paramDiscounts;
-  readonly combineMode = this.discountService.combineMode;
+  readonly paymentDiscounts = this.discountService.paymentDiscounts;
+  readonly freeShippingDiscounts = this.discountService.freeShippingDiscounts;
   readonly groups = this.paramService.groups;
   readonly status = this.discountService.status;
   readonly saving = this.discountService.saving;
   readonly reload = () => this.discountService.reload();
+
+  readonly paymentMethods = PAYMENT_METHODS;
+  readonly paymentLabels = PAYMENT_LABELS;
 
   constructor() {
     this.discountService.ensureLoaded();
     this.paramService.ensureLoaded();
   }
 
-  // --- por monto ---
+  // --- forms de "agregar" ---
   readonly newMinAmount = signal<number>(0);
   readonly newAmountPercent = signal<number>(0);
   readonly amountError = signal<string | null>(null);
 
-  // --- por parámetro ---
   readonly newGroupId = signal<string>('');
   readonly newOptionId = signal<string>('');
   readonly newParamPercent = signal<number>(0);
   readonly paramError = signal<string | null>(null);
 
+  readonly newPagoPercent = signal<number>(0);
+  readonly newPagoMethods = signal<Set<PaymentMethod>>(new Set());
+  readonly pagoError = signal<string | null>(null);
+
+  readonly newFreeMin = signal<number>(0);
+  readonly newFreeDetail = signal<string>('');
+  readonly freeError = signal<string | null>(null);
+
+  readonly newStartsAt = signal<string>('');
+  readonly newEndsAt = signal<string>('');
+
   readonly optionsForNewGroup = computed(
     () => this.groups().find((g) => g.id === this.newGroupId())?.options ?? []
   );
 
-  // --- vigencia por fechas ---
-  readonly newStartsAt = signal<string>('');
-  readonly newEndsAt = signal<string>('');
-
-  /** Etiqueta legible del estado de vigencia. */
   statusLabel(d: Discount): string {
     switch (d.status) {
-      case 'PROGRAMADO':
-        return 'Programado';
-      case 'VENCIDO':
-        return 'Vencido';
-      case 'DESHABILITADO':
-        return 'Deshabilitado';
-      default:
-        return 'Activo';
+      case 'PROGRAMADO': return 'Programado';
+      case 'VENCIDO': return 'Vencido';
+      case 'DESHABILITADO': return 'Deshabilitado';
+      default: return 'Activo';
     }
   }
 
@@ -65,12 +73,24 @@ export class AdminPromosComponent {
     this.discountService.update(id, { [which]: value || null });
   }
 
-  setCombineMode(mode: DiscountCombineMode): void {
-    this.discountService.setCombineMode(mode);
-  }
-
   toggle(id: string): void {
     this.discountService.toggle(id);
+  }
+
+  toggleStackable(id: string): void {
+    this.discountService.toggleStackable(id);
+  }
+
+  updateDetail(id: string, value: string): void {
+    this.discountService.update(id, { detail: value.trim() || null });
+  }
+
+  updatePercent(id: string, value: string): void {
+    this.discountService.update(id, { discountPercent: clampPct(value) });
+  }
+
+  updateMinAmount(id: string, value: string): void {
+    this.discountService.update(id, { minAmount: Number(value) || 0 });
   }
 
   remove(id: string): void {
@@ -78,43 +98,26 @@ export class AdminPromosComponent {
   }
 
   // --- por monto ---
-
-  updateMinAmount(id: string, value: string): void {
-    this.discountService.update(id, { minAmount: Number(value) || 0 });
-  }
-
-  updateAmountPercent(id: string, value: string): void {
-    this.discountService.update(id, {
-      discountPercent: Math.min(100, Math.max(0, Number(value) || 0)),
-    });
-  }
-
   addAmountDiscount(): void {
     this.amountError.set(null);
     if (this.newMinAmount() <= 0 || this.newAmountPercent() <= 0) {
       this.amountError.set('Ingresá un monto mínimo y un porcentaje mayores a 0.');
       return;
     }
-    if (this.newAmountPercent() > 100) {
-      this.amountError.set('El descuento no puede ser mayor a 100%.');
-      return;
-    }
     this.discountService.add({
       kind: 'MONTO',
       minAmount: this.newMinAmount(),
-      discountPercent: this.newAmountPercent(),
+      discountPercent: clampPct(this.newAmountPercent()),
       enabled: true,
-      startsAt: this.newStartsAt() || null,
-      endsAt: this.newEndsAt() || null,
+      stackable: false,
+      ...this.vigenciaPatch(),
     });
     this.newMinAmount.set(0);
     this.newAmountPercent.set(0);
-    this.newStartsAt.set('');
-    this.newEndsAt.set('');
+    this.clearVigencia();
   }
 
   // --- por parámetro ---
-
   groupName(groupId: string | undefined): string {
     return this.groups().find((g) => g.id === groupId)?.name ?? '—';
   }
@@ -122,12 +125,6 @@ export class AdminPromosComponent {
   optionLabel(groupId: string | undefined, optionId: string | undefined): string {
     if (!groupId || !optionId) return '—';
     return this.paramService.labelFor(groupId, optionId) || '—';
-  }
-
-  updateParamPercent(id: string, value: string): void {
-    this.discountService.update(id, {
-      discountPercent: Math.min(100, Math.max(0, Number(value) || 0)),
-    });
   }
 
   onNewGroupChange(groupId: string): void {
@@ -149,15 +146,89 @@ export class AdminPromosComponent {
       kind: 'PARAMETRO',
       groupId: this.newGroupId(),
       optionId: this.newOptionId(),
-      discountPercent: this.newParamPercent(),
+      discountPercent: clampPct(this.newParamPercent()),
       enabled: true,
-      startsAt: this.newStartsAt() || null,
-      endsAt: this.newEndsAt() || null,
+      stackable: false,
+      ...this.vigenciaPatch(),
     });
     this.newGroupId.set('');
     this.newOptionId.set('');
     this.newParamPercent.set(0);
+    this.clearVigencia();
+  }
+
+  // --- por medio de pago ---
+  isPagoMethodChecked(m: PaymentMethod): boolean {
+    return this.newPagoMethods().has(m);
+  }
+
+  toggleNewPagoMethod(m: PaymentMethod): void {
+    this.newPagoMethods.update((set) => {
+      const next = new Set(set);
+      next.has(m) ? next.delete(m) : next.add(m);
+      return next;
+    });
+  }
+
+  methodsLabel(d: Discount): string {
+    return (d.paymentMethods ?? []).map((m) => this.paymentLabels[m]).join(', ') || '—';
+  }
+
+  addPagoDiscount(): void {
+    this.pagoError.set(null);
+    if (this.newPagoMethods().size === 0) {
+      this.pagoError.set('Elegí al menos un medio de pago.');
+      return;
+    }
+    if (this.newPagoPercent() <= 0 || this.newPagoPercent() > 100) {
+      this.pagoError.set('Ingresá un porcentaje entre 1 y 100.');
+      return;
+    }
+    this.discountService.add({
+      kind: 'PAGO',
+      discountPercent: clampPct(this.newPagoPercent()),
+      paymentMethods: [...this.newPagoMethods()],
+      enabled: true,
+      stackable: false,
+      ...this.vigenciaPatch(),
+    });
+    this.newPagoPercent.set(0);
+    this.newPagoMethods.set(new Set());
+    this.clearVigencia();
+  }
+
+  // --- envío gratis ---
+  addFreeShipping(): void {
+    this.freeError.set(null);
+    if (this.newFreeMin() <= 0) {
+      this.freeError.set('Ingresá el monto a partir del cual el envío es gratis.');
+      return;
+    }
+    this.discountService.add({
+      kind: 'ENVIO_GRATIS',
+      discountPercent: 0,
+      minAmount: this.newFreeMin(),
+      detail: this.newFreeDetail().trim() || null,
+      enabled: true,
+      stackable: false,
+      ...this.vigenciaPatch(),
+    });
+    this.newFreeMin.set(0);
+    this.newFreeDetail.set('');
+    this.clearVigencia();
+  }
+
+  // --- vigencia compartida ---
+  private vigenciaPatch(): { startsAt: string | null; endsAt: string | null } {
+    return { startsAt: this.newStartsAt() || null, endsAt: this.newEndsAt() || null };
+  }
+
+  private clearVigencia(): void {
     this.newStartsAt.set('');
     this.newEndsAt.set('');
   }
+}
+
+function clampPct(value: number | string): number {
+  return Math.min(100, Math.max(0, Number(value) || 0));
 }

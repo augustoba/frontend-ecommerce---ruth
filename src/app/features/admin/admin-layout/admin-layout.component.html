@@ -1,124 +1,94 @@
-<div class="min-h-screen bg-stone-50 flex flex-col sm:flex-row">
-  <aside class="sm:w-56 shrink-0 bg-stone-900 text-stone-100 flex sm:flex-col sm:min-h-screen">
-    <div class="p-5 hidden sm:block">
-      <img src="logo.jpeg" alt="Estilos Pequeños" class="h-9 w-9 rounded-full object-cover" />
-      <p class="font-display font-extrabold mt-1">{{ storeName() }}</p>
-      <p class="text-xs text-stone-400">Panel de administración</p>
+<div class="min-h-screen bg-stone-50 sm:flex">
+  <!-- Barra superior (solo mobile) -->
+  <div class="sm:hidden sticky top-0 z-40 flex items-center gap-3 bg-stone-900 text-stone-100 px-4 py-3">
+    <button type="button" (click)="drawerOpen.set(true)" aria-label="Abrir menú"
+      class="relative p-1.5 -ml-1.5 rounded-lg hover:bg-stone-800">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" aria-hidden="true">
+        <path d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+      @if (pendingOrders() + lowStockCount() > 0) {
+        <span class="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-red-400 ring-2 ring-stone-900"></span>
+      }
+    </button>
+    <img [src]="logoSrc()" alt="" class="h-7 w-7 rounded-full object-cover bg-white" />
+    <span class="font-display font-extrabold truncate">{{ storeName() }}</span>
+  </div>
+
+  <!-- Backdrop del drawer (mobile) -->
+  @if (drawerOpen()) {
+    <button type="button" (click)="drawerOpen.set(false)" aria-label="Cerrar menú"
+      class="sm:hidden fixed inset-0 z-40 bg-black/40"></button>
+  }
+
+  <aside
+    class="fixed sm:static inset-y-0 left-0 z-50 w-64 sm:w-56 shrink-0 bg-stone-900 text-stone-100 flex flex-col sm:min-h-screen transition-transform sm:transition-none sm:translate-x-0 overflow-y-auto"
+    [class.-translate-x-full]="!drawerOpen()"
+  >
+    <div class="p-5 flex items-start gap-3">
+      <img [src]="logoSrc()" alt="Estilos Pequeños" class="h-9 w-9 rounded-full object-cover shrink-0 bg-white" />
+      <div class="min-w-0">
+        <p class="font-display font-extrabold truncate">{{ storeName() }}</p>
+        <p class="text-xs text-stone-400">Panel de administración</p>
+      </div>
+      <button type="button" (click)="drawerOpen.set(false)"
+        class="sm:hidden ml-auto -mr-1 p-1 rounded-lg hover:bg-stone-800" aria-label="Cerrar menú">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
     </div>
 
-    <nav
-      class="flex sm:flex-col gap-1 p-3 flex-1 min-w-0 overflow-x-auto sm:overflow-visible [-webkit-overflow-scrolling:touch]"
-    >
-      <a
-        routerLink="/admin"
-        [routerLinkActiveOptions]="{ exact: true }"
-        routerLinkActive="bg-stone-700 text-white"
-        class="shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors flex items-center gap-2"
-      >
+    <nav class="flex flex-col gap-0.5 p-3 flex-1">
+      <a routerLink="/admin" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="bg-stone-700 text-white"
+        class="px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors flex items-center gap-2">
         🏠 Inicio
         @if (lowStockCount() > 0) {
-          <span class="ml-auto bg-red-400 text-red-950 text-xs font-bold rounded-full px-2 py-0.5">
-            {{ lowStockCount() }}
-          </span>
+          <span class="ml-auto bg-red-400 text-red-950 text-xs font-bold rounded-full px-2 py-0.5">{{ lowStockCount() }}</span>
         }
       </a>
-      <a
-        routerLink="/admin/pedidos"
-        routerLinkActive="bg-stone-700 text-white"
-        class="shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors flex items-center gap-2"
-      >
-        🧾 Pedidos
-        @if (pendingOrders() > 0) {
-          <span class="ml-auto bg-amber-400 text-amber-950 text-xs font-bold rounded-full px-2 py-0.5">
-            {{ pendingOrders() }}
-          </span>
+
+      @for (group of groups; track group.id) {
+        <button type="button" (click)="toggleGroup(group.id)"
+          class="mt-1 px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors flex items-center gap-2 text-left">
+          <span aria-hidden="true">{{ group.icon }}</span>
+          <span class="flex-1">{{ group.label }}</span>
+          @if (!isOpen(group) && groupBadge(group) > 0) {
+            <span class="bg-amber-400 text-amber-950 text-xs font-bold rounded-full px-2 py-0.5">{{ groupBadge(group) }}</span>
+          }
+          <span class="text-stone-500 transition-transform" [class.rotate-90]="isOpen(group)" aria-hidden="true">▸</span>
+        </button>
+        @if (isOpen(group)) {
+          <div class="flex flex-col gap-0.5 pl-3 border-l border-stone-700 ml-4 mb-1">
+            @for (item of group.items; track item.path) {
+              <a [routerLink]="item.path" [routerLinkActiveOptions]="{ exact: !!item.exact }"
+                routerLinkActive="bg-stone-700 text-white"
+                class="px-3 py-2 rounded-lg text-sm font-medium text-stone-300 hover:bg-stone-800 hover:text-white transition-colors flex items-center gap-2">
+                <span class="flex-1">{{ item.label }}</span>
+                @if (item.badge === 'pending' && pendingOrders() > 0) {
+                  <span class="bg-amber-400 text-amber-950 text-xs font-bold rounded-full px-2 py-0.5">{{ pendingOrders() }}</span>
+                }
+              </a>
+            }
+          </div>
         }
-      </a>
-      <a
-        routerLink="/admin/productos"
-        routerLinkActive="bg-stone-700 text-white"
-        class="shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
-      >
-        📦 Productos
-      </a>
-      <a
-        routerLink="/admin/productos/nuevo"
-        routerLinkActive="bg-stone-700 text-white"
-        class="shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
-      >
-        ➕ Nuevo producto
-      </a>
-      <a
-        routerLink="/admin/carrusel"
-        routerLinkActive="bg-stone-700 text-white"
-        class="shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
-      >
-        🖼️ Carrusel
-      </a>
-      <a
-        routerLink="/admin/parametrias"
-        routerLinkActive="bg-stone-700 text-white"
-        class="shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
-      >
-        🧩 Parametrías
-      </a>
-      <a
-        routerLink="/admin/proveedores"
-        routerLinkActive="bg-stone-700 text-white"
-        class="shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
-      >
-        🚚 Proveedores
-      </a>
-      <a
-        routerLink="/admin/talles"
-        routerLinkActive="bg-stone-700 text-white"
-        class="shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
-      >
-        📏 Talles
-      </a>
-      <a
-        routerLink="/admin/promociones"
-        routerLinkActive="bg-stone-700 text-white"
-        class="shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
-      >
-        🏷️ Descuentos
-      </a>
-      <a
-        routerLink="/admin/metricas"
-        routerLinkActive="bg-stone-700 text-white"
-        class="shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
-      >
-        📊 Métricas
-      </a>
-      <a
-        routerLink="/admin/ajustes"
-        routerLinkActive="bg-stone-700 text-white"
-        class="shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
-      >
-        🏬 Datos del local
-      </a>
-      <a
-        routerLink="/admin/cuenta"
-        routerLinkActive="bg-stone-700 text-white"
-        class="shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
-      >
+      }
+
+      <a routerLink="/admin/cuenta" routerLinkActive="bg-stone-700 text-white"
+        class="mt-1 px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors flex items-center gap-2">
         ⚙️ Mi cuenta
-      </a>
-      <a
-        routerLink="/"
-        class="shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
-      >
-        🛍️ Ver tienda
       </a>
     </nav>
 
-    <button
-      type="button"
-      (click)="logout()"
-      class="shrink-0 whitespace-nowrap m-3 px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-red-900/40 hover:text-red-200 text-left transition-colors"
-    >
-      🚪 Salir
-    </button>
+    <div class="p-3 pt-0 flex flex-col gap-1">
+      <a routerLink="/" target="_blank"
+        class="px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-900 bg-stone-100 hover:bg-white transition-colors flex items-center gap-2 justify-center">
+        🛍️ Ver tienda
+      </a>
+      <button type="button" (click)="logout()"
+        class="px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-red-900/40 hover:text-red-200 text-left transition-colors">
+        🚪 Salir
+      </button>
+    </div>
   </aside>
 
   <main class="flex-1 p-4 sm:p-8 min-w-0">

@@ -70,7 +70,7 @@ También exporta `apiUrl(path)` → `` `${apiBaseUrl}/api${path}` ``.
 
 **El nombre de la tienda, el número de WhatsApp, el texto de "sobre nosotros"
 y las redes ya NO viven en el código.** Son configurables desde
-`/admin/ajustes` y los guarda el backend (`site_settings`). Ver sección 9sexies.
+`/admin/config` y los guarda el backend (`site_settings`). Ver sección 9sexies.
 Valores por defecto (fallback si el backend no responde) en
 `src/app/core/services/settings.service.ts` → `DEFAULTS`.
 
@@ -79,13 +79,19 @@ Valores por defecto (fallback si el backend no responde) en
 - URL: `http://localhost:4200/admin`. Login **`admin` / `ruth123`** — valida
   contra el backend (`POST /api/auth/login`) y guarda el JWT en `localStorage`.
   Un interceptor lo manda en `/api/admin/**`; si expira o falta, vuelve al login.
+- **Menú lateral agrupado** (sección 9octies): Inicio suelto arriba + tres grupos
+  colapsables (Ventas, Catálogo, **Configuración del sitio**) + Mi cuenta y "Ver
+  tienda" abajo. En mobile es un drawer con botón hamburguesa. El estado abierto
+  de cada grupo se recuerda en `localStorage` (`ep_admin_menu_open`).
 - `/admin/recuperar` — si el admin se olvidó la contraseña: usuario + **frase de
   recuperación** + contraseña nueva (no usa email).
 - `/admin/cuenta` — cambiar la contraseña y la frase de recuperación (piden la
   contraseña actual). ⚠️ **La frase de recuperación inicial es
   `frase-de-recuperacion-cambiar` — cambiala.**
-- `/admin/ajustes` ("🏬 Datos del local") — nombre de la tienda, número de
-  WhatsApp, texto de "sobre nosotros" y redes. Sin redesplegar nada (sección 9sexies).
+- `/admin/config` ("🎨 Configuración del sitio") — hub con sub-páginas: identidad
+  y contacto (nombre + WhatsApp), redes sociales, "sobre nosotros" y carrusel.
+  Cada una con **previsualización en vivo** de cómo queda en la tienda. Sin
+  redesplegar nada (sección 9sexies). `/admin/ajustes` redirige acá.
 - `/admin/metricas` ("📊 Métricas") — ventas por período: facturación, unidades
   y pedidos, facturación por mes, productos más/menos vendidos y desglose por
   parametría (sección 9septies).
@@ -149,25 +155,39 @@ src/app/
       auth.service.ts           # POST /api/auth/login → JWT en localStorage; isAuthenticated()
       toast.service.ts          # cola de toasts (éxito/error)
     guards/admin.guard.ts       # protege /admin/* (isAuthenticated)
-  shared/components/            # header, footer, product-card, quantity-stepper, hero-carousel, toast, skeleton
+  shared/components/            # header, footer, product-card, quantity-stepper, hero-carousel, toast, skeleton, site-preview
   features/
     catalog/catalog-page/       # home: hero + carrusel + filtros + grilla
     product-detail/             # ficha de producto (talle con stock, cantidad, agregar al carrito)
-    cart/cart-page/             # carrito + botón "Comprar por WhatsApp" (crea el pedido)
+    cart/cart-page/             # carrito + entrega (retiro/envío) + pago + "Comprar por WhatsApp"
     admin/                      # login, layout, productos, pedidos, carrusel (ver sección 9bis)
+  core/services/geocoding.service.ts     # autocompletado de direcciones (Nominatim/OSM), sesgado a Tucumán
+  shared/components/address-picker/      # busca dirección + mapa Leaflet con pin arrastrable
 ```
 
 ## 9. Cómo funciona el checkout por WhatsApp
 
 1. Cliente agrega prendas al carrito eligiendo talle y cantidad (limitado
    al stock de ESE talle puntual). El carrito vive en `localStorage`.
-2. En `/carrito` carga su nombre y toca **"Comprar por WhatsApp"**. Ahí el
-   frontend hace `POST /api/orders` → el **backend** crea el pedido con
+2. En `/carrito` carga su nombre, elige **entrega** (retiro en el local /
+   envío a domicilio) y **medio de pago**, y toca **"Comprar por WhatsApp"**:
+   - **Envío:** un autocompletado de direcciones (`GeocodingService` contra
+     **Nominatim / OpenStreetMap** — gratis, sin key; se cambió de georef-ar
+     porque no tenía coordenadas de las calles de San Miguel de Tucumán) + un
+     **mapa Leaflet** con pin arrastrable para marcar la puerta exacta
+     (`<app-address-picker>`) + un campo de referencia. El costo del envío
+     **no** se cotiza acá: se coordina por WhatsApp.
+   - **Pago:** el cliente elige entre los medios que el dueño habilitó en
+     `/admin/config/pagos` (transferencia por alias, QR de transferencia, QR/link
+     de tarjeta, efectivo). Si no hay ninguno cargado, se coordina por WhatsApp.
+   Ahí el frontend hace `POST /api/orders` → el **backend** crea el pedido con
    código correlativo (`PED-0001`…), calcula los descuentos y el total, y lo
-   guarda en la base. Con el pedido devuelto se abre `wa.me/<número>` en
-   pestaña nueva con el mensaje ya armado. El cliente solo tiene que enviarlo.
-3. El dueño/a recibe el pedido por WhatsApp y responde con el alias o
-   link de Mercado Pago para que el cliente pague directamente.
+   guarda con la entrega y el pago. Con el pedido devuelto se abre
+   `wa.me/<número>` con el mensaje ya armado (incluye entrega, dirección + link
+   de mapa, y el medio de pago — con el alias si aplica).
+3. El dueño/a recibe el pedido por WhatsApp con todo el detalle y sólo tiene que
+   pasar el QR si el cliente eligió pagar con QR (el alias y los links ya van en
+   el mensaje), y coordinar el costo del envío si corresponde.
 4. El dueño/a entra a `/admin/pedidos`, busca el pedido por su código,
    **tilda/destilda cada prenda** según si la va a entregar y toca
    **"Confirmar y descontar stock"** — el backend descuenta el stock de cada
@@ -183,11 +203,12 @@ src/app/
   **filtros** (server-side): buscar por código o nombre del cliente, estado
   (pendientes / confirmados / cancelados), y rango de fechas. Contador de
   pendientes en el menú (de `/api/admin/orders/pending-count`).
-- `/admin/pedidos/:id` — detalle: tildar/destildar ítems, confirmar
-  (descuenta stock) o cancelar el pedido completo. **No deja confirmar** si
-  algún ítem tildado no tiene stock suficiente (muestra qué falta y el backend
-  también lo rechaza). Usa un *resolver* (`orderResolver`) — no depende de que
-  el pedido esté en la página cargada del listado.
+- `/admin/pedidos/:id` — detalle: **entrega** (retiro / envío con dirección,
+  referencia y link al mapa) + **medio de pago** en dos tarjetas arriba;
+  tildar/destildar ítems, confirmar (descuenta stock) o cancelar el pedido
+  completo. **No deja confirmar** si algún ítem tildado no tiene stock suficiente
+  (muestra qué falta y el backend también lo rechaza). Usa un *resolver*
+  (`orderResolver`) — no depende de que el pedido esté en la página cargada.
 - `/admin/productos` — listado **paginado** (20 por página). `nuevo` / `:id/editar`
   — CRUD con stock por talle, **galería de fotos** (agregar por URL o subir del
   disco, reordenar, quitar; la primera es la portada) y **umbral de stock bajo**
@@ -198,16 +219,20 @@ src/app/
 - `/admin/parametrias` — grupos de clasificación de prendas (ver sección 9ter).
 - `/admin/talles` — escalas de talle editables (ver sección 9quinquies).
 - `/admin/proveedores` — proveedores del local (ver sección 9quater).
-- `/admin/promociones` — descuentos automáticos: por **monto de compra** y por
-  **parametría** (ej: "todo lo de bebé 15% off"), con un **modo de combinación**
-  ("aplicar el mayor" / "combinar"). Cada descuento admite **fechas de vigencia**
-  (desde / hasta) — fuera del rango no se aplica; el panel muestra un indicador
-  (Programado / Vencido / Vigente). Se aplican solo en el carrito.
+- `/admin/promociones` — descuentos automáticos (solo carrito), 4 tipos: por
+  **monto de compra**, por **parametría** ("todo lo de bebé 15% off"), por
+  **medio de pago** (efectivo, transferencia, QR, tarjeta — se aplica según lo
+  que elige el cliente al comprar) y **envío gratis por monto** (informativo, no
+  descuenta plata: muestra "envío gratis" + un detalle configurable). Cada
+  descuento tiene un tilde **acumulable** (si hay uno no acumulable en juego, se
+  aplica solo el que más ahorra; si todos son acumulables, se combinan en
+  cascada) + un texto de **detalle** ("letra chica") + **fechas de vigencia**.
+  Ya no hay "modo de combinación" global.
 - `/admin/cuenta` — cambiar contraseña y frase de recuperación.
 - `/admin/recuperar` — recuperar la cuenta con la frase de recuperación (ruta
   pública, fuera del layout del admin).
-- `/admin/ajustes` — datos del local: nombre de la tienda, WhatsApp, "sobre
-  nosotros", Instagram y Facebook (ver sección 9sexies).
+- `/admin/config` (+ `/config/identidad`, `/config/redes`, `/config/nosotros`) —
+  configuración del sitio con previsualización en vivo (ver sección 9sexies).
 - `/admin/metricas` — métricas de ventas por período (ver sección 9septies).
 
 ## 9ter. Parametrías (clasificación de prendas)
@@ -275,25 +300,65 @@ src/app/
 - **Catálogo:** el filtro de talle lista sólo los talles presentes en el
   catálogo, ordenados según el orden de las escalas.
 
-## 9sexies. Datos del local (configurables sin desplegar)
+## 9sexies. Configuración del sitio (configurable sin desplegar)
 
-- **Qué es:** `/admin/ajustes` — un formulario para editar el **nombre de la
-  tienda**, el **número de WhatsApp**, el texto de **"sobre nosotros"** (pie de
-  página), el **usuario de Instagram** y el **link de Facebook**. Los cambios se
-  aplican al instante para todos, sin redesplegar backend ni frontend.
-- **Backend:** tabla `site_settings` (una sola fila, id fijo `config`).
-  `GET /api/settings` (público — lo usan header, footer, home y el armado del
-  mensaje de WhatsApp), `GET`/`PUT /api/admin/settings` (con token).
+- **Qué es:** `/admin/config` — un **hub** con tarjetas hacia sub-páginas
+  (`admin-config/`, componente único `AdminConfigSectionComponent` por
+  `data.section`): **identidad y contacto** (`/config/identidad`: nombre + **logo**
+  + WhatsApp + **dirección del local** para el retiro), **mensaje de WhatsApp**
+  (`/config/whatsapp`), **medios de pago** (`/config/pagos`: transferencia por
+  alias, QR de transferencia, QR/link de tarjeta, efectivo — cada uno con un
+  **tilde de activar/desactivar** aparte del dato; aparece en el checkout si está
+  tildado *y* tiene su dato), **redes sociales** (`/config/redes`), **sobre
+  nosotros** (`/config/nosotros`) y **carrusel** (`/admin/carrusel`).
+  Los cambios se aplican al instante para todos, sin redesplegar. `/admin/ajustes`
+  redirige a `/admin/config`.
+- **Previsualización en vivo:** cada sub-página muestra al costado un
+  `<app-site-preview>` (`shared/components/site-preview/`) — una maqueta del
+  encabezado + pie + mensaje de WhatsApp que se actualiza mientras se tipea
+  (todavía sin guardar), con la sección relevante destacada y el resto atenuado.
+  No monta los componentes reales del storefront (sería acoplar el signal global).
+- **Sub-página** = `AdminConfigSectionComponent`, parametrizado por `data.section`
+  en la ruta. Edita sólo su parte de `SiteSettings`, y al guardar la mezcla con
+  el resto (el `PUT /api/admin/settings` pide el objeto completo). El botón
+  "Guardar" se deshabilita si no hay cambios (`dirty`).
+- **Logo:** se sube del disco → `resizeImageFile(..., 512, 0.9, 'image/png'|'image/jpeg')`
+  (conserva el PNG con transparencia) → data URI en `site_settings.logo_url`
+  (`MEDIUMTEXT`; null = `logo.jpeg`, el archivo estático). `SettingsService.logoSrc`
+  lo resuelve; lo usan header, footer, home, login, recuperar, layout del admin y
+  el `<app-site-preview>`. También actualiza el **favicon** en vivo
+  (`SettingsService.applyFavicon`).
+- **Mensaje de WhatsApp:** `whatsappIntro` (saludo) y `whatsappClosing` (cierre,
+  ej: cómo pagar) — texto libre con tokens `{tienda}` y `{codigo}` (ver
+  `applyWhatsappTokens` en `whatsapp.service.ts`). El detalle del pedido y los
+  totales quedan fijos. null = usar `WHATSAPP_INTRO_DEFAULT` / `WHATSAPP_CLOSING_DEFAULT`.
+- **Backend:** tabla `site_settings` (una sola fila, id fijo `config`) — sumó
+  `logo_url`, `whatsapp_intro`, `whatsapp_closing`. `GET /api/settings` (público),
+  `GET`/`PUT /api/admin/settings` (con token). El mensaje de pedido se arma en el
+  frontend (`WhatsappService`), el backend sólo guarda los textos.
 - **Frontend:** `SettingsService` (signal-based, `providedIn: 'root'`) carga
-  `/api/settings` al arrancar la app y expone `settings()`, `whatsappUrl()`,
-  `instagramUrl()`. Si el backend no responde, usa `DEFAULTS` (los valores
-  reales actuales) para no romper la tienda. `FooterComponent`,
-  `HeaderComponent`, `CatalogPageComponent`, `AdminLayoutComponent` y
-  `WhatsappService` leen de ahí.
+  `/api/settings` al arrancar la app y expone `settings()`, `logoSrc()`,
+  `whatsappUrl()`, `instagramUrl()`. Si el backend no responde, usa `DEFAULTS`.
 - **Validación** del número: solo dígitos, 8 a 15 (sin `+`, espacios ni `15`).
-  Mismo `@Pattern` en el DTO del backend y en el form.
-- Sigue **pendiente** cargar el número de WhatsApp real: ahora se hace desde
-  `/admin/ajustes`, no tocando código.
+  Mismo `@Pattern` en el DTO del backend y en el form; el preview marca en rojo
+  el link `wa.me` si el número no valida.
+- Sigue **pendiente** cargar el número de WhatsApp real (hoy `5491122334455`).
+
+## 9octies. Menú del panel (agrupado + drawer mobile)
+
+- **`AdminLayoutComponent`:** el menú lateral pasó de 13 items planos a **Inicio**
+  suelto + tres grupos colapsables (acordeón): **Ventas** (Pedidos, Descuentos,
+  Métricas), **Catálogo** (Productos, Parametrías, Talles, Proveedores) y
+  **Configuración del sitio** (Vista general, Identidad y contacto, Mensaje de
+  WhatsApp, Medios de pago, Redes sociales, Sobre nosotros, Carrusel) + **Mi
+  cuenta** y **Ver tienda** abajo.
+- El grupo de la ruta activa se abre solo; el resto recuerda su estado en
+  `localStorage` (`ep_admin_menu_open`). Grupo colapsado con badge = suma de
+  pendientes de sus items (hoy: pedidos pendientes).
+- **Mobile:** la barra dejó de ser un scroll horizontal — ahora es un **drawer**
+  que se abre con un botón hamburguesa en una barra superior fija, con backdrop,
+  y se cierra al navegar. "Nuevo producto" salió del menú (queda el botón en
+  `/admin/productos`).
 
 ## 9septies. Métricas de ventas
 
@@ -347,8 +412,11 @@ Pendientes, por prioridad:
       preview). Pausado: depende del hosting (los bots no ejecutan JS → SSR/
       prerender o endpoint de meta por User-Agent). Junto con SSR.
 - [ ] **Imágenes a storage externo** (Cloudinary/S3/disco) en vez de data-URI.
-- [ ] **Datos de envío/retiro** configurables en `/admin/ajustes` + en el mensaje
-      de WhatsApp.
+- [x] **Entrega (retiro/envío) + medio de pago** en el checkout (hecho 2026-09-08,
+      sección 9 y 36). Pendiente: **cotizar el envío** (hoy es "a coordinar"; a
+      futuro zonas con precio). El geocoder ya es Nominatim/OSM (georef-ar no
+      cubría San Miguel de Tucumán); para volumen alto habría que auto-hospedar
+      Nominatim o pasar a LocationIQ/Geoapify (free tier, compatibles).
 - [ ] **Estados de pedido más finos** ("pago recibido", "entregado") + notas internas.
 - [ ] Variantes de **color** (stock por talle+color) · **SSR/prerender** ·
       **multi-admin con roles** · métricas por talle/proveedor + export CSV.
@@ -523,6 +591,98 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
     barra de filtros (buscar por código/nombre, estado, rango de fechas) que se
     resuelve **server-side** (`GET /api/admin/orders?search&status&from&to`).
     `CollectionStore` sumó `setQuery()` para llevar query params en el paginado.
+32. **Badge de "por reponer" como notificaciones no leídas** (2026-09-08): el
+    contador rojo del menú (y la tarjeta "Por reponer" del inicio) ahora cuenta
+    sólo los talles en alerta que el admin **no revisó todavía**. Al abrir un
+    talle desde la lista "Productos por reponer" queda marcado como visto y baja
+    el contador, aunque no se haya repuesto (fila atenuada con ✓). Las marcas
+    viven en `localStorage` (`ep_low_stock_seen`, por dispositivo) y se limpian
+    solas cuando el talle sale de la lista: si se repone y vuelve a bajar, alerta
+    de nuevo. Todo en `DashboardService` (`markLowStockSeen`, `lowStockCount`
+    filtra por vistos). Sin cambios en el backend.
+33. **Marcar un producto "no reponer"** (2026-09-08): para que un producto que ya
+    no se va a reponer no quede para siempre en "Productos por reponer". El
+    producto tiene un flag `discontinued`: sigue publicado y se vende mientras
+    tenga stock, pero no aparece en las alertas de stock bajo ni suma al badge.
+    Se marca con el botón "no reponer" en cada fila de la lista del inicio, o con
+    el checkbox "No reponer" en el form del producto; se revierte editando el
+    producto. `/admin/productos` muestra "No se repone" en la columna Estado.
+    Backend: `Product.discontinued`, `PATCH /api/admin/products/{id}/discontinued`,
+    `DashboardService.lowStock()` lo excluye. Front: `ProductService.setDiscontinued`,
+    `DashboardService.removeProductFromLowStock` (quita optimista de la lista).
+34. **Menú del panel agrupado + "Configuración del sitio" con previsualización**
+    (2026-09-08, secciones 9sexies y 9octies): el menú lateral (13 items planos)
+    pasó a Inicio + 3 grupos colapsables (Ventas / Catálogo / Configuración del
+    sitio) + Mi cuenta / Ver tienda, con drawer hamburguesa en mobile (antes era
+    scroll horizontal). "Datos del local" (`/admin/ajustes`, componente
+    `admin-settings`, un form con todo junto) → **hub `/admin/config`** con
+    sub-páginas (`admin-config/`, componente único `AdminConfigSectionComponent`
+    por `data.section`): identidad y contacto, redes, sobre nosotros, + link al
+    carrusel. Cada una con **`<app-site-preview>`** (`shared/components/site-preview/`):
+    maqueta en vivo de header + footer + mensaje de WhatsApp que se actualiza al
+    tipear, con la sección relevante destacada. `/admin/ajustes` → redirect a
+    `/admin/config`. Sin cambios en el backend. Se sacó "Nuevo producto" del menú.
+35. **Logo y mensaje de WhatsApp configurables** (2026-09-08, sección 9sexies):
+    `site_settings` sumó `logo_url` (data URI, `MEDIUMTEXT`), `whatsapp_intro` y
+    `whatsapp_closing` (texto libre con tokens `{tienda}`/`{codigo}`). En
+    `/admin/config/identidad` se sube el logo (se redimensiona a 512px, conserva
+    PNG transparente) → lo usan header, footer, home, login, layout del admin,
+    el `<app-site-preview>` y el **favicon** (todos via `SettingsService.logoSrc`
+    / `applyFavicon`, con fallback a `logo.jpeg`). Nueva sub-página
+    `/admin/config/whatsapp` para el saludo y el cierre del mensaje de pedido
+    (el detalle y los totales siguen fijos; `applyWhatsappTokens` en
+    `whatsapp.service.ts`). Backend: `SiteSettings` + DTOs + `schema.sql`/`setup.sql`.
+36. **Entrega (retiro/envío) + medio de pago en el checkout** (2026-09-08): en
+    `/carrito`, antes de comprar, el cliente elige **retiro en el local** o
+    **envío a domicilio** y **cómo paga**.
+    - **Dirección:** `GeocodingService` (fetch a **Nominatim/OSM**, sesgado a la
+      bbox de Tucumán, filtra `address.state === 'Tucumán'`; se probó georef-ar
+      primero pero no tiene coordenadas de las calles de la capital) +
+      `<app-address-picker>` (dep nueva **leaflet**; CSS importado en `styles.css`,
+      no en `angular.json`,
+      para que el dev-server lo tome sin reiniciar) con mapa y pin arrastrable.
+      El envío **no se cotiza** en la web ("a coordinar por WhatsApp").
+    - **Pago:** el cliente elige entre los medios cargados en `/admin/config/pagos`
+      (`SettingsService.availablePaymentMethods`). Nueva sección `pagos` en
+      `AdminConfigSectionComponent` (alias, 2 uploads de QR, link de tarjeta,
+      tilde de efectivo). `storeAddress` se agregó a la sección `identity`.
+    - **`Order`** sumó `deliveryMethod`, `shippingAddress/Reference/Lat/Lng`,
+      `paymentMethod` (enums nuevos back+front). `WhatsappService` agrega al
+      mensaje la entrega (con link de Google Maps al pin) y el pago (con el alias
+      si aplica). `/admin/pedidos/:id` muestra dos tarjetas (Entrega / Pago).
+    - Backend: `Order` + `SiteSettings` + DTOs + `OrderService.create` valida que
+      envío traiga dirección. `schema.sql`/`setup.sql` actualizados; **sin
+      migración** (`ddl-auto=update`).
+37. **Bugs** (2026-09-08): "Ver catálogo" de la home rebotaba (el `href="#..."`
+    peleaba con el scroll del router) → botón con `scrollIntoView`. El
+    `<app-site-preview>` mostraba todas las secciones atenuadas → ahora **oculta**
+    las que no son de la sección editada (la de "Mensaje de WhatsApp" muestra sólo
+    el mensaje).
+38b. **Toggle por medio de pago** (2026-09-08): cada medio de `/admin/config/pagos`
+    (transferencia, QR transf., QR/link tarjeta) tiene ahora su propio
+    `payment*Enabled` en `SiteSettings`, aparte del dato — así se puede apagar
+    "tarjeta" sin borrar el QR. `availablePaymentMethods` = habilitado **y** con
+    dato. (Efectivo ya era un booleano.)
+38. **Descuentos: nuevos tipos + acumulable + detalle** (2026-09-08): al motor
+    de descuentos se le sumaron los tipos **PAGO** (por medio de pago elegido en
+    el carrito) y **ENVIO_GRATIS** (informativo — muestra "envío gratis" + detalle
+    cuando el subtotal supera un monto y el cliente eligió envío). Cada descuento
+    tiene ahora `stackable` (acumulable) y `detail` (letra chica). **Se eliminó el
+    `combineMode` global** (`DiscountConfig`, endpoints `/discounts/config`): la
+    regla es "si hay al menos uno no acumulable → gana el que más ahorra; si todos
+    son acumulables → se combinan en cascada". `DiscountService.computeCartDiscount`
+    reescrito (port del backend), recibe `{ paymentMethod, deliveryMethod }`. El
+    carrito muestra el detalle bajo cada descuento y el cartel de envío gratis;
+    `Order` sumó `freeShippingNote` y `discountNote`, que van al mensaje de
+    WhatsApp y al detalle del pedido en el admin. `/admin/promociones` rehecho
+    con 4 tablas + toggle acumulable + input de detalle por fila.
+39. **Geocoder → Nominatim/OSM** (2026-09-08): el autocompletado de direcciones
+    del checkout pasó de **georef-ar** a **Nominatim** porque georef tiene los
+    nombres de las calles de San Miguel de Tucumán pero no las coordenadas ni las
+    alturas ("San Juan 354" → 0 resultados). Nominatim las ubica exactas.
+    `GeocodingService` sesga por bbox de Tucumán y filtra `address.state`; el
+    debounce del address-picker subió a 600ms (límite ~1 req/s de Nominatim).
+    Sólo frontend, sin cambios de modelo.
 
 ## 12. Backend (`../backend/`) — resumen
 

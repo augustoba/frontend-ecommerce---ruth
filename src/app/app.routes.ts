@@ -150,13 +150,59 @@ export const routes: Routes = [
         title: 'Métricas | Admin',
       },
       {
-        path: 'ajustes',
+        path: 'config',
         loadComponent: () =>
-          import('./features/admin/admin-settings/admin-settings.component').then(
-            (m) => m.AdminSettingsComponent
+          import('./features/admin/admin-config/admin-config-hub.component').then(
+            (m) => m.AdminConfigHubComponent
           ),
-        title: 'Datos del local | Admin',
+        title: 'Configuración del sitio | Admin',
       },
+      {
+        path: 'config/identidad',
+        loadComponent: () =>
+          import('./features/admin/admin-config/admin-config-section.component').then(
+            (m) => m.AdminConfigSectionComponent
+          ),
+        data: { section: 'identity' },
+        title: 'Identidad y contacto | Admin',
+      },
+      {
+        path: 'config/redes',
+        loadComponent: () =>
+          import('./features/admin/admin-config/admin-config-section.component').then(
+            (m) => m.AdminConfigSectionComponent
+          ),
+        data: { section: 'social' },
+        title: 'Redes sociales | Admin',
+      },
+      {
+        path: 'config/nosotros',
+        loadComponent: () =>
+          import('./features/admin/admin-config/admin-config-section.component').then(
+            (m) => m.AdminConfigSectionComponent
+          ),
+        data: { section: 'about' },
+        title: 'Sobre nosotros | Admin',
+      },
+      {
+        path: 'config/whatsapp',
+        loadComponent: () =>
+          import('./features/admin/admin-config/admin-config-section.component').then(
+            (m) => m.AdminConfigSectionComponent
+          ),
+        data: { section: 'whatsapp' },
+        title: 'Mensaje de WhatsApp | Admin',
+      },
+      {
+        path: 'config/pagos',
+        loadComponent: () =>
+          import('./features/admin/admin-config/admin-config-section.component').then(
+            (m) => m.AdminConfigSectionComponent
+          ),
+        data: { section: 'pagos' },
+        title: 'Medios de pago | Admin',
+      },
+      { path: 'ajustes', redirectTo: 'config', pathMatch: 'full' },
       {
         path: 'cuenta',
         loadComponent: () =>

@@ -1,4 +1,7 @@
 @import "tailwindcss";
+/* Mapa del checkout (address-picker). Se importa acá y no en angular.json para
+   que el dev-server lo tome sin reiniciar. */
+@import "leaflet/dist/leaflet.css";
 
 @theme {
   /* Paleta pensada para un ecommerce de ropa infantil: cálida, alegre, no corporativa */

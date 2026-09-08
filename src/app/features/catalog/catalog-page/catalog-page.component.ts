@@ -24,6 +24,7 @@ export class CatalogPageComponent {
   private readonly heroSlidesService = inject(HeroSlidesService);
 
   readonly storeName = computed(() => this.settingsService.settings().storeName);
+  readonly logoSrc = this.settingsService.logoSrc;
 
   /** Fotos del carrusel de bienvenida — administrables desde /admin/carrusel */
   readonly heroSlides = this.heroSlidesService.slides;
@@ -116,5 +117,10 @@ export class CatalogPageComponent {
     this.searchTerm.set('');
     this.selectedSize.set('todos');
     this.selectedParams.set({});
+  }
+
+  /** Baja con scroll suave a la grilla del catálogo (evita el salto raro del `href="#..."`). */
+  scrollToCatalog(): void {
+    document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }

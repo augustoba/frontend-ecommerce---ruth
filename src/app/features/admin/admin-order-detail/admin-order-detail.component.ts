@@ -5,7 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { OrderService } from '../../../core/services/order.service';
 import { ProductService } from '../../../core/services/product.service';
-import { Order } from '../../../core/models/order.model';
+import { Order, PAYMENT_LABELS } from '../../../core/models/order.model';
 import { Product, ProductSize, stockForSize } from '../../../core/models/product.model';
 
 @Component({
@@ -29,6 +29,13 @@ export class AdminOrderDetailComponent {
   readonly notFound = !this.order();
   readonly saving = signal(false);
   readonly confirmError = signal<string | null>(null);
+  readonly paymentLabels = PAYMENT_LABELS;
+
+  mapsLink(order: Order): string | null {
+    return order.shippingLat != null && order.shippingLng != null
+      ? `https://www.google.com/maps?q=${order.shippingLat},${order.shippingLng}`
+      : null;
+  }
 
   /** Productos referenciados por las líneas del pedido (para el stock actual real). */
   private readonly lineProducts = signal<Record<string, Product>>({});

@@ -79,6 +79,7 @@ export class AdminProductFormComponent {
     price: [this.editingProduct?.price ?? 0, [Validators.required, Validators.min(1)]],
     ageRange: [this.editingProduct?.ageRange ?? '', Validators.required],
     active: [this.editingProduct?.active ?? true],
+    discontinued: [this.editingProduct?.discontinued ?? false],
     sizeScaleId: [this.editingProduct?.sizeScaleId ?? ''],
     supplierId: [this.editingProduct?.supplierId ?? ''],
     costPrice: [this.editingProduct?.costPrice ?? 0, [Validators.min(0)]],

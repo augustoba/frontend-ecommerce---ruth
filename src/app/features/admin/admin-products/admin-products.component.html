@@ -78,6 +78,9 @@
               >
                 {{ product.active ? 'Publicado' : 'Oculto' }}
               </button>
+              @if (product.discontinued) {
+                <span class="block mt-1 text-[11px] font-bold text-amber-600">No se repone</span>
+              }
             </td>
             <td class="p-4">
               <div class="flex items-center justify-end gap-3">

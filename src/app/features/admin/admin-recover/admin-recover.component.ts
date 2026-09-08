@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { SettingsService } from '../../../core/services/settings.service';
 
 @Component({
   selector: 'app-admin-recover',
@@ -11,6 +12,8 @@ import { AuthService } from '../../../core/services/auth.service';
 export class AdminRecoverComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+
+  readonly logoSrc = inject(SettingsService).logoSrc;
 
   readonly username = signal('');
   readonly phrase = signal('');

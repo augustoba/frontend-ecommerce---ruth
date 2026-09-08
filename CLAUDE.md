@@ -46,7 +46,9 @@ si conviene tocar también este archivo o el `README.md`).
 
 - El logo real del comercio (sombrilla + corazones, paleta pastel
   rosa/celeste/durazno) está en `public/logo.jpeg` — lo pasó el cliente,
-  coincide con su marca real de WhatsApp/redes.
+  coincide con su marca real de WhatsApp/redes. Es el **fallback**: desde
+  `/admin/config/identidad` se puede subir otro (queda en `site_settings.logo_url`
+  como data URI); todo lee de `SettingsService.logoSrc`.
 - Las imágenes de productos y del carrusel de la home son **íconos SVG
   generados por código** (backend `DataSeeder` / `clothing-icons.ts`), no
   fotos reales. El cliente todavía no mandó fotos de sus productos. Cada
@@ -56,10 +58,11 @@ si conviene tocar también este archivo o el `README.md`).
   quedó como **posible ajuste pendiente** para acercarla a los tonos
   exactos del logo — ofrecido, no confirmado.
 - El nombre de la tienda, el número de WhatsApp, el "sobre nosotros" y las
-  redes se editan desde **`/admin/ajustes`** (tabla `site_settings` del
-  backend, `GET /api/settings` público). Ya NO están en `site-config.ts`, que
-  quedó sólo con `apiBaseUrl`. El número actual (`5491122334455`) sigue siendo
-  un **placeholder** — cargarlo real desde el panel antes de publicar.
+  redes se editan desde **`/admin/config`** (hub con sub-páginas + preview en
+  vivo; `/admin/ajustes` redirige ahí). Tabla `site_settings` del backend,
+  `GET /api/settings` público. Ya NO están en `site-config.ts`, que quedó sólo
+  con `apiBaseUrl`. El número actual (`5491122334455`) sigue siendo un
+  **placeholder** — cargarlo real desde el panel antes de publicar.
   Fallback si el backend no responde: `settings.service.ts` → `DEFAULTS`.
 - Redes del footer: Instagram `@estilospequenos_` y Facebook (links reales
   confirmados, hoy en `site_settings`), con íconos de marca SVG propios (no

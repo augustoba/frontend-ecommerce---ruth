@@ -15,4 +15,5 @@ export class HeaderComponent {
 
   readonly totalItems = this.cartService.totalItems;
   readonly storeName = computed(() => this.settingsService.settings().storeName);
+  readonly logoSrc = this.settingsService.logoSrc;
 }

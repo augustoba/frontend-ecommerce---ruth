@@ -91,6 +91,14 @@ export class ProductService {
     this.mutate(this.http.patch(apiUrl(`/admin/products/${id}/active`), { active: !p.active }));
   }
 
+  /** Marca (o desmarca) un producto como "no reponer" — sale de las alertas de stock bajo. */
+  setDiscontinued(id: string, discontinued: boolean, onSuccess?: () => void): void {
+    this.mutate(
+      this.http.patch(apiUrl(`/admin/products/${id}/discontinued`), { discontinued }),
+      onSuccess
+    );
+  }
+
   setStock(id: string, size: string, stock: number): void {
     this.mutate(this.http.patch(apiUrl(`/admin/products/${id}/stock`), { size, stock }));
   }

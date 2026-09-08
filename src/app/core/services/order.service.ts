@@ -2,7 +2,17 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { CartItem } from '../models/cart-item.model';
-import { Order, OrderStatus } from '../models/order.model';
+import { DeliveryMethod, Order, OrderStatus, PaymentMethod } from '../models/order.model';
+
+/** Datos de entrega + pago que se cargan en el carrito antes de comprar. */
+export interface CheckoutDetails {
+  deliveryMethod: DeliveryMethod;
+  shippingAddress?: string | null;
+  shippingReference?: string | null;
+  shippingLat?: number | null;
+  shippingLng?: number | null;
+  paymentMethod: PaymentMethod;
+}
 import { CollectionStore } from '../state/collection-store';
 import { apiUrl } from '../config/site-config';
 
@@ -75,7 +85,7 @@ export class OrderService {
   }
 
   /** Crea el pedido desde el carrito (público). Devuelve el pedido con totales. */
-  create(customerName: string, items: CartItem[]): Observable<Order> {
+  create(customerName: string, items: CartItem[], details: CheckoutDetails): Observable<Order> {
     return this.http.post<Order>(apiUrl('/orders'), {
       customerName: customerName.trim(),
       items: items.map((i) => ({
@@ -83,6 +93,12 @@ export class OrderService {
         size: i.size,
         quantity: i.quantity,
       })),
+      deliveryMethod: details.deliveryMethod,
+      shippingAddress: details.shippingAddress ?? null,
+      shippingReference: details.shippingReference ?? null,
+      shippingLat: details.shippingLat ?? null,
+      shippingLng: details.shippingLng ?? null,
+      paymentMethod: details.paymentMethod,
     });
   }
 

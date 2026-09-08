@@ -3,6 +3,19 @@ import { ProductSize } from './product.model';
 /** Estados que devuelve el backend (en MAYÚSCULA). */
 export type OrderStatus = 'PENDIENTE' | 'PROCESADO' | 'CANCELADO';
 
+/** Cómo recibe el pedido el cliente. */
+export type DeliveryMethod = 'PICKUP' | 'SHIPPING';
+
+/** Medio de pago que elige el cliente (para que el dueño sepa qué mandar). */
+export type PaymentMethod = 'TRANSFER' | 'QR_TRANSFER' | 'QR_CARD' | 'CASH';
+
+export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
+  TRANSFER: 'Transferencia (alias/CBU)',
+  QR_TRANSFER: 'QR de transferencia',
+  QR_CARD: 'Tarjeta (QR o link)',
+  CASH: 'Efectivo al recibir/retirar',
+};
+
 export interface OrderLine {
   /** id de la línea (lo asigna el backend) */
   id: string;
@@ -34,4 +47,16 @@ export interface Order {
   status: OrderStatus;
   createdAt: string;
   processedAt?: string;
+  /** Entrega. Los pedidos viejos vienen como 'PICKUP'. */
+  deliveryMethod: DeliveryMethod;
+  /** Dirección de envío normalizada (solo si deliveryMethod === 'SHIPPING'). */
+  shippingAddress?: string | null;
+  shippingReference?: string | null;
+  shippingLat?: number | null;
+  shippingLng?: number | null;
+  paymentMethod?: PaymentMethod | null;
+  /** Si al crear el pedido aplicaba "envío gratis": el texto para el cliente. */
+  freeShippingNote?: string | null;
+  /** Letra chica de los descuentos aplicados (ej: "solo microcentro"). */
+  discountNote?: string | null;
 }
