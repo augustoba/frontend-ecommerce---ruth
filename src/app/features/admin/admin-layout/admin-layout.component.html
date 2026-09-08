@@ -1,0 +1,70 @@
+<div class="min-h-screen bg-stone-50 flex flex-col sm:flex-row">
+  <aside class="sm:w-56 shrink-0 bg-stone-900 text-stone-100 flex sm:flex-col">
+    <div class="p-5 hidden sm:block">
+      <img src="logo.jpeg" alt="Estilos Pequeños" class="h-9 w-9 rounded-full object-cover" />
+      <p class="font-display font-extrabold mt-1">{{ storeName }}</p>
+      <p class="text-xs text-stone-400">Panel de administración</p>
+    </div>
+
+    <nav class="flex sm:flex-col gap-1 p-3 flex-1">
+      <a
+        routerLink="/admin/pedidos"
+        routerLinkActive="bg-stone-700 text-white"
+        class="px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors flex items-center gap-2"
+      >
+        🧾 Pedidos
+        @if (pendingOrders() > 0) {
+          <span class="ml-auto bg-amber-400 text-amber-950 text-xs font-bold rounded-full px-2 py-0.5">
+            {{ pendingOrders() }}
+          </span>
+        }
+      </a>
+      <a
+        routerLink="/admin/productos"
+        routerLinkActive="bg-stone-700 text-white"
+        class="px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
+      >
+        📦 Productos
+      </a>
+      <a
+        routerLink="/admin/productos/nuevo"
+        routerLinkActive="bg-stone-700 text-white"
+        class="px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
+      >
+        ➕ Nuevo producto
+      </a>
+      <a
+        routerLink="/admin/carrusel"
+        routerLinkActive="bg-stone-700 text-white"
+        class="px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
+      >
+        🖼️ Carrusel
+      </a>
+      <a
+        routerLink="/admin/promociones"
+        routerLinkActive="bg-stone-700 text-white"
+        class="px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
+      >
+        🏷️ Promociones
+      </a>
+      <a
+        routerLink="/"
+        class="px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors"
+      >
+        🛍️ Ver tienda
+      </a>
+    </nav>
+
+    <button
+      type="button"
+      (click)="logout()"
+      class="m-3 px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-red-900/40 hover:text-red-200 text-left transition-colors"
+    >
+      🚪 Salir
+    </button>
+  </aside>
+
+  <main class="flex-1 p-4 sm:p-8 min-w-0">
+    <router-outlet />
+  </main>
+</div>

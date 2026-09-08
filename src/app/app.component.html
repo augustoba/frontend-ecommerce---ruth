@@ -1,0 +1,13 @@
+<div class="min-h-screen flex flex-col">
+  @if (!isAdminRoute()) {
+    <app-header />
+  }
+
+  <main class="flex-1">
+    <router-outlet />
+  </main>
+
+  @if (!isAdminRoute()) {
+    <app-footer />
+  }
+</div>

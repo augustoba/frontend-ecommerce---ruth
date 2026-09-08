@@ -1,0 +1,53 @@
+<h1 class="font-display font-extrabold text-2xl text-stone-800 mb-6">Pedidos</h1>
+
+@if (orders().length) {
+  <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-x-auto">
+    <table class="w-full text-sm min-w-[640px]">
+      <thead>
+        <tr class="text-left text-stone-500 border-b border-stone-100">
+          <th class="p-4 font-semibold">Código</th>
+          <th class="p-4 font-semibold">Cliente</th>
+          <th class="p-4 font-semibold">Fecha</th>
+          <th class="p-4 font-semibold">Ítems</th>
+          <th class="p-4 font-semibold">Total</th>
+          <th class="p-4 font-semibold">Estado</th>
+          <th class="p-4 font-semibold text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (order of orders(); track order.id) {
+          <tr class="border-b border-stone-50 last:border-0 hover:bg-stone-50/60">
+            <td class="p-4 font-mono font-semibold text-stone-800">{{ order.code }}</td>
+            <td class="p-4 text-stone-600">{{ order.customerName }}</td>
+            <td class="p-4 text-stone-500">{{ order.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
+            <td class="p-4 text-stone-500">{{ order.lines.length }}</td>
+            <td class="p-4 text-stone-600">{{ order.total | currency: 'ARS' : 'symbol' : '1.0-0' }}</td>
+            <td class="p-4">
+              <span
+                [class.bg-amber-100]="order.status === 'pendiente'"
+                [class.text-amber-700]="order.status === 'pendiente'"
+                [class.bg-mint-100]="order.status === 'procesado'"
+                [class.text-mint-600]="order.status === 'procesado'"
+                [class.bg-stone-100]="order.status === 'cancelado'"
+                [class.text-stone-500]="order.status === 'cancelado'"
+                class="text-xs font-bold px-2.5 py-1 rounded-full capitalize"
+              >
+                {{ order.status }}
+              </span>
+            </td>
+            <td class="p-4 text-right">
+              <a [routerLink]="['/admin/pedidos', order.id]" class="text-brand-600 hover:underline font-semibold">
+                Ver
+              </a>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <div class="text-center py-20 text-stone-400 bg-white rounded-2xl ring-1 ring-black/5">
+    <p class="text-4xl mb-3">🧾</p>
+    <p class="font-semibold">Todavía no llegó ningún pedido.</p>
+  </div>
+}

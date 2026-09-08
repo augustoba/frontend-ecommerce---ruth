@@ -1,0 +1,147 @@
+<section class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+  <h1 class="font-display font-extrabold text-2xl sm:text-3xl text-stone-800 mb-6">Tu carrito 🛒</h1>
+
+  @if (isEmpty()) {
+    <div class="text-center py-20 text-stone-500">
+      <p class="text-4xl mb-3">🧺</p>
+      <p class="font-semibold">Todavía no agregaste ninguna prenda.</p>
+      <a routerLink="/" class="mt-3 inline-block text-brand-600 font-semibold hover:underline">
+        Ir al catálogo
+      </a>
+    </div>
+  } @else {
+    <div class="flex flex-col gap-4">
+      @for (item of items(); track item.product.id + item.size) {
+        <div class="flex gap-4 bg-white rounded-2xl p-3 sm:p-4 ring-1 ring-black/5">
+          <img
+            [src]="item.product.imageUrl"
+            [alt]="item.product.name"
+            class="w-20 h-24 sm:w-24 sm:h-28 object-cover rounded-xl bg-brand-100 shrink-0"
+          />
+
+          <div class="flex-1 min-w-0 flex flex-col">
+            <div class="flex justify-between gap-2">
+              <div class="min-w-0">
+                <p class="font-semibold text-stone-800 truncate">{{ item.product.name }}</p>
+                <p class="text-sm text-stone-500">Talle {{ item.size }}</p>
+              </div>
+              <button
+                type="button"
+                (click)="remove(item.product.id, item.size)"
+                class="text-stone-400 hover:text-red-500 transition-colors shrink-0"
+                aria-label="Quitar del carrito"
+              >
+                🗑️
+              </button>
+            </div>
+
+            <div class="mt-auto pt-2 flex items-center justify-between">
+              <app-quantity-stepper
+                [quantity]="item.quantity"
+                [max]="stockOf(item.product, item.size)"
+                (quantityChange)="updateQuantity(item.product.id, item.size, $event)"
+              />
+              <p class="font-display font-bold text-brand-600">
+                {{ item.product.price * item.quantity | currency: 'ARS' : 'symbol' : '1.0-0' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (appliedPromo(); as promo) {
+      <div class="mt-6 bg-mint-100 text-mint-700 rounded-2xl px-5 py-3.5 font-semibold text-sm flex items-center gap-2">
+        <span aria-hidden="true">🎉</span>
+        ¡Descuento del {{ promo.discountPercent }}% aplicado por compras mayores a
+        {{ promo.minAmount | currency: 'ARS' : 'symbol' : '1.0-0' }}!
+      </div>
+    } @else {
+      @if (nextPromo(); as next) {
+        <div class="mt-6 bg-brand-100 text-brand-700 rounded-2xl px-5 py-3.5 font-semibold text-sm flex items-center gap-2">
+          <span aria-hidden="true">🛍️</span>
+          Comprá {{ amountToNextPromo() | currency: 'ARS' : 'symbol' : '1.0-0' }} más y obtené
+          {{ next.discountPercent }}% de descuento
+        </div>
+      }
+    }
+
+    <div class="mt-6 bg-white rounded-2xl p-5 sm:p-6 ring-1 ring-black/5">
+      @if (!orderSent()) {
+        <label class="block text-sm font-semibold text-stone-700 mb-1.5" for="customerName">
+          Tu nombre (para identificar el pedido)
+        </label>
+        <input
+          id="customerName"
+          type="text"
+          [ngModel]="customerName()"
+          (ngModelChange)="customerName.set($event)"
+          placeholder="Ej: María López"
+          class="w-full rounded-full border border-stone-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+        />
+
+        <div class="mt-5 flex flex-col gap-1.5">
+          <div class="flex items-center justify-between text-stone-600">
+            <span>Subtotal ({{ totalItems() }} {{ totalItems() === 1 ? 'prenda' : 'prendas' }})</span>
+            <span>{{ subtotal() | currency: 'ARS' : 'symbol' : '1.0-0' }}</span>
+          </div>
+          @if (discountAmount() > 0) {
+            <div class="flex items-center justify-between text-mint-600 font-semibold">
+              <span>Descuento ({{ appliedPromo()?.discountPercent }}%)</span>
+              <span>-{{ discountAmount() | currency: 'ARS' : 'symbol' : '1.0-0' }}</span>
+            </div>
+          }
+          <div class="flex items-center justify-between text-lg pt-1.5 border-t border-stone-100 mt-1">
+            <span class="font-semibold text-stone-800">Total</span>
+            <span class="font-display font-extrabold text-brand-600">
+              {{ finalTotal() | currency: 'ARS' : 'symbol' : '1.0-0' }}
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          (click)="sendOrder()"
+          class="mt-5 w-full flex items-center justify-center gap-2 bg-mint-500 hover:bg-mint-600 text-white font-bold py-3.5 rounded-full transition-colors text-lg"
+        >
+          <span aria-hidden="true">💬</span> Comprar por WhatsApp
+        </button>
+        <p class="text-xs text-stone-400 text-center mt-2">
+          Se abre WhatsApp con tu pedido armado. Después de enviarlo, te pasamos el alias o link de Mercado Pago para coordinar el pago.
+        </p>
+      } @else {
+        <div class="text-center py-4">
+          <p class="text-4xl mb-2">✅</p>
+          <p class="font-semibold text-stone-800">¡Se abrió WhatsApp con tu pedido!</p>
+          @if (currentOrder(); as order) {
+            <p class="text-sm text-stone-600 mt-2">
+              Tu código de pedido es <span class="font-mono font-bold text-brand-600">{{ order.code }}</span>
+            </p>
+            <p class="text-sm text-stone-500 mt-1">
+              Total: <span class="font-semibold text-stone-700">{{ order.total | currency: 'ARS' : 'symbol' : '1.0-0' }}</span>
+            </p>
+          }
+          <p class="text-sm text-stone-500 mt-1 max-w-sm mx-auto">
+            Enviá el mensaje y en breve te respondemos con el alias o link de Mercado Pago para coordinar el pago.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-3 justify-center mt-5">
+            <button
+              type="button"
+              (click)="sendOrder()"
+              class="text-brand-600 font-semibold hover:underline"
+            >
+              Reabrir WhatsApp
+            </button>
+            <button
+              type="button"
+              (click)="clearCart()"
+              class="text-stone-400 hover:text-red-500 font-semibold"
+            >
+              Vaciar carrito
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</section>

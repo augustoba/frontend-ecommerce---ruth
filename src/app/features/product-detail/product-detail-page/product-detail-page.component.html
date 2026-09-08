@@ -1,0 +1,110 @@
+@if (product(); as p) {
+  <section class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+    <a routerLink="/" class="text-sm font-semibold text-brand-600 hover:underline">← Volver al catálogo</a>
+
+    <div class="mt-4 grid md:grid-cols-2 gap-8">
+      <div class="relative rounded-2xl overflow-hidden bg-brand-100 aspect-[4/5]">
+        <img [src]="p.imageUrl" [alt]="p.name" class="w-full h-full object-cover" />
+        @if (outOfStock()) {
+          <span
+            class="absolute inset-0 bg-stone-900/50 flex items-center justify-center text-white font-bold"
+          >
+            Sin stock
+          </span>
+        }
+      </div>
+
+      <div class="flex flex-col">
+        <span class="inline-block w-fit bg-brand-100 text-brand-600 text-xs font-bold px-2.5 py-1 rounded-full">
+          {{ categoryLabel() }}
+        </span>
+
+        <h1 class="font-display font-extrabold text-2xl sm:text-3xl text-stone-800 mt-3">{{ p.name }}</h1>
+        <p class="text-sm text-stone-500 mt-1">{{ p.ageRange }}</p>
+
+        <p class="font-display font-extrabold text-3xl text-brand-600 mt-4">
+          {{ p.price | currency: 'ARS' : 'symbol' : '1.0-0' }}
+        </p>
+
+        <p class="text-stone-600 mt-4 leading-relaxed">{{ p.description }}</p>
+
+        <div class="mt-6">
+          <p class="font-semibold text-stone-800 mb-2">Talle</p>
+          <div class="flex flex-wrap gap-2">
+            @for (sizeStock of p.sizeStocks; track sizeStock.size) {
+              <button
+                type="button"
+                (click)="selectSize(sizeStock.size)"
+                [disabled]="sizeStock.stock <= 0"
+                [class.bg-brand-500]="selectedSize() === sizeStock.size"
+                [class.text-white]="selectedSize() === sizeStock.size"
+                [class.bg-white]="selectedSize() !== sizeStock.size && sizeStock.stock > 0"
+                [class.text-stone-700]="selectedSize() !== sizeStock.size && sizeStock.stock > 0"
+                [class.bg-stone-100]="sizeStock.stock <= 0"
+                [class.text-stone-300]="sizeStock.stock <= 0"
+                [class.line-through]="sizeStock.stock <= 0"
+                class="min-w-10 h-10 px-2 rounded-lg font-semibold text-sm ring-1 ring-black/10 hover:enabled:ring-brand-400 disabled:cursor-not-allowed transition-colors"
+                [attr.title]="sizeStock.stock > 0 ? sizeStock.stock + ' disponibles' : 'Sin stock'"
+              >
+                {{ sizeStock.size }}
+              </button>
+            }
+          </div>
+          @if (selectedSize()) {
+            <p class="text-xs text-stone-400 mt-1.5">{{ stockForSelectedSize() }} disponibles en talle {{ selectedSize() }}</p>
+          }
+        </div>
+
+        <div class="mt-6 flex items-center gap-4">
+          <p class="font-semibold text-stone-800">Cantidad</p>
+          <app-quantity-stepper
+            [quantity]="quantity()"
+            [max]="stockForSelectedSize() || 1"
+            (quantityChange)="quantity.set($event)"
+          />
+        </div>
+
+        @if (!outOfStock()) {
+          <div class="mt-8 flex flex-col sm:flex-row gap-3">
+            @if (!justAdded()) {
+              <button
+                type="button"
+                (click)="addToCart()"
+                [disabled]="!selectedSize()"
+                class="flex-1 bg-brand-500 hover:bg-brand-600 disabled:bg-stone-300 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-full transition-colors"
+              >
+                Agregar al carrito
+              </button>
+            } @else {
+              <div class="flex-1 flex flex-col sm:flex-row gap-3">
+                <p class="flex items-center gap-2 text-mint-600 font-semibold">
+                  <span aria-hidden="true">✅</span> ¡Agregado al carrito!
+                </p>
+                <button
+                  type="button"
+                  (click)="goToCart()"
+                  class="sm:ml-auto bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 px-6 rounded-full transition-colors"
+                >
+                  Ver carrito
+                </button>
+              </div>
+            }
+          </div>
+          @if (!selectedSize() && !justAdded()) {
+            <p class="text-xs text-stone-400 mt-2">Elegí un talle para poder agregarlo al carrito.</p>
+          }
+        } @else {
+          <p class="mt-8 font-semibold text-stone-500">Este producto está sin stock por ahora 😔</p>
+        }
+      </div>
+    </div>
+  </section>
+} @else {
+  <section class="max-w-5xl mx-auto px-4 sm:px-6 py-20 text-center">
+    <p class="text-4xl mb-3">🧸</p>
+    <p class="font-semibold text-stone-600">No encontramos este producto.</p>
+    <a routerLink="/" class="mt-3 inline-block text-brand-600 font-semibold hover:underline">
+      Volver al catálogo
+    </a>
+  </section>
+}
