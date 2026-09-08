@@ -1,0 +1,64 @@
+<h1 class="font-display font-extrabold text-2xl text-stone-800 mb-2">Mi cuenta</h1>
+<p class="text-sm text-stone-500 mb-6">
+  Sesión iniciada como <span class="font-semibold text-stone-700">{{ username() }}</span>.
+</p>
+
+<div class="grid md:grid-cols-2 gap-6 max-w-3xl">
+  <!-- Cambiar contraseña -->
+  <form (ngSubmit)="changePassword()" class="bg-white rounded-2xl ring-1 ring-black/5 p-5">
+    <p class="font-semibold text-stone-800 mb-3">Cambiar contraseña</p>
+
+    <label class="block text-xs font-semibold text-stone-500 mb-1" for="cp">Contraseña actual</label>
+    <input id="cp" type="password" name="cp" required
+      [ngModel]="curPass()" (ngModelChange)="curPass.set($event)"
+      class="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 mb-3" />
+
+    <label class="block text-xs font-semibold text-stone-500 mb-1" for="np">Contraseña nueva</label>
+    <input id="np" type="password" name="np" required
+      [ngModel]="newPass()" (ngModelChange)="newPass.set($event)"
+      class="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 mb-3" />
+
+    <label class="block text-xs font-semibold text-stone-500 mb-1" for="np2">Repetí la nueva</label>
+    <input id="np2" type="password" name="np2" required
+      [ngModel]="newPass2()" (ngModelChange)="newPass2.set($event)"
+      class="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400" />
+
+    @if (pwError()) {
+      <p class="text-sm text-red-500 font-semibold mt-3">{{ pwError() }}</p>
+    }
+
+    <button type="submit" [disabled]="pwSaving()"
+      class="mt-4 w-full bg-brand-500 hover:bg-brand-600 disabled:bg-stone-300 text-white font-bold py-2.5 rounded-full transition-colors text-sm">
+      {{ pwSaving() ? 'Guardando…' : 'Cambiar contraseña' }}
+    </button>
+  </form>
+
+  <!-- Frase de recuperación -->
+  <form (ngSubmit)="changeRecovery()" class="bg-white rounded-2xl ring-1 ring-black/5 p-5">
+    <p class="font-semibold text-stone-800 mb-1">Frase de recuperación</p>
+    <p class="text-xs text-stone-400 mb-3">
+      Es el "segundo secreto" para recuperar la cuenta si te olvidás la contraseña.
+      Anotala en un lugar seguro.
+    </p>
+
+    <label class="block text-xs font-semibold text-stone-500 mb-1" for="rcp">Contraseña actual</label>
+    <input id="rcp" type="password" name="rcp" required
+      [ngModel]="recCurPass()" (ngModelChange)="recCurPass.set($event)"
+      class="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 mb-3" />
+
+    <label class="block text-xs font-semibold text-stone-500 mb-1" for="nph">Nueva frase de recuperación</label>
+    <input id="nph" type="text" name="nph" required
+      [ngModel]="newPhrase()" (ngModelChange)="newPhrase.set($event)"
+      placeholder="Ej: el nombre de mi primera mascota"
+      class="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400" />
+
+    @if (recError()) {
+      <p class="text-sm text-red-500 font-semibold mt-3">{{ recError() }}</p>
+    }
+
+    <button type="submit" [disabled]="recSaving()"
+      class="mt-4 w-full bg-brand-500 hover:bg-brand-600 disabled:bg-stone-300 text-white font-bold py-2.5 rounded-full transition-colors text-sm">
+      {{ recSaving() ? 'Guardando…' : 'Cambiar frase' }}
+    </button>
+  </form>
+</div>

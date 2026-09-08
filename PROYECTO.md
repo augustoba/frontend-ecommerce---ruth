@@ -1,7 +1,8 @@
 # Estilos Pequeños — Documento de alcance y referencia
 
-> Documento vivo: actualizalo a mano (o pedime que lo actualice) cada vez
-> que cambie algo importante del proyecto. Última actualización: 2026-09-07.
+> Documento vivo del proyecto (overview general + detalle del frontend).
+> El detalle del backend (entidades, endpoints, auth) está en
+> `../backend/PROYECTO.md`. Última actualización: 2026-09-08.
 
 ## 1. Qué es esto
 
@@ -16,8 +17,9 @@ Mercado Pago para coordinar el pago manualmente.
   contra `/api/*` (proxy del dev-server → `localhost:8080`). Solo el carrito
   y el token JWT quedan en `localStorage`.
 - **Backend:** Java 21 + Spring Boot 3.3 + MySQL 8, carpeta hermana
-  `../backend/`. CRUD completo del admin + catálogo público + login JWT.
-  Ver sección 12 y `../backend/README.md`.
+  `../backend/` (repo git propio). CRUD completo del admin + catálogo público
+  + login/recuperación por JWT. **Detalle completo en `../backend/PROYECTO.md`**
+  (y resumen en la sección 12 de acá).
 
 ## 2. Stack técnico y decisiones tomadas
 
@@ -72,14 +74,19 @@ este único archivo.**
 
 ## 5. Panel de administración
 
-- URL: `http://localhost:4200/admin` (pide login: `admin` / `ruth123`, valida
-  contra el backend y guarda un JWT en `localStorage`).
-- Permite: crear/editar/ocultar/eliminar productos, con **stock manejado
-  por talle** (cada talle tiene su propia cantidad, no un stock único por
-  producto) y **clasificación por parametrías** (ver sección 9ter).
-- Los datos se guardan en `localStorage` del navegador (no hay backend
-  todavía) — si se borra el storage del navegador, vuelve al catálogo de
-  ejemplo.
+- URL: `http://localhost:4200/admin`. Login **`admin` / `ruth123`** — valida
+  contra el backend (`POST /api/auth/login`) y guarda el JWT en `localStorage`.
+  Un interceptor lo manda en `/api/admin/**`; si expira o falta, vuelve al login.
+- `/admin/recuperar` — si el admin se olvidó la contraseña: usuario + **frase de
+  recuperación** + contraseña nueva (no usa email).
+- `/admin/cuenta` — cambiar la contraseña y la frase de recuperación (piden la
+  contraseña actual). ⚠️ **La frase de recuperación inicial es
+  `frase-de-recuperacion-cambiar` — cambiala.**
+- Permite: crear/editar/ocultar/eliminar productos, con **stock por talle** y
+  **clasificación por parametrías** (ver sección 9ter), + proveedores,
+  descuentos, escalas de talle, carrusel y gestión de pedidos.
+- Todos los datos vienen del backend (MySQL). Si el backend está caído, cada
+  sección muestra un estado de error con botón "reintentar".
 
 ## 6. Identidad visual
 
@@ -140,23 +147,21 @@ src/app/
     admin/                      # login, layout, productos, pedidos, carrusel (ver sección 9bis)
 ```
 
-## 9. Cómo funciona el checkout por WhatsApp (100% client-side)
+## 9. Cómo funciona el checkout por WhatsApp
 
 1. Cliente agrega prendas al carrito eligiendo talle y cantidad (limitado
-   al stock de ESE talle puntual).
-2. En `/carrito` carga su nombre y toca **"Comprar por WhatsApp"**. Ahí
-   se crea un **pedido con código correlativo** (`PED-0001`, `PED-0002`...)
-   guardado en el panel de admin, y se abre `wa.me/<número>` en pestaña
-   nueva con el mensaje ya armado (código, detalle de prendas, talles,
-   cantidades, total). El cliente solo tiene que enviarlo.
+   al stock de ESE talle puntual). El carrito vive en `localStorage`.
+2. En `/carrito` carga su nombre y toca **"Comprar por WhatsApp"**. Ahí el
+   frontend hace `POST /api/orders` → el **backend** crea el pedido con
+   código correlativo (`PED-0001`…), calcula los descuentos y el total, y lo
+   guarda en la base. Con el pedido devuelto se abre `wa.me/<número>` en
+   pestaña nueva con el mensaje ya armado. El cliente solo tiene que enviarlo.
 3. El dueño/a recibe el pedido por WhatsApp y responde con el alias o
    link de Mercado Pago para que el cliente pague directamente.
 4. El dueño/a entra a `/admin/pedidos`, busca el pedido por su código,
-   **tilda/destilda cada prenda** según si la va a entregar (por si no
-   hay stock real de algo) y toca **"Confirmar y descontar stock"** — ahí
-   se descuenta automático el stock de cada talle confirmado, sin tener
-   que ir producto por producto a mano. También puede cancelar el pedido
-   completo sin tocar stock.
+   **tilda/destilda cada prenda** según si la va a entregar y toca
+   **"Confirmar y descontar stock"** — el backend descuenta el stock de cada
+   talle confirmado. También puede cancelar el pedido completo sin tocar stock.
 
 ## 9bis. Panel de administración — módulos
 
@@ -166,18 +171,20 @@ src/app/
   (descuenta stock) o cancelar el pedido completo. Avisa si el stock
   actual de un talle ya no alcanza para lo pedido.
 - `/admin/productos` y `/admin/productos/nuevo` / `:id/editar` — CRUD de
-  productos con stock por talle (ver sección 5... perdón, sección de
-  panel admin original).
-- `/admin/carrusel` — administra las fotos del carrusel de la home: subir
-  foto desde archivo (se redimensiona sola a máx. 1600px de ancho antes
-  de guardarla, para no llenar el `localStorage`), editar descripción,
-  reordenar, eliminar, o restaurar las ilustraciones de ejemplo.
+  productos con stock por talle. El form de edición usa un *resolver* que trae
+  el producto del backend antes de entrar.
+- `/admin/carrusel` — fotos del carrusel de la home: subir foto (se redimensiona
+  sola a máx. 1600px de ancho antes de mandarla), editar descripción, reordenar,
+  eliminar.
 - `/admin/parametrias` — grupos de clasificación de prendas (ver sección 9ter).
 - `/admin/talles` — escalas de talle editables (ver sección 9quinquies).
 - `/admin/proveedores` — proveedores del local (ver sección 9quater).
 - `/admin/promociones` — descuentos automáticos: por **monto de compra** y por
   **parametría** (ej: "todo lo de bebé 15% off"), con un **modo de combinación**
   ("aplicar el mayor" / "combinar"). Se aplican solo en el carrito.
+- `/admin/cuenta` — cambiar contraseña y frase de recuperación.
+- `/admin/recuperar` — recuperar la cuenta con la frase de recuperación (ruta
+  pública, fuera del layout del admin).
 
 ## 9ter. Parametrías (clasificación de prendas)
 
@@ -246,20 +253,18 @@ src/app/
 
 ## 10. Pendientes / próximos pasos conocidos
 
-- [ ] Reemplazar `whatsappNumber` por el número real antes de publicar.
-- [ ] Cambiar `admin.username` / `admin.password` a algo definitivo.
-- [ ] Sumar fotos reales de los productos y del carrusel (hoy son íconos
-      de ejemplo).
-- [ ] Definir si se ajusta la paleta de colores del sitio a los tonos
-      exactos del logo.
-- [ ] Backend en Java: **arrancar solo cuando el cliente lo pida**
-      (instrucción explícita: no adelantarse). `ProductService` y
-      `AuthService` ya están aislados del resto de la app para poder
-      cambiarlos por llamadas HTTP sin tocar las pantallas.
-- [ ] Evaluar deploy/hosting del frontend cuando esté listo para publicar.
-- [ ] Pantalla de métricas (`/admin/metricas`): con talles, proveedores y
-      parametrías ya estructurados, se puede armar un panel de ventas por talle
-      / proveedor / estación leyendo los pedidos procesados. Pedido a futuro.
+- [ ] Reemplazar `whatsappNumber` (site-config.ts) por el número real antes de publicar.
+- [ ] Cambiar la contraseña (`ruth123`) y la **frase de recuperación**
+      (`frase-de-recuperacion-cambiar`) del admin — desde `/admin/cuenta`.
+- [ ] En prod: definir `JWT_SECRET` (≥32 chars) y `apiBaseUrl` si el backend
+      va en otro dominio.
+- [ ] Sumar fotos reales de los productos y del carrusel (hoy son íconos SVG).
+- [ ] Definir si se ajusta la paleta de colores del sitio a los tonos del logo.
+- [ ] Deploy/hosting: front (estático) + backend (Java + MySQL). Ver
+      `../backend/PROYECTO.md` §9 y §11.
+- [ ] Pantalla de métricas (`/admin/metricas`): ventas por talle / proveedor /
+      parametría, leyendo los pedidos procesados. La data ya está estructurada.
+- [ ] (Backend) Flyway, perfil `prod`, proyecciones DTO — ver `../backend/PROYECTO.md` §11.
 
 ## 11. Historial de pedidos/decisiones relevantes (cronológico)
 
@@ -335,21 +340,27 @@ src/app/
     de `localStorage` a `HttpClient` contra `/api/*` (proxy del dev-server →
     `:8080`). Auth por JWT (`admin`/`ruth123`), interceptor que lo manda en
     `/api/admin/**` y que en 401 vuelve al login. Manejo de carga/error
-    "completo": `CollectionStore` genérico (status loading/error/saving),
-    skeletons, estados de error con "reintentar", y toasts. El carrito sigue
-    siendo local. El backend sumó `GET /api/discounts` (público) para el
-    preview del descuento en el carrito.
+    "completo": `CollectionStore` genérico, skeletons, estados de error con
+    "reintentar", y toasts. El carrito sigue siendo local. El backend sumó
+    `GET /api/discounts` (público) para el preview del descuento en el carrito.
+22. **Recuperación de contraseña + gestión de cuenta** (2026-09-08): pantalla
+    `/admin/recuperar` (usuario + **frase de recuperación** + contraseña nueva,
+    sin email) y `/admin/cuenta` (cambiar contraseña y frase). Backend: campo
+    `recoveryHash` en `AdminUser`, `POST /api/auth/recover`,
+    `PUT /api/admin/account/password` y `/recovery`. Frase inicial
+    `frase-de-recuperacion-cambiar`.
 
-## 12. Backend (`../backend/`)
+## 12. Backend (`../backend/`) — resumen
 
-- **Qué es:** API REST en Java 21 / Spring Boot 3.3 / MySQL 8. Proyecto
-  separado, con su propio git. Docs interactivas en `/swagger-ui.html`.
-- **Auth:** `POST /api/auth/login` valida contra la tabla **`admin_user`**
-  (contraseña **hasheada con BCrypt**) y devuelve un **JWT** que hay que mandar
-  como `Authorization: Bearer <token>` en todos los `/api/admin/**`. Admin
-  inicial sembrado: **`admin` / `ruth123`**. Los endpoints públicos
-  (`/api/products`, `/api/param-groups`, `/api/size-scales`, `/api/hero-slides`,
-  `POST /api/orders`) no piden token.
+**Detalle completo en `../backend/PROYECTO.md`.** Resumen:
+
+- **Qué es:** API REST en Java 21 / Spring Boot 3.3 / MySQL 8. Repo git propio.
+  Docs interactivas en `http://localhost:8080/swagger-ui.html`.
+- **Auth:** `POST /api/auth/login` (`admin` / `ruth123`) valida contra la tabla
+  `admin_user` (contraseña **BCrypt**) → **JWT** para `Authorization: Bearer` en
+  `/api/admin/**`. Recuperación por frase (`POST /api/auth/recover`), cambio de
+  clave/frase en `/api/admin/account/**`. Endpoints públicos: catálogo,
+  `GET /api/discounts`, `POST /api/orders`.
 - **Entidades:** AdminUser, Product (con `params`, `sizeStocks`, `sizeScaleId`,
   `supplierId`, `costPrice`), ParamGroup/ParamOption, SizeScale, Supplier,
   Discount + DiscountConfig, Order/OrderLine, HeroSlide.

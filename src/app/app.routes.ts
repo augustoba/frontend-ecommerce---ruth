@@ -34,6 +34,14 @@ export const routes: Routes = [
     title: 'Ingresar | Admin',
   },
   {
+    path: 'admin/recuperar',
+    loadComponent: () =>
+      import('./features/admin/admin-recover/admin-recover.component').then(
+        (m) => m.AdminRecoverComponent
+      ),
+    title: 'Recuperar contraseña | Admin',
+  },
+  {
     path: 'admin',
     loadComponent: () =>
       import('./features/admin/admin-layout/admin-layout.component').then(
@@ -123,6 +131,14 @@ export const routes: Routes = [
             (m) => m.AdminPromosComponent
           ),
         title: 'Descuentos | Admin',
+      },
+      {
+        path: 'cuenta',
+        loadComponent: () =>
+          import('./features/admin/admin-account/admin-account.component').then(
+            (m) => m.AdminAccountComponent
+          ),
+        title: 'Mi cuenta | Admin',
       },
     ],
   },

@@ -34,26 +34,37 @@ export class AuthService {
     return !!t && t.expiresAt > Date.now();
   });
 
+  /** Usuario del token actual (claim `sub` del JWT), o '' */
+  readonly username = computed(() => {
+    const t = this.tokenSignal();
+    if (!t || t.expiresAt <= Date.now()) return '';
+    return decodeSub(t.token);
+  });
+
   token(): string | null {
     const t = this.tokenSignal();
     return t && t.expiresAt > Date.now() ? t.token : null;
   }
 
   login(username: string, password: string): Observable<boolean> {
+    return this.postToken(apiUrl('/auth/login'), { username, password });
+  }
+
+  /** Recuperar la cuenta con la frase de recuperación → setea la pass nueva y loguea. */
+  recover(username: string, recoveryPhrase: string, newPassword: string): Observable<boolean> {
+    return this.postToken(apiUrl('/auth/recover'), { username, recoveryPhrase, newPassword });
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<boolean> {
     return this.http
-      .post<LoginResponse>(apiUrl('/auth/login'), { username, password })
-      .pipe(
-        map((res) => {
-          const stored: StoredToken = {
-            token: res.token,
-            expiresAt: new Date(res.expiresAt).getTime(),
-          };
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
-          this.tokenSignal.set(stored);
-          return true;
-        }),
-        catchError(() => of(false))
-      );
+      .put(apiUrl('/admin/account/password'), { currentPassword, newPassword })
+      .pipe(map(() => true), catchError(() => of(false)));
+  }
+
+  changeRecoveryPhrase(currentPassword: string, recoveryPhrase: string): Observable<boolean> {
+    return this.http
+      .put(apiUrl('/admin/account/recovery'), { currentPassword, recoveryPhrase })
+      .pipe(map(() => true), catchError(() => of(false)));
   }
 
   logout(): void {
@@ -63,6 +74,21 @@ export class AuthService {
       /* ignore */
     }
     this.tokenSignal.set(null);
+  }
+
+  private postToken(url: string, body: unknown): Observable<boolean> {
+    return this.http.post<LoginResponse>(url, body).pipe(
+      map((res) => {
+        const stored: StoredToken = {
+          token: res.token,
+          expiresAt: new Date(res.expiresAt).getTime(),
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+        this.tokenSignal.set(stored);
+        return true;
+      }),
+      catchError(() => of(false))
+    );
   }
 
   private loadStored(): StoredToken | null {
@@ -79,5 +105,15 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+}
+
+/** Lee el claim `sub` de un JWT sin validar la firma (solo para mostrar el nombre). */
+function decodeSub(jwt: string): string {
+  try {
+    const payload = JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return typeof payload.sub === 'string' ? payload.sub : '';
+  } catch {
+    return '';
   }
 }
