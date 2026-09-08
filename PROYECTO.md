@@ -690,6 +690,14 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
     (no se ubicó la puerta), el campo **"entre qué calles está" pasa a ser
     obligatorio** en el carrito (`referenceRequired` bloquea el botón de comprar).
     Sólo frontend, sin cambios de modelo.
+40. **Carrito: caja "Promos disponibles"** (2026-09-08): además del descuento ya
+    aplicado, el carrito muestra las promos que el cliente todavía podría
+    aprovechar (`promoHints`): próximo escalón por monto ("comprá $X más y llegás
+    a Y%"), descuentos por medio de pago que no eligió ("pagando con transferencia
+    10% off") y envío gratis ("comprá $X más" / "tu compra ya tiene envío gratis —
+    elegí envío"). `DiscountService` sumó `activePaymentDiscounts` y
+    `bestFreeShippingFor`. El agregar-descuento del panel ganó el tilde
+    "acumulable" (antes sólo se toggleaba después de crear).
 
 ## 12. Backend (`../backend/`) — resumen
 

@@ -67,6 +67,52 @@ export class CartPageComponent {
     return next ? (next.minAmount ?? 0) - this.subtotal() : 0;
   });
 
+  /** Otras promos que el cliente todavía podría aprovechar (además de las ya aplicadas). */
+  readonly promoHints = computed<{ icon: string; text: string; detail?: string | null }[]>(() => {
+    const hints: { icon: string; text: string; detail?: string | null }[] = [];
+    const subtotal = this.subtotal();
+    if (subtotal <= 0) return hints;
+
+    // próximo escalón por monto (aunque ya tenga otro descuento aplicado)
+    const nt = this.nextPromo();
+    if (nt) {
+      hints.push({
+        icon: '🛍️',
+        text: `Comprá ${fmtArs(this.amountToNextPromo())} más y llegás a ${nt.discountPercent}% de descuento`,
+      });
+    }
+
+    // descuentos por medio de pago que todavía no elegiste
+    const chosen = this.paymentMethod();
+    for (const d of this.discountService.activePaymentDiscounts()) {
+      const methods = d.paymentMethods ?? [];
+      if (chosen && methods.includes(chosen)) continue; // ese descuento ya lo estás usando
+      const names = methods.map((m) => this.paymentLabels[m]).join(' o ');
+      hints.push({ icon: '💳', text: `Pagando con ${names}: ${d.discountPercent}% off`, detail: d.detail });
+    }
+
+    // envío gratis (cuando todavía no elegiste envío)
+    if (this.deliveryMethod() !== 'SHIPPING') {
+      const reached = this.discountService.bestFreeShippingFor(subtotal);
+      const next = this.nextFreeShipping();
+      if (reached) {
+        hints.push({
+          icon: '🚚',
+          text: 'Tu compra tiene envío gratis — elegí "Envío a domicilio"',
+          detail: reached.detail,
+        });
+      } else if (next) {
+        hints.push({
+          icon: '🚚',
+          text: `Comprá ${fmtArs(this.amountToFreeShipping())} más y el envío a domicilio sale gratis`,
+          detail: next.detail,
+        });
+      }
+    }
+
+    return hints;
+  });
+
   readonly customerName = signal('');
   readonly deliveryMethod = signal<DeliveryMethod | null>(null);
   readonly shippingAddr = signal<PickedAddress | null>(null);
@@ -156,4 +202,8 @@ export class CartPageComponent {
         error: () => this.sending.set(false),
       });
   }
+}
+
+function fmtArs(value: number): string {
+  return '$' + Math.round(Math.max(0, value)).toLocaleString('es-AR');
 }

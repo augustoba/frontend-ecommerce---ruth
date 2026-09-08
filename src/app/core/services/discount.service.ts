@@ -116,6 +116,20 @@ export class DiscountService {
       .sort((a, b) => (a.minAmount ?? 0) - (b.minAmount ?? 0))[0] ?? null;
   }
 
+  /** El mejor "envío gratis" que el subtotal ya alcanza (sin importar la entrega elegida). */
+  bestFreeShippingFor(subtotal: number): Discount | null {
+    return this.freeShippingDiscounts()
+      .filter((d) => this.isActive(d) && subtotal >= (d.minAmount ?? 0))
+      .sort((a, b) => (b.minAmount ?? 0) - (a.minAmount ?? 0))[0] ?? null;
+  }
+
+  /** Descuentos por medio de pago vigentes (para mostrarlos como promo en el carrito). */
+  readonly activePaymentDiscounts = computed(() =>
+    this.paymentDiscounts().filter(
+      (d) => this.isActive(d) && d.discountPercent > 0 && (d.paymentMethods ?? []).length > 0
+    )
+  );
+
   // --- Cálculo central ---
 
   computeCartDiscount(items: DiscountCartItem[], ctx: DiscountContext = {}): CartDiscountResult {
@@ -212,9 +226,7 @@ export class DiscountService {
     deliveryMethod: DeliveryMethod | null
   ): { label: string; detail: string | null } | null {
     if (deliveryMethod !== 'SHIPPING') return null;
-    const reached = this.freeShippingDiscounts()
-      .filter((d) => this.isActive(d) && subtotal >= (d.minAmount ?? 0))
-      .sort((a, b) => (b.minAmount ?? 0) - (a.minAmount ?? 0))[0];
+    const reached = this.bestFreeShippingFor(subtotal);
     if (!reached) return null;
     return { label: reached.label?.trim() || 'Envío gratis', detail: reached.detail?.trim() || null };
   }
