@@ -86,6 +86,9 @@ Valores por defecto (fallback si el backend no responde) en
   `frase-de-recuperacion-cambiar` — cambiala.**
 - `/admin/ajustes` ("🏬 Datos del local") — nombre de la tienda, número de
   WhatsApp, texto de "sobre nosotros" y redes. Sin redesplegar nada (sección 9sexies).
+- `/admin/metricas` ("📊 Métricas") — ventas por período: facturación, unidades
+  y pedidos, facturación por mes, productos más/menos vendidos y desglose por
+  parametría (sección 9septies).
 - Permite: crear/editar/ocultar/eliminar productos, con **stock por talle** y
   **clasificación por parametrías** (ver sección 9ter), + proveedores,
   descuentos, escalas de talle, carrusel y gestión de pedidos.
@@ -191,6 +194,7 @@ src/app/
   pública, fuera del layout del admin).
 - `/admin/ajustes` — datos del local: nombre de la tienda, WhatsApp, "sobre
   nosotros", Instagram y Facebook (ver sección 9sexies).
+- `/admin/metricas` — métricas de ventas por período (ver sección 9septies).
 
 ## 9ter. Parametrías (clasificación de prendas)
 
@@ -277,6 +281,24 @@ src/app/
 - Sigue **pendiente** cargar el número de WhatsApp real: ahora se hace desde
   `/admin/ajustes`, no tocando código.
 
+## 9septies. Métricas de ventas
+
+- **Qué es:** `/admin/metricas` — tablero de ventas leyendo del backend
+  (`GET /api/admin/metrics`). Cuenta sólo los **pedidos procesados**
+  (confirmados), por la fecha de confirmación; la facturación es a **precio de
+  lista** (no aplica el descuento del pedido).
+- **Filtros:** presets de rango (este mes / últimos 3 / este año / últimos 12
+  meses) + fechas desde-hasta a mano, y un selector "desglosar por" con los
+  grupos de parametría (por defecto "Tipo de prenda").
+- **Muestra:** 3 totales (facturación, prendas, pedidos); barras de facturación
+  por mes (serie continua); "más vendidos" (top 10 por unidades) y "menos
+  vendidos" (incluye productos activos con 0 ventas); y el desglose por el
+  grupo elegido (unidades + facturación por opción).
+- **Front:** `MetricsService` (signal, cada `load(query)` reemplaza el
+  resultado), `AdminMetricsComponent`. Barras con CSS (sin librería de charts).
+- **Pendiente:** desglose por talle y por proveedor (el backend hoy sólo hace
+  por grupo de parametría).
+
 ## 10. Pendientes / próximos pasos conocidos
 
 - [ ] Cargar el número de WhatsApp real desde `/admin/ajustes` antes de publicar
@@ -289,8 +311,9 @@ src/app/
 - [ ] Definir si se ajusta la paleta de colores del sitio a los tonos del logo.
 - [ ] Deploy/hosting: front (estático) + backend (Java + MySQL). Ver
       `../backend/PROYECTO.md` §9 y §11.
-- [ ] Pantalla de métricas (`/admin/metricas`): ventas por talle / proveedor /
-      parametría, leyendo los pedidos procesados. La data ya está estructurada.
+- [ ] Métricas (`/admin/metricas`, sección 9septies): sumar el desglose por
+      **talle** y por **proveedor** (hoy hace totales, por mes, top/bottom
+      productos y por parametría).
 - [ ] (Backend) Flyway, perfil `prod`, proyecciones DTO — ver `../backend/PROYECTO.md` §11.
 
 ## 11. Historial de pedidos/decisiones relevantes (cronológico)
@@ -382,6 +405,11 @@ src/app/
     `site_settings` (fila única), `GET /api/settings` (público) +
     `GET`/`PUT /api/admin/settings`. Frontend: `SettingsService` con fallback a
     `DEFAULTS`. `site-config.ts` quedó sólo con `apiBaseUrl`.
+24. **Métricas de ventas** (2026-09-08, sección 9septies): `/admin/metricas` —
+    tablero con facturación / unidades / pedidos por período, facturación por
+    mes, productos más y menos vendidos, y desglose por parametría (por defecto
+    "Tipo de prenda"). Backend: `GET /api/admin/metrics` (`MetricsService`),
+    sobre los pedidos PROCESADO. Barras en CSS, sin librería de charts.
 
 ## 12. Backend (`../backend/`) — resumen
 
@@ -393,7 +421,8 @@ src/app/
   `admin_user` (contraseña **BCrypt**) → **JWT** para `Authorization: Bearer` en
   `/api/admin/**`. Recuperación por frase (`POST /api/auth/recover`), cambio de
   clave/frase en `/api/admin/account/**`. Endpoints públicos: catálogo,
-  `GET /api/discounts`, `GET /api/settings`, `POST /api/orders`.
+  `GET /api/discounts`, `GET /api/settings`, `POST /api/orders`. Métricas del
+  panel: `GET /api/admin/metrics`.
 - **Entidades:** AdminUser, SiteSettings (fila única), Product (con `params`,
   `sizeStocks`, `sizeScaleId`, `supplierId`, `costPrice`),
   ParamGroup/ParamOption, SizeScale, Supplier, Discount + DiscountConfig,

@@ -133,6 +133,14 @@ export const routes: Routes = [
         title: 'Descuentos | Admin',
       },
       {
+        path: 'metricas',
+        loadComponent: () =>
+          import('./features/admin/admin-metrics/admin-metrics.component').then(
+            (m) => m.AdminMetricsComponent
+          ),
+        title: 'Métricas | Admin',
+      },
+      {
         path: 'ajustes',
         loadComponent: () =>
           import('./features/admin/admin-settings/admin-settings.component').then(
