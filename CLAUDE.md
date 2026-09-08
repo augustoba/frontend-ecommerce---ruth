@@ -35,11 +35,13 @@ si conviene tocar también este archivo o el `README.md`).
   el chat. Es estilo de escritura rápido, **no** indica nivel técnico bajo.
 - Pide cambios **de a uno, iterativos y concretos** ("agregá imágenes",
   "necesito que el stock sea por talle"), no specs grandes de una vez.
-- **Corta el scope explícitamente cuando algo se adelanta.** Instrucción
-  vigente: **"NO HAGAS BACKEND TODAVÍA"** — respetarla y no volver a
-  ofrecer el backend salvo que lo pida. `ProductService` y `AuthService`
-  ya están aislados para poder cambiarlos por llamadas HTTP más adelante
-  sin tocar las pantallas.
+- **Corta el scope explícitamente cuando algo se adelanta.** Trabajar de a
+  un cambio a la vez y no meter cosas que no pidió.
+- **El backend YA arrancó** (2026-09-08): existe `../backend/` (Spring Boot 3
+  + Java 21 + MySQL + JWT) con el CRUD completo del admin. Pero el **frontend
+  todavía NO está conectado** — sigue con datos mock en `localStorage`.
+  `ProductService` / `AuthService` están aislados para el switch a `HttpClient`.
+  Conectar Angular al backend es un paso pendiente y explícito (no adelantarlo).
 
 ## Detalles que no están en el código y conviene recordar
 

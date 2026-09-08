@@ -11,19 +11,24 @@ Ecommerce de indumentaria infantil ("Estilos Pequeños", Argentina).
 del dueño/a. El dueño/a responde por WhatsApp con el alias o link de
 Mercado Pago para coordinar el pago manualmente.
 
-- **Frontend:** Angular — repo actual (`frontend/`), ya desarrollado.
-- **Backend:** Java — carpeta hermana `../backend/`, **todavía sin
-  empezar** (decisión explícita del cliente: "no hagas backend todavía").
-  Hoy todo corre 100% en el navegador con datos de ejemplo.
+- **Frontend:** Angular — repo actual (`frontend-ecommerce---ruth/`), ya
+  desarrollado. **Todavía usa datos mock en `localStorage`** — NO está
+  conectado al backend.
+- **Backend:** Java 21 + Spring Boot 3.3 + MySQL 8, carpeta hermana
+  `../backend/` — **v1 hecha (2026-09-08)**: CRUD completo del admin + catálogo
+  público + login JWT. Ver sección 12 y `../backend/README.md`.
+- **Pendiente:** conectar el frontend al backend (reemplazar los services de
+  `localStorage` por `HttpClient`).
 
 ## 2. Stack técnico y decisiones tomadas
 
 | Decisión | Elegido | Alternativas descartadas |
 |---|---|---|
-| Framework | Angular 19 (standalone components + signals) | — |
+| Framework front | Angular 19 (standalone components + signals) | — |
 | Estilos | Tailwind CSS v4 | Angular Material, Bootstrap, CSS plano |
-| Datos de productos | Mock en código + `localStorage` (sin API todavía) | Preparar capa HTTP desde ya |
-| Alcance v1 | Catálogo+filtros, carrito+checkout WhatsApp, panel admin simple | — |
+| Datos de productos (front) | Mock en código + `localStorage` (todavía sin conectar al backend) | Preparar capa HTTP desde ya |
+| Backend | Java 21 + Spring Boot 3.3 + MySQL 8 + JWT (Maven) | Node/Nest, Quarkus, Gradle, Postgres/H2 |
+| Alcance v1 | Catálogo+filtros, carrito+checkout WhatsApp, panel admin, API backend | — |
 | Pasarela de pago | Ninguna — checkout por WhatsApp + alias/link MP manual | Mercado Pago Checkout Pro/API |
 
 Sin dependencias de pasarela de pago en el proyecto.
@@ -310,3 +315,32 @@ src/app/
     producto tiene `sizeScaleId`, y en el alta se elige la escala (ropa bebé,
     niños, adultos, calzado…). El filtro de talle del catálogo se volvió
     dinámico. Se dejó anotado un pendiente de pantalla de métricas.
+20. **Se arrancó el backend** (`../backend/`, sección 12): Spring Boot 3.3 +
+    Java 21 + MySQL 8 + JWT. CRUD completo del admin, catálogo público, y
+    creación de pedidos con cálculo de descuentos server-side. El frontend
+    **todavía no está conectado** (sigue con `localStorage`).
+
+## 12. Backend (`../backend/`)
+
+- **Qué es:** API REST en Java 21 / Spring Boot 3.3 / MySQL 8. Proyecto
+  separado, con su propio git. Docs interactivas en `/swagger-ui.html`.
+- **Auth:** `POST /api/auth/login` (usuario/clave del admin, por defecto los
+  mismos que el front: `admin` / `cambiar-esta-clave`) devuelve un **JWT** que
+  hay que mandar como `Authorization: Bearer <token>` en todos los
+  `/api/admin/**`. Los endpoints públicos (`/api/products`, `/api/param-groups`,
+  `/api/size-scales`, `/api/hero-slides`, `POST /api/orders`) no piden token.
+- **Entidades:** Product (con `params`, `sizeStocks`, `sizeScaleId`, `supplierId`,
+  `costPrice`), ParamGroup/ParamOption, SizeScale, Supplier, Discount +
+  DiscountConfig, Order/OrderLine, HeroSlide. Reflejan 1:1 los modelos del front.
+- **Descuentos:** `DiscountService.computeForLines` es el port de
+  `discount.service.ts` (`computeCartDiscount`) — se aplica al crear el pedido.
+- **Código de pedido:** `PED-0001`… derivado de un correlativo `number`.
+- **Seed:** al primer arranque carga parametrías, escalas, 2 descuentos y 10
+  productos de ejemplo (`DataSeeder`). Se apaga con `SEED_ENABLED=false`.
+- **Correr:** `cd ../backend && ./mvnw spring-boot:run` con `DB_USER`/`DB_PASSWORD`
+  (MySQL) y `JWT_SECRET` en el entorno (o `application-local.yml`). Detalle en
+  `../backend/README.md`.
+- **DB:** `spring.jpa.hibernate.ddl-auto=update` (Hibernate crea/actualiza el
+  esquema). Flyway queda pendiente.
+- **Pendientes backend:** Flyway, hashear la clave del admin, perfil de
+  producción/deploy, y **conectar el frontend Angular**.
