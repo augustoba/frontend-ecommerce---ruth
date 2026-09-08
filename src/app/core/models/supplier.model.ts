@@ -10,8 +10,7 @@ export interface Supplier {
   phone?: string;
   address?: string;
   notes?: string;
-  createdAt: string;
 }
 
 /** Datos con los que se crea/edita un proveedor */
-export type SupplierInput = Omit<Supplier, 'id' | 'createdAt'>;
+export type SupplierInput = Omit<Supplier, 'id'>;

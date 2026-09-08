@@ -1,20 +1,20 @@
-<div class="flex items-center justify-between mb-2">
-  <h1 class="font-display font-extrabold text-2xl text-stone-800">Escalas de talle</h1>
-  <button
-    type="button"
-    (click)="resetDefaults()"
-    class="text-sm font-semibold text-stone-400 hover:text-stone-600"
-  >
-    Restaurar ejemplo
-  </button>
-</div>
+<h1 class="font-display font-extrabold text-2xl text-stone-800 mb-2">Escalas de talle</h1>
 <p class="text-sm text-stone-500 mb-6 max-w-2xl">
   Conjuntos de talles con nombre. La ropa de bebé va por edad, la de niños por número,
   el calzado por otro número… Al cargar un producto elegís la escala y aparecen esos
   talles. Podés editar o agregar valores a cualquier escala.
 </p>
 
-<div class="flex flex-col gap-5">
+@if (status() === 'loading' && !scales().length) {
+  <p class="text-sm text-stone-400">Cargando escalas…</p>
+} @else if (status() === 'error') {
+  <div class="bg-white rounded-2xl ring-1 ring-black/5 p-6 text-center">
+    <p class="text-sm text-stone-500 mb-2">No se pudieron cargar las escalas.</p>
+    <button type="button" (click)="reload()" class="text-brand-600 font-semibold hover:underline">Reintentar</button>
+  </div>
+}
+
+<div class="flex flex-col gap-5" [class.opacity-60]="saving()">
   @for (scale of scales(); track scale.id) {
     <div class="bg-white rounded-2xl ring-1 ring-black/5 p-5">
       <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mb-4">

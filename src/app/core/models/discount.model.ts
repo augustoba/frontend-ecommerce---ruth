@@ -1,10 +1,11 @@
 /**
  * Descuentos configurables desde /admin/promociones. Dos tipos:
- *  - 'monto': por monto de compra ("compra mayor a $X → Y% off"), a nivel carrito.
- *  - 'parametro': por parametría ("todo lo de bebé 15% off"), a nivel de cada
+ *  - 'MONTO': por monto de compra ("compra mayor a $X → Y% off"), a nivel carrito.
+ *  - 'PARAMETRO': por parametría ("todo lo de bebé 15% off"), a nivel de cada
  *     ítem del carrito cuyo producto tenga esa opción.
+ * (En MAYÚSCULA porque así los devuelve/espera el backend.)
  */
-export type DiscountKind = 'monto' | 'parametro';
+export type DiscountKind = 'MONTO' | 'PARAMETRO';
 
 export interface Discount {
   id: string;
@@ -25,11 +26,11 @@ export interface Discount {
 
 /**
  * Cómo se combinan el descuento por parámetro y el descuento por monto:
- *  - 'mejor': se aplica el que más ahorra (no se acumulan).
- *  - 'combinar': primero el de parámetro por ítem, y el de monto sobre el
+ *  - 'MEJOR': se aplica el que más ahorra (no se acumulan).
+ *  - 'COMBINAR': primero el de parámetro por ítem, y el de monto sobre el
  *     subtotal ya rebajado.
  */
-export type DiscountCombineMode = 'mejor' | 'combinar';
+export type DiscountCombineMode = 'MEJOR' | 'COMBINAR';
 
 /** Detalle de cada descuento aplicado, para mostrarlo en el carrito */
 export interface DiscountBreakdownLine {

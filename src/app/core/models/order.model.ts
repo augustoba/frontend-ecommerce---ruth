@@ -1,8 +1,11 @@
 import { ProductSize } from './product.model';
 
-export type OrderStatus = 'pendiente' | 'procesado' | 'cancelado';
+/** Estados que devuelve el backend (en MAYÚSCULA). */
+export type OrderStatus = 'PENDIENTE' | 'PROCESADO' | 'CANCELADO';
 
 export interface OrderLine {
+  /** id de la línea (lo asigna el backend) */
+  id: string;
   productId: string;
   /** Nombre del producto al momento del pedido (por si luego se edita/borra el producto) */
   productName: string;

@@ -1,6 +1,13 @@
 <h1 class="font-display font-extrabold text-2xl text-stone-800 mb-6">Pedidos</h1>
 
-@if (orders().length) {
+@if (status() === 'loading' && !orders().length) {
+  <app-skeleton variant="row" [count]="6" />
+} @else if (status() === 'error' && !orders().length) {
+  <div class="text-center py-16 text-stone-400 bg-white rounded-2xl ring-1 ring-black/5">
+    <p class="font-semibold mb-2">No se pudieron cargar los pedidos.</p>
+    <button type="button" (click)="reload()" class="text-brand-600 font-semibold hover:underline">Reintentar</button>
+  </div>
+} @else if (orders().length) {
   <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-x-auto">
     <table class="w-full text-sm min-w-[640px]">
       <thead>
@@ -24,15 +31,15 @@
             <td class="p-4 text-stone-600">{{ order.total | currency: 'ARS' : 'symbol' : '1.0-0' }}</td>
             <td class="p-4">
               <span
-                [class.bg-amber-100]="order.status === 'pendiente'"
-                [class.text-amber-700]="order.status === 'pendiente'"
-                [class.bg-mint-100]="order.status === 'procesado'"
-                [class.text-mint-600]="order.status === 'procesado'"
-                [class.bg-stone-100]="order.status === 'cancelado'"
-                [class.text-stone-500]="order.status === 'cancelado'"
+                [class.bg-amber-100]="order.status === 'PENDIENTE'"
+                [class.text-amber-700]="order.status === 'PENDIENTE'"
+                [class.bg-mint-100]="order.status === 'PROCESADO'"
+                [class.text-mint-600]="order.status === 'PROCESADO'"
+                [class.bg-stone-100]="order.status === 'CANCELADO'"
+                [class.text-stone-500]="order.status === 'CANCELADO'"
                 class="text-xs font-bold px-2.5 py-1 rounded-full capitalize"
               >
-                {{ order.status }}
+                {{ order.status.toLowerCase() }}
               </span>
             </td>
             <td class="p-4 text-right">

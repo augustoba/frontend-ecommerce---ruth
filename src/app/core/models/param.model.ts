@@ -23,7 +23,6 @@ export interface ParamGroup {
   /** true = grupo de sistema: no se puede eliminar (sí editar sus opciones) */
   system: boolean;
   options: ParamOption[];
-  createdAt: string;
 }
 
 /** Opciones elegidas por un producto: { [groupId]: optionId[] } */

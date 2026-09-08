@@ -34,13 +34,14 @@ export class AdminProductFormComponent {
   readonly paramGroups = this.paramService.groups;
   readonly suppliers = this.supplierService.suppliers;
   readonly sizeScales = this.sizeScaleService.scales;
+  readonly saving = this.productService.saving;
 
   private readonly editingId = this.route.snapshot.paramMap.get('id');
   readonly isEditMode = !!this.editingId;
 
-  private readonly editingProduct: Product | undefined = this.editingId
-    ? this.productService.getById(this.editingId)
-    : undefined;
+  /** El producto a editar lo trae el `productResolver` (route data). */
+  private readonly editingProduct: Product | undefined =
+    (this.route.snapshot.data['product'] as Product | null) ?? undefined;
 
   readonly notFound = this.isEditMode && !this.editingProduct;
 
@@ -125,6 +126,13 @@ export class AdminProductFormComponent {
   }
 
   readonly submitted = signal(false);
+
+  constructor() {
+    // el form usa parametrías, proveedores y escalas: asegurarse de que estén cargados
+    this.paramService.ensureLoaded();
+    this.sizeScaleService.ensureLoaded();
+    this.supplierService.ensureLoaded();
+  }
 
   readonly sizeScaleInvalid = computed(
     () => this.submitted() && !this.formValue().sizeScaleId
@@ -243,12 +251,11 @@ export class AdminProductFormComponent {
       sizeStocks: Array.from(this.sizeStocks(), ([size, stock]) => ({ size, stock })),
     };
 
+    const done = () => this.router.navigate(['/admin/productos']);
     if (this.isEditMode && this.editingId) {
-      this.productService.update(this.editingId, input);
+      this.productService.update(this.editingId, input, done);
     } else {
-      this.productService.create(input);
+      this.productService.create(input, done);
     }
-
-    this.router.navigate(['/admin/productos']);
   }
 }

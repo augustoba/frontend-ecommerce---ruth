@@ -1,21 +1,37 @@
-import { Injectable, signal } from '@angular/core';
-import { SizeScale, defaultSizeScales } from '../models/size-scale.model';
-
-const STORAGE_KEY = 'pp_size_scales';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { SizeScale } from '../models/size-scale.model';
+import { CollectionStore } from '../state/collection-store';
+import { apiUrl } from '../config/site-config';
 
 /**
- * Escalas de talle editables (ropa bebé / niños / adultos, calzado, …).
- * Mismo patrón que ParamService / SupplierService: signal + localStorage.
+ * Escalas de talle. Lee de `/api/size-scales` (público); CRUD contra
+ * `/api/admin/size-scales/**`. Los valores de una escala se editan mandando la
+ * lista completa a `PUT /{id}/values`.
  */
 @Injectable({ providedIn: 'root' })
 export class SizeScaleService {
-  private readonly scalesSignal = signal<SizeScale[]>(this.loadInitial());
+  private readonly http = inject(HttpClient);
+  private readonly store = new CollectionStore<SizeScale>(this.http, '/size-scales');
 
-  readonly scales = this.scalesSignal.asReadonly();
+  readonly scales = this.store.items;
+  readonly status = this.store.status;
+  readonly loading = this.store.loading;
+  readonly errored = this.store.errored;
+  readonly saving = this.store.saving;
+  readonly reload = this.store.reload;
+
+  constructor() {
+    this.store.ensureLoaded();
+  }
+
+  ensureLoaded(): void {
+    this.store.ensureLoaded();
+  }
 
   getById(id: string | undefined): SizeScale | undefined {
     if (!id) return undefined;
-    return this.scalesSignal().find((s) => s.id === id);
+    return this.scales().find((s) => s.id === id);
   }
 
   /** Talles de una escala (o [] si no existe) */
@@ -25,99 +41,48 @@ export class SizeScaleService {
 
   // --- Escalas ---
 
-  add(name: string): SizeScale {
-    const scale: SizeScale = {
-      id: `escala-${slug(name)}-${Math.random().toString(36).slice(2, 6)}`,
-      name: name.trim(),
-      values: [],
-      system: false,
-      createdAt: new Date().toISOString(),
-    };
-    this.scalesSignal.update((list) => [...list, scale]);
-    this.persist();
-    return scale;
+  add(name: string): void {
+    const clean = name.trim();
+    if (!clean) return;
+    this.store.mutate(this.http.post(apiUrl('/admin/size-scales'), { name: clean, values: [] }));
   }
 
   updateName(id: string, name: string): void {
     const clean = name.trim();
     if (!clean) return;
-    this.scalesSignal.update((list) =>
-      list.map((s) => (s.id === id ? { ...s, name: clean } : s))
-    );
-    this.persist();
+    this.store.mutate(this.http.put(apiUrl(`/admin/size-scales/${id}`), { name: clean }));
   }
 
   remove(id: string): void {
-    this.scalesSignal.update((list) => list.filter((s) => s.id !== id || s.system));
-    this.persist();
+    this.store.mutate(this.http.delete(apiUrl(`/admin/size-scales/${id}`)));
   }
 
-  // --- Valores ---
+  // --- Valores (se manda la lista completa) ---
 
   addValue(id: string, value: string): void {
     const clean = value.trim();
-    if (!clean) return;
-    this.scalesSignal.update((list) =>
-      list.map((s) =>
-        s.id === id && !s.values.includes(clean)
-          ? { ...s, values: [...s.values, clean] }
-          : s
-      )
-    );
-    this.persist();
+    const current = this.valuesFor(id);
+    if (!clean || current.includes(clean)) return;
+    this.replaceValues(id, [...current, clean]);
   }
 
   renameValue(id: string, oldValue: string, newValue: string): void {
     const clean = newValue.trim();
     if (!clean) return;
-    this.scalesSignal.update((list) =>
-      list.map((s) =>
-        s.id === id
-          ? { ...s, values: s.values.map((v) => (v === oldValue ? clean : v)) }
-          : s
-      )
+    this.replaceValues(
+      id,
+      this.valuesFor(id).map((v) => (v === oldValue ? clean : v))
     );
-    this.persist();
   }
 
   removeValue(id: string, value: string): void {
-    this.scalesSignal.update((list) =>
-      list.map((s) => (s.id === id ? { ...s, values: s.values.filter((v) => v !== value) } : s))
+    this.replaceValues(
+      id,
+      this.valuesFor(id).filter((v) => v !== value)
     );
-    this.persist();
   }
 
-  resetToDefaults(): void {
-    this.scalesSignal.set(defaultSizeScales());
-    this.persist();
+  private replaceValues(id: string, values: string[]): void {
+    this.store.mutate(this.http.put(apiUrl(`/admin/size-scales/${id}/values`), { values }));
   }
-
-  private loadInitial(): SizeScale[] {
-    if (typeof localStorage === 'undefined') return defaultSizeScales();
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return defaultSizeScales();
-      const parsed = JSON.parse(raw) as SizeScale[];
-      return Array.isArray(parsed) && parsed.length ? parsed : defaultSizeScales();
-    } catch {
-      return defaultSizeScales();
-    }
-  }
-
-  private persist(): void {
-    if (typeof localStorage === 'undefined') return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.scalesSignal()));
-  }
-}
-
-function slug(text: string): string {
-  return (
-    text
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-      .slice(0, 24) || 'x'
-  );
 }

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { adminGuard } from './core/guards/admin.guard';
+import { productResolver } from './features/admin/admin-product-form/product.resolver';
 
 export const routes: Routes = [
   {
@@ -55,6 +56,7 @@ export const routes: Routes = [
           import('./features/admin/admin-product-form/admin-product-form.component').then(
             (m) => m.AdminProductFormComponent
           ),
+        resolve: { product: productResolver },
         title: 'Nuevo producto | Admin',
       },
       {
@@ -63,6 +65,7 @@ export const routes: Routes = [
           import('./features/admin/admin-product-form/admin-product-form.component').then(
             (m) => m.AdminProductFormComponent
           ),
+        resolve: { product: productResolver },
         title: 'Editar producto | Admin',
       },
       {

@@ -18,6 +18,14 @@ export class AdminPromosComponent {
   readonly paramDiscounts = this.discountService.paramDiscounts;
   readonly combineMode = this.discountService.combineMode;
   readonly groups = this.paramService.groups;
+  readonly status = this.discountService.status;
+  readonly saving = this.discountService.saving;
+  readonly reload = () => this.discountService.reload();
+
+  constructor() {
+    this.discountService.ensureLoaded();
+    this.paramService.ensureLoaded();
+  }
 
   // --- por monto ---
   readonly newMinAmount = signal<number>(0);
@@ -69,7 +77,7 @@ export class AdminPromosComponent {
       return;
     }
     this.discountService.add({
-      kind: 'monto',
+      kind: 'MONTO',
       minAmount: this.newMinAmount(),
       discountPercent: this.newAmountPercent(),
       enabled: true,
@@ -111,7 +119,7 @@ export class AdminPromosComponent {
       return;
     }
     this.discountService.add({
-      kind: 'parametro',
+      kind: 'PARAMETRO',
       groupId: this.newGroupId(),
       optionId: this.newOptionId(),
       discountPercent: this.newParamPercent(),

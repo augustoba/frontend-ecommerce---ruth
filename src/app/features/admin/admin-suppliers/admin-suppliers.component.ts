@@ -27,6 +27,14 @@ export class AdminSuppliersComponent {
   private readonly productService = inject(ProductService);
 
   readonly suppliers = this.supplierService.suppliers;
+  readonly status = this.supplierService.status;
+  readonly saving = this.supplierService.saving;
+  readonly reload = () => this.supplierService.reload();
+
+  constructor() {
+    this.supplierService.ensureLoaded();
+    this.productService.ensureAdminLoaded();
+  }
 
   /** id del proveedor en edición, o null si el form está en modo "nuevo" */
   readonly editingId = signal<string | null>(null);

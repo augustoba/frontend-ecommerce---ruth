@@ -26,6 +26,9 @@ export class ProductDetailPageComponent {
     initialValue: this.route.snapshot.paramMap,
   });
 
+  readonly catalogStatus = this.productService.catalogStatus;
+  readonly reloadCatalog = () => this.productService.reloadCatalog();
+
   readonly product = computed(() => {
     const id = this.routeParamMap().get('id') ?? '';
     return this.productService.getById(id);

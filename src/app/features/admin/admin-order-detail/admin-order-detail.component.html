@@ -13,15 +13,15 @@
       </p>
     </div>
     <span
-      [class.bg-amber-100]="order.status === 'pendiente'"
-      [class.text-amber-700]="order.status === 'pendiente'"
-      [class.bg-mint-100]="order.status === 'procesado'"
-      [class.text-mint-600]="order.status === 'procesado'"
-      [class.bg-stone-100]="order.status === 'cancelado'"
-      [class.text-stone-500]="order.status === 'cancelado'"
+      [class.bg-amber-100]="order.status === 'PENDIENTE'"
+      [class.text-amber-700]="order.status === 'PENDIENTE'"
+      [class.bg-mint-100]="order.status === 'PROCESADO'"
+      [class.text-mint-600]="order.status === 'PROCESADO'"
+      [class.bg-stone-100]="order.status === 'CANCELADO'"
+      [class.text-stone-500]="order.status === 'CANCELADO'"
       class="text-sm font-bold px-3 py-1.5 rounded-full capitalize"
     >
-      {{ order.status }}
+      {{ order.status.toLowerCase() }}
     </span>
   </div>
 
@@ -39,7 +39,7 @@
   </div>
 
   <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-hidden">
-    @if (order.status === 'pendiente') {
+    @if (order.status === 'PENDIENTE') {
       <div class="flex flex-wrap items-center gap-3 p-4 border-b border-stone-100 bg-stone-50/60">
         <p class="text-sm text-stone-500 mr-auto">
           Tildá los ítems que vas a entregar. Los que dejes destildados quedan cancelados y no descuentan stock.
@@ -71,7 +71,7 @@
                 <input
                   type="checkbox"
                   [checked]="line.accepted"
-                  [disabled]="order.status !== 'pendiente'"
+                  [disabled]="order.status !== 'PENDIENTE'"
                   (change)="toggleLine($index)"
                   class="w-4 h-4 accent-mint-500"
                 />
@@ -107,7 +107,7 @@
     </div>
   </div>
 
-  @if (order.status === 'pendiente') {
+  @if (order.status === 'PENDIENTE') {
     <div class="flex flex-col sm:flex-row gap-3 mt-6">
       <button
         type="button"
@@ -125,7 +125,7 @@
         Cancelar pedido completo
       </button>
     </div>
-  } @else if (order.status === 'procesado') {
+  } @else if (order.status === 'PROCESADO') {
     <p class="text-sm text-stone-500 mt-4">
       ✅ Pedido procesado el {{ order.processedAt | date: 'dd/MM/yyyy HH:mm' }} — el stock de los ítems tildados ya
       fue descontado.
@@ -135,6 +135,8 @@
       Pedido cancelado el {{ order.processedAt | date: 'dd/MM/yyyy HH:mm' }}. No se tocó el stock.
     </p>
   }
+} @else if (ordersStatus() === 'loading') {
+  <p class="text-sm text-stone-400 py-20 text-center">Cargando el pedido…</p>
 } @else {
   <div class="text-center py-20 text-stone-400">
     <p class="text-4xl mb-3">🔍</p>

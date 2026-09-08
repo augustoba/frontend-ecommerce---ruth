@@ -117,9 +117,10 @@
         <button
           type="button"
           (click)="sendOrder()"
-          class="mt-5 w-full flex items-center justify-center gap-2 bg-mint-500 hover:bg-mint-600 text-white font-bold py-3.5 rounded-full transition-colors text-lg"
+          [disabled]="sending()"
+          class="mt-5 w-full flex items-center justify-center gap-2 bg-mint-500 hover:bg-mint-600 disabled:bg-stone-300 disabled:cursor-wait text-white font-bold py-3.5 rounded-full transition-colors text-lg"
         >
-          <span aria-hidden="true">💬</span> Comprar por WhatsApp
+          <span aria-hidden="true">💬</span> {{ sending() ? 'Creando el pedido…' : 'Comprar por WhatsApp' }}
         </button>
         <p class="text-xs text-stone-400 text-center mt-2">
           Se abre WhatsApp con tu pedido armado. Después de enviarlo, te pasamos el alias o link de Mercado Pago para coordinar el pago.

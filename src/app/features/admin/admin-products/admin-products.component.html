@@ -8,8 +8,15 @@
   </a>
 </div>
 
-@if (products().length) {
-  <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-x-auto">
+@if (status() === 'loading' && !products().length) {
+  <app-skeleton variant="row" [count]="8" />
+} @else if (status() === 'error' && !products().length) {
+  <div class="text-center py-16 text-stone-400 bg-white rounded-2xl ring-1 ring-black/5">
+    <p class="font-semibold mb-2">No se pudieron cargar los productos.</p>
+    <button type="button" (click)="reload()" class="text-brand-600 font-semibold hover:underline">Reintentar</button>
+  </div>
+} @else if (products().length) {
+  <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-x-auto" [class.opacity-60]="saving()">
     <table class="w-full text-sm min-w-[900px]">
       <thead>
         <tr class="text-left text-stone-500 border-b border-stone-100">

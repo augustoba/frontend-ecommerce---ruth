@@ -7,6 +7,13 @@ export const SITE_CONFIG = {
   storeName: 'Estilos Pequeños',
 
   /**
+   * Base del backend. Vacío = usa el proxy del dev-server (`ng serve` redirige
+   * `/api/*` a http://localhost:8080). En producción, poné acá la URL del
+   * backend (ej: 'https://api.estilospequenos.com') si va en otro dominio.
+   */
+  apiBaseUrl: '',
+
+  /**
    * Número de WhatsApp del dueño/a del local, en formato internacional
    * SIN espacios, SIN "+" y SIN guiones. Ejemplo Argentina (Buenos Aires,
    * celular): país 54 + 9 + código de área sin 0 + número sin 15.
@@ -24,16 +31,10 @@ export const SITE_CONFIG = {
     instagram: 'estilospequenos_',
     facebookUrl: 'https://www.facebook.com/share/1NZXdYgick/',
   },
-
-  /**
-   * Credenciales del panel de administración. Esto es un login MUY simple
-   * pensado solo para esta primera versión sin backend: evita que cualquiera
-   * entre a /admin por casualidad, pero NO es seguro (las credenciales viven
-   * en el código del frontend). Cuando el backend en Java esté listo,
-   * hay que reemplazar AuthService por un login real contra la API.
-   */
-  admin: {
-    username: 'admin',
-    password: 'cambiar-esta-clave',
-  },
 };
+
+/** Arma la URL de un endpoint del backend: apiUrl('/products') → '/api/products' */
+export function apiUrl(path: string): string {
+  const p = path.startsWith('/') ? path : `/${path}`;
+  return `${SITE_CONFIG.apiBaseUrl}/api${p}`;
+}

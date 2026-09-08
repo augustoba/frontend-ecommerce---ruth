@@ -1,20 +1,20 @@
-<div class="flex items-center justify-between mb-2">
-  <h1 class="font-display font-extrabold text-2xl text-stone-800">Parametrías</h1>
-  <button
-    type="button"
-    (click)="resetDefaults()"
-    class="text-sm font-semibold text-stone-400 hover:text-stone-600"
-  >
-    Restaurar ejemplo
-  </button>
-</div>
+<h1 class="font-display font-extrabold text-2xl text-stone-800 mb-2">Parametrías</h1>
 <p class="text-sm text-stone-500 mb-6 max-w-2xl">
   Grupos de clasificación para las prendas (público, tipo de prenda, estación…). Se usan al cargar
   productos y para armar descuentos. "Varias opciones" permite elegir más de una por prenda (ej:
   una prenda de primavera y verano). "Filtro en la tienda" la muestra como filtro en la home.
 </p>
 
-<div class="flex flex-col gap-5">
+@if (status() === 'loading' && !groups().length) {
+  <p class="text-sm text-stone-400">Cargando parametrías…</p>
+} @else if (status() === 'error') {
+  <div class="bg-white rounded-2xl ring-1 ring-black/5 p-6 text-center">
+    <p class="text-sm text-stone-500 mb-2">No se pudieron cargar las parametrías.</p>
+    <button type="button" (click)="reload()" class="text-brand-600 font-semibold hover:underline">Reintentar</button>
+  </div>
+}
+
+<div class="flex flex-col gap-5" [class.opacity-60]="saving()">
   @for (group of groups(); track group.id) {
     <div class="bg-white rounded-2xl ring-1 ring-black/5 p-5">
       <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mb-4">

@@ -12,6 +12,13 @@ export class AdminParamsComponent {
   private readonly paramService = inject(ParamService);
 
   readonly groups = this.paramService.groups;
+  readonly status = this.paramService.status;
+  readonly saving = this.paramService.saving;
+  readonly reload = () => this.paramService.reload();
+
+  constructor() {
+    this.paramService.ensureLoaded();
+  }
 
   /** Texto del nuevo valor por cada grupo (id del grupo → texto tipeado) */
   readonly newOptionLabel = signal<Record<string, string>>({});
@@ -81,12 +88,6 @@ export class AdminParamsComponent {
   removeOption(groupId: string, optionId: string, label: string): void {
     if (window.confirm(`¿Eliminar la opción "${label}"?`)) {
       this.paramService.removeOption(groupId, optionId);
-    }
-  }
-
-  resetDefaults(): void {
-    if (window.confirm('¿Restaurar las parametrías de ejemplo? Se pierden los cambios.')) {
-      this.paramService.resetToDefaults();
     }
   }
 }

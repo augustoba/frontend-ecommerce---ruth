@@ -11,14 +11,13 @@ Ecommerce de indumentaria infantil ("Estilos Pequeños", Argentina).
 del dueño/a. El dueño/a responde por WhatsApp con el alias o link de
 Mercado Pago para coordinar el pago manualmente.
 
-- **Frontend:** Angular — repo actual (`frontend-ecommerce---ruth/`), ya
-  desarrollado. **Todavía usa datos mock en `localStorage`** — NO está
-  conectado al backend.
+- **Frontend:** Angular — repo actual (`frontend-ecommerce---ruth/`).
+  **Conectado al backend (2026-09-08)**: todos los services usan `HttpClient`
+  contra `/api/*` (proxy del dev-server → `localhost:8080`). Solo el carrito
+  y el token JWT quedan en `localStorage`.
 - **Backend:** Java 21 + Spring Boot 3.3 + MySQL 8, carpeta hermana
-  `../backend/` — **v1 hecha (2026-09-08)**: CRUD completo del admin + catálogo
-  público + login JWT. Ver sección 12 y `../backend/README.md`.
-- **Pendiente:** conectar el frontend al backend (reemplazar los services de
-  `localStorage` por `HttpClient`).
+  `../backend/`. CRUD completo del admin + catálogo público + login JWT.
+  Ver sección 12 y `../backend/README.md`.
 
 ## 2. Stack técnico y decisiones tomadas
 
@@ -35,15 +34,27 @@ Sin dependencias de pasarela de pago en el proyecto.
 
 ## 3. Cómo correr el proyecto en local
 
+**Necesitás los dos: backend + frontend.**
+
 ```bash
-cd "C:\proyectos\ecommerce ruth\frontend"
-npm start
+# 1) backend  (con MySQL corriendo)
+cd "C:\Users\august0\Desktop\proyectos\ecommerce ruth\backend"
+./mvnw spring-boot:run          # http://localhost:8080
+
+# 2) frontend
+cd "C:\Users\august0\Desktop\proyectos\ecommerce ruth\frontend-ecommerce---ruth"
+npm start                       # http://localhost:4200
 ```
 
-Abre en `http://localhost:4200`. Live reload activado (recarga sola al
-guardar cambios). Si el puerto está ocupado: `npm start -- --port 4300`.
+El frontend llama a `/api/*` y el dev-server lo redirige al backend
+(`proxy.conf.json` — se toma solo, sin flags). Si el backend está caído,
+la tienda muestra "no se pudo conectar" y estados de error con "reintentar".
 
-Build de producción: `npm run build` → sale en `dist/ecommerce-ninos/`.
+Login del admin: **`admin` / `ruth123`**.
+
+Build de producción del frontend: `npm run build` → `dist/ecommerce-ninos/`.
+En prod, poné la URL del backend en `apiBaseUrl` (site-config.ts) si va en
+otro dominio.
 
 ## 4. Configuración clave — `src/app/core/config/site-config.ts`
 
@@ -53,16 +64,16 @@ este único archivo.**
 | Campo | Valor actual | Qué es |
 |---|---|---|
 | `storeName` | `Estilos Pequeños` | Nombre que se muestra en toda la app |
+| `apiBaseUrl` | `''` (vacío) | Base del backend. Vacío = usa el proxy del dev-server. En prod, la URL del backend si va en otro dominio. |
 | `whatsappNumber` | `5491122334455` | ⚠️ **Placeholder, no es un número real.** Formato: país+área+número sin `+`, espacios ni `15`. Hay que reemplazarlo por el número real del dueño/a antes de publicar. |
-| `admin.username` | `admin` | Usuario del panel `/admin` |
-| `admin.password` | `cambiar-esta-clave` | ⚠️ **Placeholder — cambiarla.** Login simple pensado solo para esta v1 sin backend (las credenciales viven en el código del frontend, no es seguridad real). Cuando exista el backend Java hay que reemplazar `AuthService` por un login contra la API. |
 | `about` | texto "Somos Estilos Pequeños... hace 5 años..." | Texto del "Sobre nosotros" del pie de página |
 | `redes.instagram` | `estilospequenos_` | Usuario de Instagram (sin @) — real, confirmado por el cliente |
 | `redes.facebookUrl` | `https://www.facebook.com/share/1NZXdYgick/` | Link de Facebook — real, confirmado por el cliente |
 
 ## 5. Panel de administración
 
-- URL: `http://localhost:4200/admin` (pide login).
+- URL: `http://localhost:4200/admin` (pide login: `admin` / `ruth123`, valida
+  contra el backend y guarda un JWT en `localStorage`).
 - Permite: crear/editar/ocultar/eliminar productos, con **stock manejado
   por talle** (cada talle tiene su propia cantidad, no un stock único por
   producto) y **clasificación por parametrías** (ver sección 9ter).
@@ -103,23 +114,25 @@ este único archivo.**
 ```
 src/app/
   core/
-    config/site-config.ts       # nombre, WhatsApp, credenciales admin, redes (ver sección 4)
-    assets/clothing-icons.ts    # generador de imágenes SVG de ejemplo
-    utils/image-resize.ts       # redimensiona fotos subidas antes de guardarlas
-    models/                     # Product (params + sizeScaleId + supplierId/costPrice opc.), CartItem, Order, ParamGroup, Discount, Supplier, SizeScale
-    services/
-      product.service.ts        # catálogo (mock + localStorage), CRUD admin, migra `category`→params y talles→sizeScaleId
-      param.service.ts          # parametrías (grupos + opciones) editables — localStorage
-      size-scale.service.ts     # escalas de talle editables (ropa bebé/niños/adultos, calzado…) — localStorage
-      supplier.service.ts       # proveedores del local (info interna admin) — localStorage
-      cart.service.ts           # carrito (signals + localStorage)
-      whatsapp.service.ts       # arma el mensaje (código + subtotal/descuento/total) y el link wa.me
-      order.service.ts          # pedidos con código, confirmar/cancelar, descuenta stock, aplica descuentos
-      discount.service.ts       # descuentos por monto y por parametría + modo de combinación (localStorage)
-      hero-slides.service.ts    # fotos del carrusel de la home (localStorage)
-      auth.service.ts           # login simple del panel admin
-    guards/admin.guard.ts       # protege /admin/*
-  shared/components/            # header, footer, product-card, quantity-stepper, hero-carousel
+    config/site-config.ts       # storeName, apiBaseUrl, WhatsApp, redes + helper apiUrl()
+    http/                       # auth.interceptor (Bearer en /api/admin/**), error.interceptor (401→login, toasts)
+    state/collection-store.ts   # store genérico: items + status(loading/error) + saving + reload; lo componen los services
+    utils/image-resize.ts       # redimensiona fotos del carrusel antes de subirlas
+    models/                     # Product, CartItem, Order (status MAYÚSCULA), ParamGroup, Discount (kind MAYÚSCULA), Supplier, SizeScale
+    services/                   # TODOS via HttpClient contra /api/*  (proxy → :8080)
+      product.service.ts        # 2 stores: /api/products (público, activos) y /api/admin/products (todos)
+      param.service.ts          # /api/param-groups (público) + /api/admin/param-groups/** (CRUD)
+      size-scale.service.ts     # /api/size-scales + /api/admin/size-scales/**
+      supplier.service.ts       # /api/admin/suppliers/**  (todo admin)
+      discount.service.ts       # /api/discounts (público, para el preview) + /api/admin/discounts/** ; computeCartDiscount client-side
+      order.service.ts          # /api/admin/orders + POST /api/orders (checkout público)
+      hero-slides.service.ts    # /api/hero-slides + /api/admin/hero-slides/**
+      cart.service.ts           # carrito: SOLO localStorage; items = computed(entradas ⋈ productos del catálogo)
+      whatsapp.service.ts       # arma el mensaje y el link wa.me del pedido
+      auth.service.ts           # POST /api/auth/login → JWT en localStorage; isAuthenticated()
+      toast.service.ts          # cola de toasts (éxito/error)
+    guards/admin.guard.ts       # protege /admin/* (isAuthenticated)
+  shared/components/            # header, footer, product-card, quantity-stepper, hero-carousel, toast, skeleton
   features/
     catalog/catalog-page/       # home: hero + carrusel + filtros + grilla
     product-detail/             # ficha de producto (talle con stock, cantidad, agregar al carrito)
@@ -317,8 +330,15 @@ src/app/
     dinámico. Se dejó anotado un pendiente de pantalla de métricas.
 20. **Se arrancó el backend** (`../backend/`, sección 12): Spring Boot 3.3 +
     Java 21 + MySQL 8 + JWT. CRUD completo del admin, catálogo público, y
-    creación de pedidos con cálculo de descuentos server-side. El frontend
-    **todavía no está conectado** (sigue con `localStorage`).
+    creación de pedidos con cálculo de descuentos server-side.
+21. **Se conectó el frontend al backend** (2026-09-08): los ~8 services pasaron
+    de `localStorage` a `HttpClient` contra `/api/*` (proxy del dev-server →
+    `:8080`). Auth por JWT (`admin`/`ruth123`), interceptor que lo manda en
+    `/api/admin/**` y que en 401 vuelve al login. Manejo de carga/error
+    "completo": `CollectionStore` genérico (status loading/error/saving),
+    skeletons, estados de error con "reintentar", y toasts. El carrito sigue
+    siendo local. El backend sumó `GET /api/discounts` (público) para el
+    preview del descuento en el carrito.
 
 ## 12. Backend (`../backend/`)
 

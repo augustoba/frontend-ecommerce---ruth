@@ -102,7 +102,17 @@
   </div>
 
   <!-- Grilla de productos -->
-  @if (filteredProducts().length) {
+  @if (catalogStatus() === 'loading' && !filteredProducts().length) {
+    <app-skeleton variant="card" [count]="8" />
+  } @else if (catalogStatus() === 'error') {
+    <div class="text-center py-20 text-stone-500">
+      <p class="text-4xl mb-3">😕</p>
+      <p class="font-semibold">No se pudo cargar el catálogo.</p>
+      <button type="button" (click)="reloadCatalog()" class="mt-3 text-brand-600 font-semibold hover:underline">
+        Reintentar
+      </button>
+    </div>
+  } @else if (filteredProducts().length) {
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
       @for (product of filteredProducts(); track product.id) {
         <app-product-card [product]="product" />

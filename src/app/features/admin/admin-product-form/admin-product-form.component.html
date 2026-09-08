@@ -277,9 +277,10 @@
     <div class="flex gap-3 mt-8">
       <button
         type="submit"
-        class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 px-6 rounded-full transition-colors"
+        [disabled]="saving()"
+        class="bg-brand-500 hover:bg-brand-600 disabled:bg-stone-300 disabled:cursor-wait text-white font-bold py-2.5 px-6 rounded-full transition-colors"
       >
-        {{ isEditMode ? 'Guardar cambios' : 'Crear producto' }}
+        {{ saving() ? 'Guardando…' : isEditMode ? 'Guardar cambios' : 'Crear producto' }}
       </button>
       <a
         routerLink="/admin/productos"

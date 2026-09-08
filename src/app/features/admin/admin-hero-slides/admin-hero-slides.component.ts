@@ -13,10 +13,17 @@ export class AdminHeroSlidesComponent {
   private readonly heroSlidesService = inject(HeroSlidesService);
 
   readonly slides = this.heroSlidesService.slides;
+  readonly status = this.heroSlidesService.status;
+  readonly saving = this.heroSlidesService.saving;
+  readonly reload = () => this.heroSlidesService.reload();
 
   readonly newAlt = signal('');
   readonly uploading = signal(false);
   readonly error = signal<string | null>(null);
+
+  constructor() {
+    this.heroSlidesService.ensureLoaded();
+  }
 
   async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
@@ -27,14 +34,8 @@ export class AdminHeroSlidesComponent {
     this.uploading.set(true);
     try {
       const dataUrl = await resizeImageFile(file);
-      const ok = this.heroSlidesService.add(dataUrl, this.newAlt());
-      if (!ok) {
-        this.error.set(
-          'No se pudo guardar la foto: se llenó el espacio de almacenamiento del navegador. Probá con menos fotos o fotos más livianas.'
-        );
-      } else {
-        this.newAlt.set('');
-      }
+      this.heroSlidesService.add(dataUrl, this.newAlt());
+      this.newAlt.set('');
     } catch {
       this.error.set('No se pudo procesar esa imagen. Probá con otro archivo (JPG o PNG).');
     } finally {
@@ -58,10 +59,5 @@ export class AdminHeroSlidesComponent {
 
   moveDown(id: string): void {
     this.heroSlidesService.move(id, 1);
-  }
-
-  resetToDefault(): void {
-    const confirmed = window.confirm('¿Restaurar las ilustraciones de ejemplo? Se van a borrar las fotos que hayas subido.');
-    if (confirmed) this.heroSlidesService.resetToDefault();
   }
 }

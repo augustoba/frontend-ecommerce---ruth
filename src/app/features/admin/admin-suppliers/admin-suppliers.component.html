@@ -5,10 +5,19 @@
   lo elegís al dar de alta o editar un producto.
 </p>
 
+@if (status() === 'error' && !suppliers().length) {
+  <div class="bg-white rounded-2xl ring-1 ring-black/5 p-6 text-center mb-6">
+    <p class="text-sm text-stone-500 mb-2">No se pudieron cargar los proveedores.</p>
+    <button type="button" (click)="reload()" class="text-brand-600 font-semibold hover:underline">Reintentar</button>
+  </div>
+}
+
 <div class="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
   <!-- Listado -->
   <div class="min-w-0">
-    @if (suppliers().length) {
+    @if (status() === 'loading' && !suppliers().length) {
+      <p class="text-sm text-stone-400">Cargando proveedores…</p>
+    } @else if (suppliers().length) {
       <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-x-auto">
         <table class="w-full text-sm min-w-[560px]">
           <thead>

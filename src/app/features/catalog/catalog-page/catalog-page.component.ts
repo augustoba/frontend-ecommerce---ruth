@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ProductCardComponent } from '../../../shared/components/product-card/product-card.component';
 import { HeroCarouselComponent } from '../../../shared/components/hero-carousel/hero-carousel.component';
+import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
 import { SizeScaleService } from '../../../core/services/size-scale.service';
@@ -10,7 +11,7 @@ import { productHasParam } from '../../../core/models/product.model';
 
 @Component({
   selector: 'app-catalog-page',
-  imports: [FormsModule, ProductCardComponent, HeroCarouselComponent],
+  imports: [FormsModule, ProductCardComponent, HeroCarouselComponent, SkeletonComponent],
   templateUrl: './catalog-page.component.html',
   styleUrl: './catalog-page.component.css',
 })
@@ -22,6 +23,9 @@ export class CatalogPageComponent {
 
   /** Fotos del carrusel de bienvenida — administrables desde /admin/carrusel */
   readonly heroSlides = this.heroSlidesService.slides;
+
+  readonly catalogStatus = this.productService.catalogStatus;
+  readonly reloadCatalog = () => this.productService.reloadCatalog();
 
   /** Grupos de parametrías que se muestran como filtro */
   readonly filterGroups = this.paramService.catalogGroups;

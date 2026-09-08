@@ -16,14 +16,19 @@ export class AdminLoginComponent {
   readonly username = signal('');
   readonly password = signal('');
   readonly error = signal(false);
+  readonly loading = signal(false);
 
   submit(): void {
-    const ok = this.authService.login(this.username(), this.password());
-    if (ok) {
-      this.error.set(false);
-      this.router.navigate(['/admin/productos']);
-    } else {
-      this.error.set(true);
-    }
+    if (this.loading()) return;
+    this.error.set(false);
+    this.loading.set(true);
+    this.authService.login(this.username(), this.password()).subscribe((ok) => {
+      this.loading.set(false);
+      if (ok) {
+        this.router.navigate(['/admin/productos']);
+      } else {
+        this.error.set(true);
+      }
+    });
   }
 }

@@ -5,39 +5,52 @@ import { ProductService } from './product.service';
 
 const STORAGE_KEY = 'pp_cart';
 
-interface PersistedCartItem {
+interface CartEntry {
   productId: string;
   size: ProductSize;
   quantity: number;
 }
 
+/**
+ * Carrito. Vive **solo en `localStorage`** (es local del navegador, no va al
+ * backend). Guarda `{productId, size, quantity}` y arma los `CartItem`
+ * completos juntándolos con los productos del catálogo (`ProductService`), así
+ * se rehidrata solo cuando llegan los productos.
+ */
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly productService = inject(ProductService);
 
-  private readonly itemsSignal = signal<CartItem[]>(this.loadInitial());
+  private readonly entries = signal<CartEntry[]>(this.loadEntries());
 
-  readonly items = this.itemsSignal.asReadonly();
+  /** Ítems completos: entradas del storage + producto del catálogo. */
+  readonly items = computed<CartItem[]>(() => {
+    const products = this.productService.availableProducts();
+    return this.entries()
+      .map((e) => {
+        const product = products.find((p) => p.id === e.productId);
+        return product ? ({ product, size: e.size, quantity: e.quantity } satisfies CartItem) : null;
+      })
+      .filter((i): i is CartItem => i !== null);
+  });
 
   readonly totalItems = computed(() =>
-    this.itemsSignal().reduce((sum, item) => sum + item.quantity, 0)
+    this.items().reduce((sum, item) => sum + item.quantity, 0)
   );
 
   readonly totalPrice = computed(() =>
-    this.itemsSignal().reduce((sum, item) => sum + item.quantity * item.product.price, 0)
+    this.items().reduce((sum, item) => sum + item.quantity * item.product.price, 0)
   );
 
-  readonly isEmpty = computed(() => this.itemsSignal().length === 0);
+  readonly isEmpty = computed(() => this.items().length === 0);
 
   add(product: Product, size: ProductSize, quantity = 1): void {
-    this.itemsSignal.update((items) => {
-      const existing = items.find((i) => i.product.id === product.id && i.size === size);
+    this.entries.update((list) => {
+      const existing = list.find((e) => e.productId === product.id && e.size === size);
       if (existing) {
-        return items.map((i) =>
-          i === existing ? { ...i, quantity: i.quantity + quantity } : i
-        );
+        return list.map((e) => (e === existing ? { ...e, quantity: e.quantity + quantity } : e));
       }
-      return [...items, { product, size, quantity }];
+      return [...list, { productId: product.id, size, quantity }];
     });
     this.persist();
   }
@@ -47,40 +60,30 @@ export class CartService {
       this.remove(productId, size);
       return;
     }
-    this.itemsSignal.update((items) =>
-      items.map((i) =>
-        i.product.id === productId && i.size === size ? { ...i, quantity } : i
-      )
+    this.entries.update((list) =>
+      list.map((e) => (e.productId === productId && e.size === size ? { ...e, quantity } : e))
     );
     this.persist();
   }
 
   remove(productId: string, size: ProductSize): void {
-    this.itemsSignal.update((items) =>
-      items.filter((i) => !(i.product.id === productId && i.size === size))
+    this.entries.update((list) =>
+      list.filter((e) => !(e.productId === productId && e.size === size))
     );
     this.persist();
   }
 
   clear(): void {
-    this.itemsSignal.set([]);
+    this.entries.set([]);
     this.persist();
   }
 
-  private loadInitial(): CartItem[] {
+  private loadEntries(): CartEntry[] {
     if (typeof localStorage === 'undefined') return [];
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw) as PersistedCartItem[];
-      if (!Array.isArray(parsed)) return [];
-      return parsed
-        .map((entry) => {
-          const product = this.productService.getById(entry.productId);
-          if (!product) return null;
-          return { product, size: entry.size, quantity: entry.quantity } satisfies CartItem;
-        })
-        .filter((item): item is CartItem => item !== null);
+      const parsed = raw ? (JSON.parse(raw) as CartEntry[]) : [];
+      return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
     }
@@ -88,11 +91,6 @@ export class CartService {
 
   private persist(): void {
     if (typeof localStorage === 'undefined') return;
-    const toStore: PersistedCartItem[] = this.itemsSignal().map((i) => ({
-      productId: i.product.id,
-      size: i.size,
-      quantity: i.quantity,
-    }));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.entries()));
   }
 }

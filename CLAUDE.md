@@ -23,11 +23,11 @@ si conviene tocar también este archivo o el `README.md`).
   es 100% client-side.
 - **Frontend:** Angular 19 (standalone components + signals) + Tailwind
   CSS v4. Repo actual (`frontend/`), ya desarrollado.
-- **Backend:** Java, carpeta hermana `../backend/`, **todavía sin
-  empezar**. Hoy los datos son mock en código + `localStorage`
-  (`ProductService`, `CartService`, `OrderService`, etc.).
-- Correr en local: `npm install && npm start` → `http://localhost:4200`.
-  Build: `npm run build` → `dist/ecommerce-ninos/`.
+- **Backend:** Java 21 + Spring Boot 3 + MySQL 8 + JWT, carpeta hermana
+  `../backend/` (repo git propio). Package-by-layer. Ver `../backend/README.md`.
+- Correr en local: backend (`cd ../backend && ./mvnw spring-boot:run`) **y**
+  frontend (`npm start` → `http://localhost:4200`). El carrito es lo único
+  que sigue en `localStorage`.
 
 ## Cómo trabaja el cliente (importante)
 
@@ -37,11 +37,10 @@ si conviene tocar también este archivo o el `README.md`).
   "necesito que el stock sea por talle"), no specs grandes de una vez.
 - **Corta el scope explícitamente cuando algo se adelanta.** Trabajar de a
   un cambio a la vez y no meter cosas que no pidió.
-- **El backend YA arrancó** (2026-09-08): existe `../backend/` (Spring Boot 3
-  + Java 21 + MySQL + JWT) con el CRUD completo del admin. Pero el **frontend
-  todavía NO está conectado** — sigue con datos mock en `localStorage`.
-  `ProductService` / `AuthService` están aislados para el switch a `HttpClient`.
-  Conectar Angular al backend es un paso pendiente y explícito (no adelantarlo).
+- **Frontend + backend conectados** (2026-09-08): los services usan `HttpClient`
+  contra `/api/*` (proxy `ng serve` → `../backend/` en `:8080`). Para correr
+  hace falta **levantar los dos** (ver PROYECTO.md sección 3). Login admin:
+  `admin` / `ruth123` (JWT). Solo el carrito y el token quedan en `localStorage`.
 
 ## Detalles que no están en el código y conviene recordar
 

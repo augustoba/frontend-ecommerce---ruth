@@ -12,6 +12,13 @@ export class AdminSizeScalesComponent {
   private readonly sizeScaleService = inject(SizeScaleService);
 
   readonly scales = this.sizeScaleService.scales;
+  readonly status = this.sizeScaleService.status;
+  readonly saving = this.sizeScaleService.saving;
+  readonly reload = () => this.sizeScaleService.reload();
+
+  constructor() {
+    this.sizeScaleService.ensureLoaded();
+  }
 
   /** Texto del nuevo talle por cada escala (id de la escala → texto tipeado) */
   readonly newValue = signal<Record<string, string>>({});
@@ -61,11 +68,5 @@ export class AdminSizeScalesComponent {
 
   removeValue(scaleId: string, value: string): void {
     this.sizeScaleService.removeValue(scaleId, value);
-  }
-
-  resetDefaults(): void {
-    if (window.confirm('¿Restaurar las escalas de ejemplo? Se pierden los cambios.')) {
-      this.sizeScaleService.resetToDefaults();
-    }
   }
 }

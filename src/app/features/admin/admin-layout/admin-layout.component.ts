@@ -18,6 +18,10 @@ export class AdminLayoutComponent {
   readonly storeName = SITE_CONFIG.storeName;
   readonly pendingOrders = this.orderService.pendingCount;
 
+  constructor() {
+    this.orderService.ensureLoaded();
+  }
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/admin/login']);

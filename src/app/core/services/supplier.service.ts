@@ -1,22 +1,33 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Supplier, SupplierInput } from '../models/supplier.model';
-
-const STORAGE_KEY = 'pp_suppliers';
+import { CollectionStore } from '../state/collection-store';
+import { apiUrl } from '../config/site-config';
 
 /**
- * Proveedores del local (info interna del admin). Mismo patrón que
- * ParamService / DiscountService: signal + localStorage, sin backend todavía.
- * Arranca vacío — no hay proveedores de ejemplo.
+ * Proveedores del local (info interna del admin). Todo contra
+ * `/api/admin/suppliers/**`. Se carga al entrar a una pantalla que lo necesite
+ * (`ensureLoaded()`), no al arrancar la app.
  */
 @Injectable({ providedIn: 'root' })
 export class SupplierService {
-  private readonly suppliersSignal = signal<Supplier[]>(this.loadInitial());
+  private readonly http = inject(HttpClient);
+  private readonly store = new CollectionStore<Supplier>(this.http, '/admin/suppliers');
 
-  readonly suppliers = this.suppliersSignal.asReadonly();
+  readonly suppliers = this.store.items;
+  readonly status = this.store.status;
+  readonly loading = this.store.loading;
+  readonly errored = this.store.errored;
+  readonly saving = this.store.saving;
+  readonly reload = this.store.reload;
+
+  ensureLoaded(): void {
+    this.store.ensureLoaded();
+  }
 
   getById(id: string | undefined): Supplier | undefined {
     if (!id) return undefined;
-    return this.suppliersSignal().find((s) => s.id === id);
+    return this.suppliers().find((s) => s.id === id);
   }
 
   /** Nombre del proveedor, o '' si no tiene / fue eliminado */
@@ -24,52 +35,15 @@ export class SupplierService {
     return this.getById(id)?.name ?? '';
   }
 
-  add(input: SupplierInput): Supplier {
-    const supplier: Supplier = {
-      ...this.clean(input),
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-    };
-    this.suppliersSignal.update((list) => [...list, supplier]);
-    this.persist();
-    return supplier;
+  add(input: SupplierInput): void {
+    this.store.mutate(this.http.post(apiUrl('/admin/suppliers'), input));
   }
 
   update(id: string, input: SupplierInput): void {
-    this.suppliersSignal.update((list) =>
-      list.map((s) => (s.id === id ? { ...s, ...this.clean(input) } : s))
-    );
-    this.persist();
+    this.store.mutate(this.http.put(apiUrl(`/admin/suppliers/${id}`), input));
   }
 
   remove(id: string): void {
-    this.suppliersSignal.update((list) => list.filter((s) => s.id !== id));
-    this.persist();
-  }
-
-  private clean(input: SupplierInput): SupplierInput {
-    return {
-      name: input.name.trim(),
-      phone: input.phone?.trim() || undefined,
-      address: input.address?.trim() || undefined,
-      notes: input.notes?.trim() || undefined,
-    };
-  }
-
-  private loadInitial(): Supplier[] {
-    if (typeof localStorage === 'undefined') return [];
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw) as Supplier[];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  }
-
-  private persist(): void {
-    if (typeof localStorage === 'undefined') return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.suppliersSignal()));
+    this.store.mutate(this.http.delete(apiUrl(`/admin/suppliers/${id}`)));
   }
 }

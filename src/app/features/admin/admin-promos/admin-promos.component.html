@@ -6,17 +6,24 @@
   tienen esa opción.
 </p>
 
+@if (status() === 'error') {
+  <div class="bg-white rounded-2xl ring-1 ring-black/5 p-4 text-center mb-4">
+    <span class="text-sm text-stone-500">No se pudieron cargar los descuentos. </span>
+    <button type="button" (click)="reload()" class="text-brand-600 font-semibold hover:underline">Reintentar</button>
+  </div>
+}
+
 <!-- Modo de combinación -->
 <div class="bg-white rounded-2xl ring-1 ring-black/5 p-5 mb-6 max-w-2xl">
   <p class="font-semibold text-stone-800 mb-1">Si una compra alcanza los dos tipos de descuento…</p>
   <div class="flex flex-col sm:flex-row gap-2 mt-3">
     <button
       type="button"
-      (click)="setCombineMode('mejor')"
-      [class.bg-brand-500]="combineMode() === 'mejor'"
-      [class.text-white]="combineMode() === 'mejor'"
-      [class.bg-stone-100]="combineMode() !== 'mejor'"
-      [class.text-stone-600]="combineMode() !== 'mejor'"
+      (click)="setCombineMode('MEJOR')"
+      [class.bg-brand-500]="combineMode() === 'MEJOR'"
+      [class.text-white]="combineMode() === 'MEJOR'"
+      [class.bg-stone-100]="combineMode() !== 'MEJOR'"
+      [class.text-stone-600]="combineMode() !== 'MEJOR'"
       class="flex-1 text-left px-4 py-3 rounded-xl text-sm font-semibold ring-1 ring-black/5"
     >
       Aplicar el mayor
@@ -26,11 +33,11 @@
     </button>
     <button
       type="button"
-      (click)="setCombineMode('combinar')"
-      [class.bg-brand-500]="combineMode() === 'combinar'"
-      [class.text-white]="combineMode() === 'combinar'"
-      [class.bg-stone-100]="combineMode() !== 'combinar'"
-      [class.text-stone-600]="combineMode() !== 'combinar'"
+      (click)="setCombineMode('COMBINAR')"
+      [class.bg-brand-500]="combineMode() === 'COMBINAR'"
+      [class.text-white]="combineMode() === 'COMBINAR'"
+      [class.bg-stone-100]="combineMode() !== 'COMBINAR'"
+      [class.text-stone-600]="combineMode() !== 'COMBINAR'"
       class="flex-1 text-left px-4 py-3 rounded-xl text-sm font-semibold ring-1 ring-black/5"
     >
       Combinar

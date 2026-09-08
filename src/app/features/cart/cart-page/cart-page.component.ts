@@ -48,6 +48,7 @@ export class CartPageComponent {
 
   readonly customerName = signal('');
   readonly orderSent = signal(false);
+  readonly sending = signal(false);
   /** Pedido ya creado para este carrito (se reusa si el cliente reabre WhatsApp) */
   readonly currentOrder = signal<Order | null>(null);
 
@@ -70,15 +71,25 @@ export class CartPageComponent {
   }
 
   sendOrder(): void {
-    if (this.isEmpty()) return;
+    if (this.isEmpty() || this.sending()) return;
 
-    let order = this.currentOrder();
-    if (!order) {
-      order = this.orderService.create(this.customerName(), this.items());
-      this.currentOrder.set(order);
+    const existing = this.currentOrder();
+    if (existing) {
+      // ya se creó: solo reabrir WhatsApp
+      this.whatsappService.openOrderChat(existing);
+      this.orderSent.set(true);
+      return;
     }
 
-    this.whatsappService.openOrderChat(order);
-    this.orderSent.set(true);
+    this.sending.set(true);
+    this.orderService.create(this.customerName(), this.items()).subscribe({
+      next: (order) => {
+        this.sending.set(false);
+        this.currentOrder.set(order);
+        this.orderSent.set(true);
+        this.whatsappService.openOrderChat(order);
+      },
+      error: () => this.sending.set(false),
+    });
   }
 }

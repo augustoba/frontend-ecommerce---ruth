@@ -5,10 +5,11 @@ import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
 import { SupplierService } from '../../../core/services/supplier.service';
 import { Product, margin, totalStock } from '../../../core/models/product.model';
+import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 
 @Component({
   selector: 'app-admin-products',
-  imports: [CurrencyPipe, RouterLink],
+  imports: [CurrencyPipe, RouterLink, SkeletonComponent],
   templateUrl: './admin-products.component.html',
   styleUrl: './admin-products.component.css',
 })
@@ -18,6 +19,15 @@ export class AdminProductsComponent {
   private readonly supplierService = inject(SupplierService);
 
   readonly products = this.productService.products;
+  readonly status = this.productService.adminStatus;
+  readonly saving = this.productService.saving;
+  readonly reload = () => this.productService.reloadAdmin();
+
+  constructor() {
+    this.productService.ensureAdminLoaded();
+    this.paramService.ensureLoaded();
+    this.supplierService.ensureLoaded();
+  }
 
   stockTotal(product: Product): number {
     return totalStock(product);

@@ -19,6 +19,14 @@ export class AdminOrderDetailComponent {
 
   private readonly orderId = this.route.snapshot.paramMap.get('id') ?? '';
 
+  readonly ordersStatus = this.orderService.status;
+  readonly saving = this.orderService.saving;
+
+  constructor() {
+    this.orderService.ensureLoaded();
+    this.productService.ensureAdminLoaded();
+  }
+
   // Se lee del signal de la lista completa (no getById) para que la vista
   // se actualice sola al tildar/destildar o confirmar, sin recargar.
   readonly order = computed(() => this.orderService.orders().find((o) => o.id === this.orderId));
