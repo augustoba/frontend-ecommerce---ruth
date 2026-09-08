@@ -55,19 +55,6 @@
       </div>
 
       <div>
-        <label class="block text-sm font-semibold text-stone-700 mb-1.5" for="category">Categoría</label>
-        <select
-          id="category"
-          formControlName="category"
-          class="w-full rounded-lg border border-stone-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
-        >
-          @for (cat of categories; track cat.value) {
-            <option [value]="cat.value">{{ cat.label }}</option>
-          }
-        </select>
-      </div>
-
-      <div>
         <label class="block text-sm font-semibold text-stone-700 mb-1.5" for="ageRange">Rango de edad</label>
         <input
           id="ageRange"
@@ -87,6 +74,54 @@
           formControlName="imageUrl"
           class="w-full rounded-lg border border-stone-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
         />
+      </div>
+
+      <div class="sm:col-span-2 grid sm:grid-cols-2 gap-5">
+        @for (group of paramGroups(); track group.id) {
+          <div [class.sm:col-span-2]="group.multiple">
+            <label class="block text-sm font-semibold text-stone-700 mb-1.5">
+              {{ group.name }}
+              @if (group.system) { <span class="text-red-400">*</span> }
+            </label>
+
+            @if (group.multiple) {
+              <div class="flex flex-wrap gap-2">
+                @for (opt of group.options; track opt.id) {
+                  <button
+                    type="button"
+                    (click)="toggleParamOption(group.id, opt.id)"
+                    [class.bg-brand-500]="isOptionSelected(group.id, opt.id)"
+                    [class.text-white]="isOptionSelected(group.id, opt.id)"
+                    [class.bg-white]="!isOptionSelected(group.id, opt.id)"
+                    [class.text-stone-600]="!isOptionSelected(group.id, opt.id)"
+                    class="px-3 py-1.5 rounded-full text-sm font-semibold ring-1 ring-black/5"
+                  >
+                    {{ opt.label }}
+                  </button>
+                }
+                @if (!group.options.length) {
+                  <span class="text-xs text-stone-400">Sin opciones cargadas (ver Parametrías).</span>
+                }
+              </div>
+            } @else {
+              <select
+                [value]="singleValue(group.id)"
+                (change)="setSingleParam(group.id, $any($event.target).value)"
+                class="w-full rounded-lg border border-stone-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+              >
+                <option value="">{{ group.system ? '— Elegí una opción —' : '— Sin especificar —' }}</option>
+                @for (opt of group.options; track opt.id) {
+                  <option [value]="opt.id">{{ opt.label }}</option>
+                }
+              </select>
+            }
+          </div>
+        }
+        @if (paramsInvalid()) {
+          <p class="sm:col-span-2 text-xs text-red-500">
+            Completá: {{ missingRequiredParams().length ? missingRequiredParams()[0].name : '' }}.
+          </p>
+        }
       </div>
 
       <div class="sm:col-span-2">

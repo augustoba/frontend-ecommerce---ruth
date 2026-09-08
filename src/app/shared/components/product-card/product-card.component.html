@@ -9,11 +9,13 @@
       loading="lazy"
       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
     />
-    <span
-      class="absolute top-2 left-2 bg-white/90 text-brand-600 text-xs font-bold px-2 py-1 rounded-full"
-    >
-      {{ categoryLabel }}
-    </span>
+    @if (categoryLabel) {
+      <span
+        class="absolute top-2 left-2 bg-white/90 text-brand-600 text-xs font-bold px-2 py-1 rounded-full"
+      >
+        {{ categoryLabel }}
+      </span>
+    }
     @if (outOfStock) {
       <span
         class="absolute inset-0 bg-stone-900/50 flex items-center justify-center text-white font-bold text-sm tracking-wide"

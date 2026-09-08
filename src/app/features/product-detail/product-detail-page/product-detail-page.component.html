@@ -15,12 +15,24 @@
       </div>
 
       <div class="flex flex-col">
-        <span class="inline-block w-fit bg-brand-100 text-brand-600 text-xs font-bold px-2.5 py-1 rounded-full">
-          {{ categoryLabel() }}
-        </span>
+        @if (categoryLabel()) {
+          <span class="inline-block w-fit bg-brand-100 text-brand-600 text-xs font-bold px-2.5 py-1 rounded-full">
+            {{ categoryLabel() }}
+          </span>
+        }
 
         <h1 class="font-display font-extrabold text-2xl sm:text-3xl text-stone-800 mt-3">{{ p.name }}</h1>
         <p class="text-sm text-stone-500 mt-1">{{ p.ageRange }}</p>
+
+        @if (paramChips().length) {
+          <div class="flex flex-wrap gap-1.5 mt-3">
+            @for (chip of paramChips(); track chip) {
+              <span class="text-xs font-semibold bg-stone-100 text-stone-600 px-2.5 py-1 rounded-full">
+                {{ chip }}
+              </span>
+            }
+          </div>
+        }
 
         <p class="font-display font-extrabold text-3xl text-brand-600 mt-4">
           {{ p.price | currency: 'ARS' : 'symbol' : '1.0-0' }}

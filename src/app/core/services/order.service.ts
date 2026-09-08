@@ -2,7 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { CartItem } from '../models/cart-item.model';
 import { Order, OrderLine } from '../models/order.model';
 import { ProductService } from './product.service';
-import { PromoService } from './promo.service';
+import { DiscountService } from './discount.service';
 
 const STORAGE_KEY = 'pp_orders';
 const SEQ_KEY = 'pp_order_seq';
@@ -10,7 +10,7 @@ const SEQ_KEY = 'pp_order_seq';
 @Injectable({ providedIn: 'root' })
 export class OrderService {
   private readonly productService = inject(ProductService);
-  private readonly promoService = inject(PromoService);
+  private readonly discountService = inject(DiscountService);
 
   private readonly ordersSignal = signal<Order[]>(this.loadInitial());
 
@@ -37,9 +37,11 @@ export class OrderService {
     }));
 
     const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
-    const tier = this.promoService.bestTierFor(subtotal);
-    const discountPercent = tier?.discountPercent ?? 0;
-    const discountAmount = tier ? Math.round((subtotal * discountPercent) / 100) : 0;
+    const discount = this.discountService.computeCartDiscount(
+      items.map((it) => ({ product: it.product, quantity: it.quantity }))
+    );
+    const discountPercent = discount.discountPercent;
+    const discountAmount = discount.discountAmount;
 
     const order: Order = {
       id: crypto.randomUUID(),

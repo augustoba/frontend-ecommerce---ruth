@@ -15,6 +15,13 @@ Editar `src/app/core/config/site-config.ts`:
 - `whatsappNumber`: número de WhatsApp del dueño/a, en formato internacional
   sin `+`, espacios ni guiones (ej: `5491122334455`).
 - `admin.username` / `admin.password`: credenciales para entrar a `/admin`.
+  Valores actuales (placeholders, **cambiar antes de publicar**):
+
+  | Campo | Valor |
+  |---|---|
+  | usuario | `admin` |
+  | contraseña | `cambiar-esta-clave` |
+
   **Ojo:** es un login simple pensado solo para esta primera versión sin
   backend (las credenciales viven en el código del frontend), no un
   mecanismo de seguridad real. Cuando el backend en Java esté listo, hay

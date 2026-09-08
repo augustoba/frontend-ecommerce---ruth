@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProductService } from '../../../core/services/product.service';
+import { ParamService } from '../../../core/services/param.service';
 import { Product, totalStock } from '../../../core/models/product.model';
 
 @Component({
@@ -12,11 +13,24 @@ import { Product, totalStock } from '../../../core/models/product.model';
 })
 export class AdminProductsComponent {
   private readonly productService = inject(ProductService);
+  private readonly paramService = inject(ParamService);
 
   readonly products = this.productService.products;
 
   stockTotal(product: Product): number {
     return totalStock(product);
+  }
+
+  /** Etiquetas de todas las parametrías del producto, ej: "Bebé · Body · Verano" */
+  paramLabels(product: Product): string {
+    const labels: string[] = [];
+    for (const group of this.paramService.groups()) {
+      for (const optId of product.params?.[group.id] ?? []) {
+        const label = this.paramService.labelFor(group.id, optId);
+        if (label) labels.push(label);
+      }
+    }
+    return labels.join(' · ');
   }
 
   toggleActive(id: string): void {

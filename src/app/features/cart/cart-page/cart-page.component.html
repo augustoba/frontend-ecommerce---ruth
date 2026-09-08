@@ -50,11 +50,19 @@
       }
     </div>
 
-    @if (appliedPromo(); as promo) {
-      <div class="mt-6 bg-mint-100 text-mint-700 rounded-2xl px-5 py-3.5 font-semibold text-sm flex items-center gap-2">
-        <span aria-hidden="true">🎉</span>
-        ¡Descuento del {{ promo.discountPercent }}% aplicado por compras mayores a
-        {{ promo.minAmount | currency: 'ARS' : 'symbol' : '1.0-0' }}!
+    @if (discountAmount() > 0) {
+      <div class="mt-6 bg-mint-100 text-mint-700 rounded-2xl px-5 py-3.5 text-sm">
+        <p class="font-semibold flex items-center gap-2">
+          <span aria-hidden="true">🎉</span> Descuentos aplicados
+        </p>
+        <ul class="mt-1.5 space-y-0.5">
+          @for (line of discountBreakdown(); track line.label) {
+            <li class="flex items-center justify-between">
+              <span>{{ line.label }}</span>
+              <span class="font-semibold">-{{ line.amount | currency: 'ARS' : 'symbol' : '1.0-0' }}</span>
+            </li>
+          }
+        </ul>
       </div>
     } @else {
       @if (nextPromo(); as next) {
@@ -87,7 +95,7 @@
           </div>
           @if (discountAmount() > 0) {
             <div class="flex items-center justify-between text-mint-600 font-semibold">
-              <span>Descuento ({{ appliedPromo()?.discountPercent }}%)</span>
+              <span>Descuento ({{ discountPercent() }}%)</span>
               <span>-{{ discountAmount() | currency: 'ARS' : 'symbol' : '1.0-0' }}</span>
             </div>
           }

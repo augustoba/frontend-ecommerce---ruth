@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
 import { WhatsappService } from '../../../core/services/whatsapp.service';
 import { OrderService } from '../../../core/services/order.service';
-import { PromoService } from '../../../core/services/promo.service';
+import { DiscountService } from '../../../core/services/discount.service';
 import { QuantityStepperComponent } from '../../../shared/components/quantity-stepper/quantity-stepper.component';
 import { Product, ProductSize, stockForSize } from '../../../core/models/product.model';
 import { Order } from '../../../core/models/order.model';
@@ -20,28 +20,30 @@ export class CartPageComponent {
   private readonly cartService = inject(CartService);
   private readonly whatsappService = inject(WhatsappService);
   private readonly orderService = inject(OrderService);
-  private readonly promoService = inject(PromoService);
+  private readonly discountService = inject(DiscountService);
 
   readonly items = this.cartService.items;
   readonly totalItems = this.cartService.totalItems;
   readonly subtotal = this.cartService.totalPrice;
   readonly isEmpty = this.cartService.isEmpty;
 
-  /** Mejor descuento por monto de compra que ya se alcanzó (o null) */
-  readonly appliedPromo = computed(() => this.promoService.bestTierFor(this.subtotal()));
+  /** Descuento total del carrito (por monto y/o por parametría) con su detalle */
+  readonly discount = computed(() =>
+    this.discountService.computeCartDiscount(
+      this.items().map((i) => ({ product: i.product, quantity: i.quantity }))
+    )
+  );
 
-  readonly discountAmount = computed(() => {
-    const promo = this.appliedPromo();
-    return promo ? Math.round((this.subtotal() * promo.discountPercent) / 100) : 0;
-  });
-
+  readonly discountAmount = computed(() => this.discount().discountAmount);
+  readonly discountPercent = computed(() => this.discount().discountPercent);
+  readonly discountBreakdown = computed(() => this.discount().breakdown);
   readonly finalTotal = computed(() => this.subtotal() - this.discountAmount());
 
-  /** Próximo escalón de descuento todavía no alcanzado, para mostrar "te faltan $X" */
-  readonly nextPromo = computed(() => this.promoService.nextTierFor(this.subtotal()));
+  /** Próximo escalón por monto todavía no alcanzado, para mostrar "te faltan $X" */
+  readonly nextPromo = computed(() => this.discountService.nextAmountTierFor(this.subtotal()));
   readonly amountToNextPromo = computed(() => {
     const next = this.nextPromo();
-    return next ? next.minAmount - this.subtotal() : 0;
+    return next ? (next.minAmount ?? 0) - this.subtotal() : 0;
   });
 
   readonly customerName = signal('');

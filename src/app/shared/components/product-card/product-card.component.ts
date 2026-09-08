@@ -1,14 +1,8 @@
-import { Component, input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Product, totalStock } from '../../../core/models/product.model';
-
-const CATEGORY_LABELS: Record<Product['category'], string> = {
-  bebe: 'Bebé',
-  nena: 'Nena',
-  nene: 'Nene',
-  unisex: 'Unisex',
-};
+import { ParamService } from '../../../core/services/param.service';
 
 @Component({
   selector: 'app-product-card',
@@ -17,10 +11,14 @@ const CATEGORY_LABELS: Record<Product['category'], string> = {
   styleUrl: './product-card.component.css',
 })
 export class ProductCardComponent {
+  private readonly paramService = inject(ParamService);
+
   readonly product = input.required<Product>();
 
+  /** Etiqueta del "Público" del producto (Bebé / Nena / ...) para el badge */
   get categoryLabel(): string {
-    return CATEGORY_LABELS[this.product().category];
+    const opt = (this.product().params?.['grp-publico'] ?? [])[0];
+    return opt ? this.paramService.labelFor('grp-publico', opt) : '';
   }
 
   get outOfStock(): boolean {

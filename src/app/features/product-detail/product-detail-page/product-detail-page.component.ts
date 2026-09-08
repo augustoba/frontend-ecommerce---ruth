@@ -4,15 +4,9 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
+import { ParamService } from '../../../core/services/param.service';
 import { ProductSize, stockForSize, totalStock } from '../../../core/models/product.model';
 import { QuantityStepperComponent } from '../../../shared/components/quantity-stepper/quantity-stepper.component';
-
-const CATEGORY_LABELS: Record<string, string> = {
-  bebe: 'Bebé',
-  nena: 'Nena',
-  nene: 'Nene',
-  unisex: 'Unisex',
-};
 
 @Component({
   selector: 'app-product-detail-page',
@@ -25,6 +19,7 @@ export class ProductDetailPageComponent {
   private readonly router = inject(Router);
   private readonly productService = inject(ProductService);
   private readonly cartService = inject(CartService);
+  private readonly paramService = inject(ParamService);
 
   /** Se actualiza cada vez que cambia el :id de la ruta (navegación entre fichas) */
   private readonly routeParamMap = toSignal(this.route.paramMap, {
@@ -42,7 +37,23 @@ export class ProductDetailPageComponent {
 
   readonly categoryLabel = computed(() => {
     const p = this.product();
-    return p ? CATEGORY_LABELS[p.category] : '';
+    const opt = p ? (p.params?.['grp-publico'] ?? [])[0] : undefined;
+    return opt ? this.paramService.labelFor('grp-publico', opt) : '';
+  });
+
+  /** Chips de tipo de prenda / estación / etc. (todos los grupos menos "Público") */
+  readonly paramChips = computed(() => {
+    const p = this.product();
+    if (!p) return [] as string[];
+    const chips: string[] = [];
+    for (const group of this.paramService.groups()) {
+      if (group.id === 'grp-publico') continue;
+      for (const optId of p.params?.[group.id] ?? []) {
+        const label = this.paramService.labelFor(group.id, optId);
+        if (label) chips.push(label);
+      }
+    }
+    return chips;
   });
 
   readonly outOfStock = computed(() => {

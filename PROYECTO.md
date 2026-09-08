@@ -60,7 +60,7 @@ este único archivo.**
 - URL: `http://localhost:4200/admin` (pide login).
 - Permite: crear/editar/ocultar/eliminar productos, con **stock manejado
   por talle** (cada talle tiene su propia cantidad, no un stock único por
-  producto).
+  producto) y **clasificación por parametrías** (ver sección 9ter).
 - Los datos se guardan en `localStorage` del navegador (no hay backend
   todavía) — si se borra el storage del navegador, vuelve al catálogo de
   ejemplo.
@@ -89,8 +89,9 @@ este único archivo.**
   - Para poner fotos reales: copiarlas a `public/` y cambiar el
     `imageUrl` correspondiente en `src/app/core/services/product.service.ts`
     (productos) o `HERO_SLIDES` en `catalog-page.component.ts` (carrusel).
-- Debajo: buscador + filtros por categoría (bebé/nena/nene/unisex) y por
-  talle, y la grilla de productos.
+- Debajo: buscador + filtros dinámicos generados desde las parametrías
+  marcadas como "filtro en la tienda" (Público como botones, el resto como
+  selectores) + filtro por talle, y la grilla de productos.
 
 ## 8. Estructura del código
 
@@ -100,13 +101,14 @@ src/app/
     config/site-config.ts       # nombre, WhatsApp, credenciales admin, redes (ver sección 4)
     assets/clothing-icons.ts    # generador de imágenes SVG de ejemplo
     utils/image-resize.ts       # redimensiona fotos subidas antes de guardarlas
-    models/                     # Product (con sizeStocks por talle), CartItem, Order, PromoTier
+    models/                     # Product (sizeStocks por talle + params), CartItem, Order, ParamGroup, Discount
     services/
-      product.service.ts        # catálogo (mock + localStorage), CRUD admin
+      product.service.ts        # catálogo (mock + localStorage), CRUD admin, migra `category` viejo → params
+      param.service.ts          # parametrías (grupos + opciones) editables — localStorage
       cart.service.ts           # carrito (signals + localStorage)
       whatsapp.service.ts       # arma el mensaje (código + subtotal/descuento/total) y el link wa.me
-      order.service.ts          # pedidos con código, confirmar/cancelar, descuenta stock, aplica promo
-      promo.service.ts          # escalones de descuento por monto de compra (localStorage)
+      order.service.ts          # pedidos con código, confirmar/cancelar, descuenta stock, aplica descuentos
+      discount.service.ts       # descuentos por monto y por parametría + modo de combinación (localStorage)
       hero-slides.service.ts    # fotos del carrusel de la home (localStorage)
       auth.service.ts           # login simple del panel admin
     guards/admin.guard.ts       # protege /admin/*
@@ -150,8 +152,31 @@ src/app/
   foto desde archivo (se redimensiona sola a máx. 1600px de ancho antes
   de guardarla, para no llenar el `localStorage`), editar descripción,
   reordenar, eliminar, o restaurar las ilustraciones de ejemplo.
-- `/admin/promociones` — descuentos automáticos por monto de compra
-  (crear/editar/habilitar/deshabilitar). Se aplican solo en el carrito.
+- `/admin/parametrias` — grupos de clasificación de prendas (ver sección 9ter).
+- `/admin/promociones` — descuentos automáticos: por **monto de compra** y por
+  **parametría** (ej: "todo lo de bebé 15% off"), con un **modo de combinación**
+  ("aplicar el mayor" / "combinar"). Se aplican solo en el carrito.
+
+## 9ter. Parametrías (clasificación de prendas)
+
+- **Qué son:** grupos editables desde `/admin/parametrias` para clasificar
+  las prendas sin tocar código. Por defecto vienen tres:
+  - **Público** (`grp-publico`, de sistema, no se puede borrar): Bebé, Nena,
+    Nene, Unisex. Reemplaza a la vieja categoría fija del producto.
+  - **Tipo de prenda** (`grp-tipo`): Remera, Buzo/Campera, Pantalón, Jean,
+    Vestido/Pollera, Body/Enterito, Conjunto, Calzado, Accesorio.
+  - **Estación** (`grp-estacion`, admite varias opciones por prenda):
+    Primavera, Verano, Otoño, Invierno, Todo el año.
+- Cada grupo tiene dos flags: "varias opciones" (multi-select por prenda) y
+  "filtro en la tienda" (aparece como filtro en la home).
+- El producto guarda `params: { [groupId]: optionId[] }`. Al cargar/editar un
+  producto aparecen los selectores generados desde estos grupos; los grupos de
+  sistema son obligatorios.
+- **Migración:** los productos viejos en `localStorage` que tenían
+  `category: 'bebe'|...` se convierten solos a `params['grp-publico']` al
+  cargar (`ProductService.migrateProduct`).
+- Los IDs de grupos/opciones por defecto son fijos (no aleatorios) para que
+  la migración y los productos de ejemplo sean deterministas.
 
 ## 10. Pendientes / próximos pasos conocidos
 
@@ -207,3 +232,15 @@ src/app/
     se muestra un banner ("te faltan $X para Y% off" o "descuento
     aplicado"), y el pedido que se crea (código, WhatsApp, panel de
     admin) ya queda con subtotal/descuento/total.
+14. Se agregaron **parametrías** (`/admin/parametrias`, sección 9ter): grupos
+    editables (Público, Tipo de prenda, Estación) para clasificar las prendas
+    sin hardcodear. La vieja categoría fija (bebé/nena/nene/unisex) pasó a ser
+    la parametría "Público" (con migración automática de datos viejos). Los
+    filtros del catálogo ahora se generan solos desde las parametrías. El alta
+    de producto usa selectores dinámicos.
+15. Los **descuentos** ahora también pueden ser **por parametría** (ej: "todo
+    lo de bebé 15% off", "todo lo de verano 20% off"), además de por monto.
+    Los de parametría se aplican por prenda del carrito que tenga esa opción.
+    Hay un **modo de combinación** configurable: "aplicar el mayor" (no
+    acumula) o "combinar". `PromoService` → `DiscountService`, `PromoTier` →
+    `Discount`. El carrito muestra el detalle de cada descuento aplicado.

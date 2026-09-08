@@ -90,12 +90,20 @@ export const routes: Routes = [
         title: 'Carrusel | Admin',
       },
       {
+        path: 'parametrias',
+        loadComponent: () =>
+          import('./features/admin/admin-params/admin-params.component').then(
+            (m) => m.AdminParamsComponent
+          ),
+        title: 'Parametrías | Admin',
+      },
+      {
         path: 'promociones',
         loadComponent: () =>
           import('./features/admin/admin-promos/admin-promos.component').then(
             (m) => m.AdminPromosComponent
           ),
-        title: 'Promociones | Admin',
+        title: 'Descuentos | Admin',
       },
     ],
   },

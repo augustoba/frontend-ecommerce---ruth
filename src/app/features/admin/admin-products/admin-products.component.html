@@ -14,7 +14,7 @@
       <thead>
         <tr class="text-left text-stone-500 border-b border-stone-100">
           <th class="p-4 font-semibold">Producto</th>
-          <th class="p-4 font-semibold">Categoría</th>
+          <th class="p-4 font-semibold">Parametrías</th>
           <th class="p-4 font-semibold">Precio</th>
           <th class="p-4 font-semibold">Stock</th>
           <th class="p-4 font-semibold">Estado</th>
@@ -30,7 +30,7 @@
                 <span class="font-semibold text-stone-800">{{ product.name }}</span>
               </div>
             </td>
-            <td class="p-4 text-stone-600 capitalize">{{ product.category }}</td>
+            <td class="p-4 text-stone-600 text-xs max-w-[200px]">{{ paramLabels(product) || '—' }}</td>
             <td class="p-4 text-stone-600">{{ product.price | currency: 'ARS' : 'symbol' : '1.0-0' }}</td>
             <td class="p-4">
               <span [class.text-red-500]="stockTotal(product) === 0" class="font-semibold">{{ stockTotal(product) }}</span>

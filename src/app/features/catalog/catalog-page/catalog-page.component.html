@@ -27,7 +27,7 @@
 <section id="catalogo" class="max-w-6xl mx-auto px-4 sm:px-6 py-8 scroll-mt-20">
   <!-- Filtros -->
   <div class="flex flex-col gap-4 mb-8">
-    <div class="flex flex-col sm:flex-row gap-3">
+    <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3">
       <input
         type="search"
         [ngModel]="searchTerm()"
@@ -39,7 +39,7 @@
       <select
         [ngModel]="selectedSize()"
         (ngModelChange)="selectedSize.set($event)"
-        class="rounded-full border border-stone-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+        class="w-full sm:w-auto rounded-full border border-stone-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
       >
         <option value="todos">Todos los talles</option>
         @for (size of sizes; track size) {
@@ -47,43 +47,58 @@
         }
       </select>
 
-      @if (searchTerm() || selectedCategory() !== 'todas' || selectedSize() !== 'todos') {
+      @for (group of selectGroups(); track group.id) {
+        <select
+          [ngModel]="paramValue(group.id)"
+          (ngModelChange)="setParam(group.id, $event)"
+          class="w-full sm:w-auto rounded-full border border-stone-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+        >
+          <option value="">{{ group.name }}: todas</option>
+          @for (opt of group.options; track opt.id) {
+            <option [value]="opt.id">{{ opt.label }}</option>
+          }
+        </select>
+      }
+
+      @if (hasActiveFilters()) {
         <button
           type="button"
           (click)="clearFilters()"
-          class="text-sm font-semibold text-brand-600 hover:text-brand-700 sm:ml-auto"
+          class="text-sm font-semibold text-brand-600 hover:text-brand-700 self-start sm:self-auto sm:ml-auto"
         >
           Limpiar filtros ✕
         </button>
       }
     </div>
 
-    <div class="flex flex-wrap gap-2">
-      <button
-        type="button"
-        (click)="setCategory('todas')"
-        [class.bg-brand-500]="selectedCategory() === 'todas'"
-        [class.text-white]="selectedCategory() === 'todas'"
-        [class.bg-white]="selectedCategory() !== 'todas'"
-        [class.text-stone-600]="selectedCategory() !== 'todas'"
-        class="px-4 py-1.5 rounded-full text-sm font-semibold ring-1 ring-black/5 hover:ring-brand-300 transition-colors"
-      >
-        Todas
-      </button>
-      @for (cat of categories; track cat.value) {
+    @if (publicoGroup(); as grupo) {
+      <div class="flex flex-wrap gap-2">
         <button
           type="button"
-          (click)="setCategory(cat.value)"
-          [class.bg-brand-500]="selectedCategory() === cat.value"
-          [class.text-white]="selectedCategory() === cat.value"
-          [class.bg-white]="selectedCategory() !== cat.value"
-          [class.text-stone-600]="selectedCategory() !== cat.value"
+          (click)="setParam(grupo.id, '')"
+          [class.bg-brand-500]="!paramValue(grupo.id)"
+          [class.text-white]="!paramValue(grupo.id)"
+          [class.bg-white]="paramValue(grupo.id)"
+          [class.text-stone-600]="paramValue(grupo.id)"
           class="px-4 py-1.5 rounded-full text-sm font-semibold ring-1 ring-black/5 hover:ring-brand-300 transition-colors"
         >
-          {{ cat.label }}
+          Todas
         </button>
-      }
-    </div>
+        @for (opt of grupo.options; track opt.id) {
+          <button
+            type="button"
+            (click)="setParam(grupo.id, opt.id)"
+            [class.bg-brand-500]="paramValue(grupo.id) === opt.id"
+            [class.text-white]="paramValue(grupo.id) === opt.id"
+            [class.bg-white]="paramValue(grupo.id) !== opt.id"
+            [class.text-stone-600]="paramValue(grupo.id) !== opt.id"
+            class="px-4 py-1.5 rounded-full text-sm font-semibold ring-1 ring-black/5 hover:ring-brand-300 transition-colors"
+          >
+            {{ opt.label }}
+          </button>
+        }
+      </div>
+    }
   </div>
 
   <!-- Grilla de productos -->

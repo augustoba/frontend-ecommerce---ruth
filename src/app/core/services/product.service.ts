@@ -1,6 +1,16 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { Product, ProductInput, SizeStock, stockForSize } from '../models/product.model';
+import { ProductParams } from '../models/param.model';
 import { clothingIconDataUri } from '../assets/clothing-icons';
+
+/** Atajo para armar los params de los productos de ejemplo */
+function params(publico: string, tipo: string, estaciones: string[]): ProductParams {
+  return {
+    'grp-publico': [`publico-${publico}`],
+    'grp-tipo': [`tipo-${tipo}`],
+    'grp-estacion': estaciones.map((e) => `estacion-${e}`),
+  };
+}
 
 const STORAGE_KEY = 'pp_products';
 
@@ -15,7 +25,7 @@ const MOCK_PRODUCTS: Product[] = [
     name: 'Body manga larga estampado animales',
     description: 'Body de algodón suave, manga larga, con estampa de animalitos. Ideal para el día a día.',
     price: 9800,
-    category: 'bebe',
+    params: params('bebe', 'body', ['todo']),
     ageRange: '0 a 12 meses',
     sizeStocks: [
       { size: 'RN', stock: 4 },
@@ -32,7 +42,7 @@ const MOCK_PRODUCTS: Product[] = [
     name: 'Conjunto jogging campera + pantalón',
     description: 'Conjunto de frisa perchada, campera con capucha y pantalón con puños. Súper abrigado.',
     price: 24500,
-    category: 'nene',
+    params: params('nene', 'conjunto', ['otono', 'invierno']),
     ageRange: '2 a 8 años',
     sizeStocks: [
       { size: '2', stock: 2 },
@@ -50,7 +60,7 @@ const MOCK_PRODUCTS: Product[] = [
     name: 'Vestido plumeti volados',
     description: 'Vestido liviano de tela plumeti con volados en el ruedo y moño en la espalda.',
     price: 19900,
-    category: 'nena',
+    params: params('nena', 'vestido', ['primavera', 'verano']),
     ageRange: '2 a 10 años',
     sizeStocks: [
       { size: '2', stock: 2 },
@@ -69,7 +79,7 @@ const MOCK_PRODUCTS: Product[] = [
     name: 'Remera básica algodón (pack x3)',
     description: 'Pack de 3 remeras lisas de algodón peinado en colores surtidos. Unisex.',
     price: 15600,
-    category: 'unisex',
+    params: params('unisex', 'remera', ['todo']),
     ageRange: '1 a 12 años',
     sizeStocks: [
       { size: '1', stock: 3 },
@@ -90,7 +100,7 @@ const MOCK_PRODUCTS: Product[] = [
     name: 'Jean chupín con elástico',
     description: 'Jean chupín de tiro medio con cintura elastizada para mayor comodidad.',
     price: 21300,
-    category: 'nena',
+    params: params('nena', 'jean', ['otono', 'invierno', 'primavera']),
     ageRange: '2 a 12 años',
     sizeStocks: [
       { size: '2', stock: 1 },
@@ -110,7 +120,7 @@ const MOCK_PRODUCTS: Product[] = [
     name: 'Buzo canguro dinosaurios',
     description: 'Buzo canguro de frisa con bolsillo y estampa de dinosaurios.',
     price: 18200,
-    category: 'nene',
+    params: params('nene', 'buzo', ['otono', 'invierno']),
     ageRange: '2 a 10 años',
     sizeStocks: [
       { size: '2', stock: 0 },
@@ -129,7 +139,7 @@ const MOCK_PRODUCTS: Product[] = [
     name: 'Enterito corto verano',
     description: 'Enterito liviano de algodón, ideal para el verano, con broches en la entrepierna.',
     price: 13400,
-    category: 'bebe',
+    params: params('bebe', 'body', ['primavera', 'verano']),
     ageRange: '3 a 24 meses',
     sizeStocks: [
       { size: '3-6M', stock: 5 },
@@ -146,7 +156,7 @@ const MOCK_PRODUCTS: Product[] = [
     name: 'Campera inflable con capucha',
     description: 'Campera inflable liviana, abrigada, con capucha desmontable. Repelente al agua.',
     price: 32900,
-    category: 'unisex',
+    params: params('unisex', 'buzo', ['otono', 'invierno']),
     ageRange: '4 a 14 años',
     sizeStocks: [
       { size: '4', stock: 1 },
@@ -165,7 +175,7 @@ const MOCK_PRODUCTS: Product[] = [
     name: 'Pollera short con volado',
     description: 'Pollera short de gabardina liviana con volado, cintura con elástico.',
     price: 12800,
-    category: 'nena',
+    params: params('nena', 'vestido', ['primavera', 'verano']),
     ageRange: '2 a 10 años',
     sizeStocks: [
       { size: '2', stock: 2 },
@@ -184,7 +194,7 @@ const MOCK_PRODUCTS: Product[] = [
     name: 'Zapatillas urbanas velcro',
     description: 'Zapatillas livianas con cierre de velcro, suela antideslizante.',
     price: 27500,
-    category: 'unisex',
+    params: params('unisex', 'calzado', ['todo']),
     ageRange: '1 a 8 años',
     sizeStocks: [
       { size: '1', stock: 1 },
@@ -200,6 +210,21 @@ const MOCK_PRODUCTS: Product[] = [
   },
 ];
 
+/**
+ * Adapta un producto guardado en localStorage al modelo actual. Los datos
+ * viejos traían `category: 'bebe' | 'nena' | ...` en vez de `params`; acá se
+ * convierte a la parametría "Público" para no romper el catálogo existente.
+ */
+function migrateProduct(raw: Record<string, unknown>): Product {
+  const p = { ...raw } as Record<string, unknown>;
+  if (!p['params'] || typeof p['params'] !== 'object') {
+    const legacy = typeof p['category'] === 'string' ? (p['category'] as string) : null;
+    p['params'] = legacy ? { 'grp-publico': [`publico-${legacy}`] } : {};
+  }
+  delete p['category'];
+  return p as unknown as Product;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private readonly productsSignal = signal<Product[]>(this.loadInitial());
@@ -211,13 +236,6 @@ export class ProductService {
   readonly availableProducts = computed(() =>
     this.productsSignal().filter((p) => p.active)
   );
-
-  readonly categories: { value: Product['category']; label: string }[] = [
-    { value: 'bebe', label: 'Bebé' },
-    { value: 'nena', label: 'Nena' },
-    { value: 'nene', label: 'Nene' },
-    { value: 'unisex', label: 'Unisex' },
-  ];
 
   getById(id: string): Product | undefined {
     return this.productsSignal().find((p) => p.id === id);
@@ -291,8 +309,9 @@ export class ProductService {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return MOCK_PRODUCTS;
-      const parsed = JSON.parse(raw) as Product[];
-      return Array.isArray(parsed) && parsed.length ? parsed : MOCK_PRODUCTS;
+      const parsed = JSON.parse(raw) as unknown[];
+      if (!Array.isArray(parsed) || !parsed.length) return MOCK_PRODUCTS;
+      return parsed.map((p) => migrateProduct(p as Record<string, unknown>));
     } catch {
       return MOCK_PRODUCTS;
     }
