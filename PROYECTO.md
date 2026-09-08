@@ -189,6 +189,12 @@ src/app/
   (precio de compra). Se cargan en la sección "Compra / proveedor" del form de
   producto, que muestra la **ganancia** estimada (`margin()` en
   `product.model.ts`: venta − costo, y % de markup sobre el costo).
+- **Calculadora de precio de venta:** en esa misma sección hay un campo
+  "% que le querés ganar (sobre el costo)". Al cargarlo (con el costo puesto),
+  escribe automáticamente el "Precio (ARS)" = costo × (1 + %/100). El % no se
+  guarda en el producto — es solo calculadora; el precio queda editable a mano.
+  Al editar un producto que ya tiene costo y precio, el campo arranca con el %
+  implícito.
 - El listado `/admin/productos` tiene una columna "Compra" con proveedor,
   costo y margen (verde/rojo).
 - La ficha del proveedor (entrar a editarlo) lista las prendas que le
@@ -271,3 +277,6 @@ src/app/
     de proveedores con datos de contacto + campos opcionales `supplierId` y
     `costPrice` en el producto, con cálculo de ganancia. Todo info interna del
     admin, no se muestra al público.
+18. Calculadora de precio de venta en el form de producto: se pone el costo y
+    el "% que le querés ganar" y el precio de venta se completa solo
+    (costo × (1 + %/100)). El % no se persiste, el precio queda editable.

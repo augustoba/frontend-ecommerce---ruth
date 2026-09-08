@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
@@ -12,9 +12,16 @@ const ALL_SIZES: ProductSize[] = [
   'RN', '0-3M', '3-6M', '6-12M', '1', '2', '3', '4', '6', '8', '10', '12', '14', '16',
 ];
 
+/** Precio de venta = costo + markup%. null si falta el costo o el %. */
+function priceFromMarkup(cost: number, markupPercent: number): number | null {
+  const m = Number(markupPercent) || 0;
+  if (cost <= 0 || m <= 0) return null;
+  return Math.round(cost * (1 + m / 100));
+}
+
 @Component({
   selector: 'app-admin-product-form',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, FormsModule, RouterLink],
   templateUrl: './admin-product-form.component.html',
   styleUrl: './admin-product-form.component.css',
 })
@@ -73,6 +80,45 @@ export class AdminProductFormComponent {
     const v = this.formValue();
     return margin({ price: Number(v.price) || 0, costPrice: Number(v.costPrice) || 0 });
   });
+
+  /**
+   * % de ganancia que se le quiere poner sobre el costo. NO se guarda en el
+   * producto: es solo una calculadora — al cargarlo, escribe el precio de venta.
+   */
+  readonly markupPercent = signal<number>(this.initialMarkup());
+
+  /** Precio de venta que saldría de aplicar el % de ganancia al costo actual */
+  readonly suggestedPrice = computed(() =>
+    priceFromMarkup(Number(this.formValue().costPrice) || 0, this.markupPercent())
+  );
+
+  private initialMarkup(): number {
+    const cost = this.editingProduct?.costPrice ?? 0;
+    const price = this.editingProduct?.price ?? 0;
+    if (cost > 0 && price > 0) return Math.round(((price - cost) / cost) * 100);
+    return 0;
+  }
+
+  /** Escribe el precio de venta a partir del % de ganancia y el costo dado */
+  private applyMarkup(cost: number): void {
+    const price = priceFromMarkup(cost, this.markupPercent());
+    if (price !== null) {
+      this.form.controls.price.setValue(price);
+      this.form.controls.price.markAsDirty();
+    }
+  }
+
+  onMarkupChange(value: number): void {
+    this.markupPercent.set(Math.max(0, Number(value) || 0));
+    this.applyMarkup(Number(this.form.controls.costPrice.value) || 0);
+  }
+
+  /** Al cambiar el costo, si ya hay un % de ganancia cargado, recalcula el precio */
+  onCostPriceInput(event: Event): void {
+    if (this.markupPercent() > 0) {
+      this.applyMarkup(Number((event.target as HTMLInputElement).value) || 0);
+    }
+  }
 
   readonly submitted = signal(false);
 
