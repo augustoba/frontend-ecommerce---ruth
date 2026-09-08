@@ -336,6 +336,25 @@ src/app/
       productos y por parametría).
 - [ ] (Backend) Flyway, perfil `prod`, proyecciones DTO — ver `../backend/PROYECTO.md` §11.
 
+### Roadmap de mejoras (análisis 2026-09-08 — 5 puntos hechos, resto pendiente)
+
+Hechos: galería de fotos por producto · dashboard `/admin` + stock bajo ·
+paginación del panel · orden del catálogo por precio · filtros de pedidos ·
+fix de sobreventa · vigencia por fechas en descuentos.
+
+Pendientes, por prioridad:
+- [ ] **Open Graph / meta tags dinámicos** (compartir productos en WhatsApp con
+      preview). Pausado: depende del hosting (los bots no ejecutan JS → SSR/
+      prerender o endpoint de meta por User-Agent). Junto con SSR.
+- [ ] **Imágenes a storage externo** (Cloudinary/S3/disco) en vez de data-URI.
+- [ ] **Datos de envío/retiro** configurables en `/admin/ajustes` + en el mensaje
+      de WhatsApp.
+- [ ] **Estados de pedido más finos** ("pago recibido", "entregado") + notas internas.
+- [ ] Variantes de **color** (stock por talle+color) · **SSR/prerender** ·
+      **multi-admin con roles** · métricas por talle/proveedor + export CSV.
+- [ ] Técnico: rate-limiting en login · tests del frontend · PWA · página 404 real ·
+      analytics · backups · encoding UTF-8 al compilar `DataSeeder.java`.
+
 ## 11. Historial de pedidos/decisiones relevantes (cronológico)
 
 1. Pedido inicial: frontend Angular + backend Java, sin pasarela de
