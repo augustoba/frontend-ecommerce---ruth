@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { apiUrl } from '../config/site-config';
 import { LoadStatus } from '../state/collection-store';
-import { SalesMetrics } from '../models/metrics.model';
+import { SalesMetrics, YearComparison } from '../models/metrics.model';
 
 export interface MetricsQuery {
   /** YYYY-MM-DD */
@@ -24,8 +24,13 @@ export class MetricsService {
   private readonly statusSignal = signal<LoadStatus>('idle');
   private lastQuery: MetricsQuery | null = null;
 
+  private readonly comparisonSignal = signal<YearComparison | null>(null);
+  private readonly comparisonStatusSignal = signal<LoadStatus>('idle');
+
   readonly metrics = this.dataSignal.asReadonly();
   readonly status = this.statusSignal.asReadonly();
+  readonly comparison = this.comparisonSignal.asReadonly();
+  readonly comparisonStatus = this.comparisonStatusSignal.asReadonly();
 
   load(query: MetricsQuery): void {
     this.lastQuery = query;
@@ -45,5 +50,18 @@ export class MetricsService {
 
   reload(): void {
     if (this.lastQuery) this.load(this.lastQuery);
+  }
+
+  /** Comparativas del año (venta total mes a mes + semana en curso vs. meses anteriores). */
+  loadComparison(): void {
+    if (this.comparisonStatusSignal() === 'loading') return;
+    this.comparisonStatusSignal.set('loading');
+    this.http.get<YearComparison>(apiUrl('/admin/metrics/comparison')).subscribe({
+      next: (c) => {
+        this.comparisonSignal.set(c);
+        this.comparisonStatusSignal.set('loaded');
+      },
+      error: () => this.comparisonStatusSignal.set('error'),
+    });
   }
 }

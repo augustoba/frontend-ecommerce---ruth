@@ -177,3 +177,76 @@
   </div>
  }
 }
+
+<!-- Comparativas del año (independientes del filtro de arriba) -->
+<div class="mt-8">
+  <h2 class="font-display font-extrabold text-xl text-stone-800 mb-1">Comparativas</h2>
+  <p class="text-sm text-stone-500 mb-4">
+    Facturación (precio de lista) de los pedidos procesados, mes a mes del año en curso.
+  </p>
+
+  @if (comparisonStatus() === 'loading') {
+    <app-skeleton variant="block" [count]="2" />
+  } @else if (comparisonStatus() === 'error') {
+    <div class="bg-white rounded-2xl ring-1 ring-black/5 p-6 text-center">
+      <p class="font-semibold text-stone-700">No se pudieron cargar las comparativas.</p>
+      <button type="button" (click)="reloadComparison()" class="mt-2 text-brand-600 font-semibold hover:underline">Reintentar</button>
+    </div>
+  } @else if (comparison()) {
+   @if (comparison(); as c) {
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Mes a mes -->
+      <div class="bg-white rounded-2xl ring-1 ring-black/5 p-5">
+        <h3 class="font-display font-bold text-stone-800 mb-1">Este mes vs. meses anteriores</h3>
+        <p class="text-xs text-stone-400 mb-4">Facturación total de cada mes de {{ c.year }}.</p>
+        <div class="flex flex-col gap-2.5">
+          @for (p of c.monthly; track p.month) {
+            <div class="flex items-center gap-3 text-sm">
+              <span class="w-10 shrink-0 font-medium"
+                [class.text-brand-700]="p.month === currentMonth" [class.text-stone-500]="p.month !== currentMonth">
+                {{ monthShort(p.month) }}
+              </span>
+              <div class="flex-1 bg-stone-100 rounded-full h-5 overflow-hidden">
+                <div class="h-full rounded-full min-w-[2px]"
+                  [class.bg-brand-500]="p.month === currentMonth" [class.bg-brand-300]="p.month !== currentMonth"
+                  [style.width.%]="p.revenue / maxMonthlyCompare() * 100"></div>
+              </div>
+              <span class="w-24 shrink-0 text-right font-semibold tabular-nums"
+                [class.text-brand-700]="p.month === currentMonth" [class.text-stone-600]="p.month !== currentMonth">
+                {{ p.revenue | currency:'ARS':'symbol-narrow':'1.0-0' }}
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Semana en curso -->
+      <div class="bg-white rounded-2xl ring-1 ring-black/5 p-5">
+        <h3 class="font-display font-bold text-stone-800 mb-1">Semana en curso vs. meses anteriores</h3>
+        <p class="text-xs text-stone-400 mb-4">
+          Días {{ c.week.dayFrom }} a {{ c.week.dayTo }} de cada mes de {{ c.year }} (semana {{ c.week.weekOfMonth }}).
+        </p>
+        <div class="flex flex-col gap-2.5">
+          @for (p of c.weekly; track p.month) {
+            <div class="flex items-center gap-3 text-sm">
+              <span class="w-10 shrink-0 font-medium"
+                [class.text-brand-700]="p.month === currentMonth" [class.text-stone-500]="p.month !== currentMonth">
+                {{ monthShort(p.month) }}
+              </span>
+              <div class="flex-1 bg-stone-100 rounded-full h-5 overflow-hidden">
+                <div class="h-full rounded-full min-w-[2px]"
+                  [class.bg-mint-500]="p.month === currentMonth" [class.bg-mint-300]="p.month !== currentMonth"
+                  [style.width.%]="p.revenue / maxWeeklyCompare() * 100"></div>
+              </div>
+              <span class="w-24 shrink-0 text-right font-semibold tabular-nums"
+                [class.text-brand-700]="p.month === currentMonth" [class.text-stone-600]="p.month !== currentMonth">
+                {{ p.revenue | currency:'ARS':'symbol-narrow':'1.0-0' }}
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+   }
+  }
+</div>

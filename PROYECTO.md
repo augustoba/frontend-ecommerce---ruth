@@ -294,8 +294,14 @@ src/app/
   por mes (serie continua); "más vendidos" (top 10 por unidades) y "menos
   vendidos" (incluye productos activos con 0 ventas); y el desglose por el
   grupo elegido (unidades + facturación por opción).
-- **Front:** `MetricsService` (signal, cada `load(query)` reemplaza el
-  resultado), `AdminMetricsComponent`. Barras con CSS (sin librería de charts).
+- **Comparativas** (bloque aparte, siempre del año en curso, no depende del
+  filtro de arriba): "este mes vs. meses anteriores" (facturación total mes a
+  mes) y "semana en curso vs. meses anteriores" (mismo tramo de días —bloques
+  de 7, cortados en hoy— mes a mes). El mes actual va resaltado.
+  `GET /api/admin/metrics/comparison`.
+- **Front:** `MetricsService` (signals: `metrics`/`status` para el tablero,
+  `comparison`/`comparisonStatus` para las comparativas), `AdminMetricsComponent`.
+  Barras con CSS (sin librería de charts).
 - **Pendiente:** desglose por talle y por proveedor (el backend hoy sólo hace
   por grupo de parametría).
 
@@ -410,6 +416,9 @@ src/app/
     mes, productos más y menos vendidos, y desglose por parametría (por defecto
     "Tipo de prenda"). Backend: `GET /api/admin/metrics` (`MetricsService`),
     sobre los pedidos PROCESADO. Barras en CSS, sin librería de charts.
+    Se sumó el bloque **Comparativas** (`/metrics/comparison`): este mes vs. los
+    meses anteriores del año, y la semana en curso vs. el mismo tramo de días de
+    los meses anteriores.
 
 ## 12. Backend (`../backend/`) — resumen
 

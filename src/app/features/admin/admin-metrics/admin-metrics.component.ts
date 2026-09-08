@@ -4,7 +4,7 @@ import { CurrencyPipe } from '@angular/common';
 import { MetricsService } from '../../../core/services/metrics.service';
 import { ParamService } from '../../../core/services/param.service';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
-import { monthLabel } from '../../../core/models/metrics.model';
+import { monthLabel, monthShort } from '../../../core/models/metrics.model';
 
 type Preset = 'mes' | 'trimestre' | 'anio-actual' | 'anio' | 'custom';
 
@@ -24,7 +24,16 @@ export class AdminMetricsComponent {
 
   readonly status = this.metricsService.status;
   readonly metrics = this.metricsService.metrics;
+  readonly comparison = this.metricsService.comparison;
+  readonly comparisonStatus = this.metricsService.comparisonStatus;
   readonly monthLabel = monthLabel;
+  readonly monthShort = monthShort;
+
+  /** Mes en curso ("YYYY-MM") para resaltarlo en las comparativas. */
+  readonly currentMonth = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  })();
 
   /** Grupos de parametría para el selector del desglose. */
   readonly groups = this.paramService.groups;
@@ -41,6 +50,12 @@ export class AdminMetricsComponent {
   readonly maxGroupUnits = computed(() =>
     Math.max(1, ...(this.metrics()?.byGroup.rows ?? []).map((r) => r.units))
   );
+  readonly maxMonthlyCompare = computed(() =>
+    Math.max(1, ...(this.comparison()?.monthly ?? []).map((p) => p.revenue))
+  );
+  readonly maxWeeklyCompare = computed(() =>
+    Math.max(1, ...(this.comparison()?.weekly ?? []).map((p) => p.revenue))
+  );
 
   readonly isEmpty = computed(() => this.status() === 'loaded' && (this.metrics()?.totals.units ?? 0) === 0);
 
@@ -49,6 +64,7 @@ export class AdminMetricsComponent {
     this.applyPreset('trimestre', false);
     // primera carga
     this.load();
+    this.metricsService.loadComparison();
 
     // si el grupo elegido dejó de existir (poco probable), volver al default
     effect(() => {
@@ -96,5 +112,9 @@ export class AdminMetricsComponent {
 
   reload(): void {
     this.metricsService.reload();
+  }
+
+  reloadComparison(): void {
+    this.metricsService.loadComparison();
   }
 }

@@ -48,9 +48,35 @@ export interface GroupRow {
   revenue: number;
 }
 
+/** Comparativas del año — respuesta de `GET /api/admin/metrics/comparison`. */
+export interface YearComparison {
+  year: number;
+  /** Ventana de días del mes que se compara (la "semana en curso"). */
+  week: { weekOfMonth: number; dayFrom: number; dayTo: number };
+  /** Venta total mes a mes del año (hasta el mes actual). */
+  monthly: PeriodStat[];
+  /** Ventas del mismo tramo de días (`week`) mes a mes. */
+  weekly: PeriodStat[];
+}
+
+export interface PeriodStat {
+  /** "YYYY-MM" */
+  month: string;
+  revenue: number;
+  units: number;
+  orders: number;
+}
+
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
 /** Etiqueta legible de un mes "YYYY-MM" → "sep 2026". */
 export function monthLabel(month: string): string {
   const [y, m] = month.split('-').map(Number);
-  const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-  return `${meses[m - 1] ?? m} ${y}`;
+  return `${MESES[m - 1] ?? m} ${y}`;
+}
+
+/** Mes sin año: "2026-09" → "sep". */
+export function monthShort(month: string): string {
+  const m = Number(month.split('-')[1]);
+  return MESES[m - 1] ?? month;
 }
