@@ -174,15 +174,20 @@ src/app/
 
 ## 9bis. Panel de administración — módulos
 
+- `/admin` — **Inicio**: resumen (pedidos pendientes, facturación del mes,
+  conteo de productos, últimos pedidos) + **lista de productos por reponer**
+  (talles con stock ≤ umbral). El menú lateral muestra un badge rojo con la
+  cantidad de talles en alerta (como el de pedidos pendientes).
 - `/admin/pedidos` — listado de pedidos (código, cliente, fecha, total,
   estado). Muestra un contador de pedidos pendientes en el menú lateral.
 - `/admin/pedidos/:id` — detalle: tildar/destildar ítems, confirmar
   (descuenta stock) o cancelar el pedido completo. Avisa si el stock
   actual de un talle ya no alcanza para lo pedido.
 - `/admin/productos` y `/admin/productos/nuevo` / `:id/editar` — CRUD de
-  productos con stock por talle y **galería de fotos** (agregar por URL o subir
-  del disco, reordenar, quitar; la primera es la portada). El form de edición
-  usa un *resolver* que trae el producto del backend antes de entrar.
+  productos con stock por talle, **galería de fotos** (agregar por URL o subir
+  del disco, reordenar, quitar; la primera es la portada) y **umbral de stock
+  bajo** propio (vacío = default global 3). El form de edición usa un *resolver*
+  que trae el producto del backend antes de entrar.
 - `/admin/carrusel` — fotos del carrusel de la home: subir foto (se redimensiona
   sola a máx. 1600px de ancho antes de mandarla), editar descripción, reordenar,
   eliminar.
@@ -428,6 +433,12 @@ src/app/
     reordenar, quitar) y la ficha muestra la galería con miniaturas. Backend:
     `Product.images` (tabla `product_image`); la respuesta mantiene `imageUrl`
     (portada) para las tarjetas y el carrito.
+26. **Inicio del panel + alertas de stock bajo** (2026-09-08): `/admin` dejó de
+    redirigir a productos y ahora es un dashboard (`AdminDashboardComponent`):
+    pedidos pendientes, facturación del mes, conteo de productos, últimos
+    pedidos y **lista de productos por reponer** (talles con stock ≤ umbral).
+    Badge rojo en el menú. El producto tiene un `lowStockThreshold` propio
+    (vacío = default 3). Backend: `GET /api/admin/dashboard` + `/low-stock`.
 
 ## 12. Backend (`../backend/`) — resumen
 

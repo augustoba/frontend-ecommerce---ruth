@@ -49,7 +49,14 @@ export const routes: Routes = [
       ),
     canActivate: [adminGuard],
     children: [
-      { path: '', redirectTo: 'productos', pathMatch: 'full' },
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/admin/admin-dashboard/admin-dashboard.component').then(
+            (m) => m.AdminDashboardComponent
+          ),
+        title: 'Inicio | Admin',
+      },
       {
         path: 'productos',
         loadComponent: () =>

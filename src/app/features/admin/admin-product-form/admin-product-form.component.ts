@@ -84,6 +84,9 @@ export class AdminProductFormComponent {
     costPrice: [this.editingProduct?.costPrice ?? 0, [Validators.min(0)]],
   });
 
+  /** Umbral de stock bajo propio del producto (vacío = usar el default global). */
+  readonly lowStockThreshold = signal<number | null>(this.editingProduct?.lowStockThreshold ?? null);
+
   private readonly formValue = toSignal(this.form.valueChanges, {
     initialValue: this.form.getRawValue(),
   });
@@ -187,6 +190,11 @@ export class AdminProductFormComponent {
 
   removeImage(index: number): void {
     this.images.update((list) => list.filter((_, i) => i !== index));
+  }
+
+  setLowStockThreshold(value: string): void {
+    const n = Number(value);
+    this.lowStockThreshold.set(value === '' || !Number.isFinite(n) || n < 0 ? null : Math.trunc(n));
   }
 
   moveImage(index: number, dir: -1 | 1): void {
@@ -308,6 +316,7 @@ export class AdminProductFormComponent {
       sizeScaleId: value.sizeScaleId || undefined,
       supplierId: value.supplierId || undefined,
       costPrice: value.costPrice > 0 ? value.costPrice : undefined,
+      lowStockThreshold: this.lowStockThreshold() ?? undefined,
       images: this.images(),
       params: this.selectedParams(),
       sizeStocks: Array.from(this.sizeStocks(), ([size, stock]) => ({ size, stock })),

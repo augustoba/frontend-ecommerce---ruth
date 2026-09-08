@@ -43,6 +43,11 @@ export interface Product {
   supplierId?: string;
   /** Precio de compra al proveedor, en ARS. Info interna del admin, opcional. */
   costPrice?: number;
+  /**
+   * A partir de cuántas unidades por talle este producto se considera "stock
+   * bajo" (para las alertas de reposición). Vacío = usar el default global (3).
+   */
+  lowStockThreshold?: number;
 }
 
 /**
