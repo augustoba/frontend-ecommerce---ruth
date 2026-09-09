@@ -50,6 +50,12 @@ export class AdminMetricsComponent {
   readonly maxGroupUnits = computed(() =>
     Math.max(1, ...(this.metrics()?.byGroup.rows ?? []).map((r) => r.units))
   );
+  readonly maxSizeUnits = computed(() =>
+    Math.max(1, ...(this.metrics()?.bySize ?? []).map((r) => r.units))
+  );
+  readonly maxSupplierUnits = computed(() =>
+    Math.max(1, ...(this.metrics()?.bySupplier ?? []).map((r) => r.units))
+  );
   readonly maxMonthlyCompare = computed(() =>
     Math.max(1, ...(this.comparison()?.monthly ?? []).map((p) => p.revenue))
   );

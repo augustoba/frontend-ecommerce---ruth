@@ -12,6 +12,10 @@ export interface SalesMetrics {
   topProducts: ProductStat[];
   bottomProducts: ProductStat[];
   byGroup: GroupBreakdown;
+  /** Unidades y facturación por talle. */
+  bySize: GroupRow[];
+  /** Unidades y facturación por proveedor. */
+  bySupplier: GroupRow[];
 }
 
 export interface ChannelBreakdown {
