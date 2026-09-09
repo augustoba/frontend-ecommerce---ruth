@@ -2,7 +2,8 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { CartItem } from '../models/cart-item.model';
-import { DeliveryMethod, Order, OrderStatus, PaymentMethod } from '../models/order.model';
+import { DeliveryMethod, Order, OrderStatus, PaymentMethod, PublicOrder } from '../models/order.model';
+import { HttpParams } from '@angular/common/http';
 
 /** Datos de entrega + pago que se cargan en el carrito antes de comprar. */
 export interface CheckoutDetails {
@@ -99,6 +100,13 @@ export class OrderService {
       shippingLat: details.shippingLat ?? null,
       shippingLng: details.shippingLng ?? null,
       paymentMethod: details.paymentMethod,
+    });
+  }
+
+  /** Consulta pública del estado de un pedido con el código + el nombre del cliente. */
+  lookup(code: string, name: string): Observable<PublicOrder> {
+    return this.http.get<PublicOrder>(apiUrl('/orders/lookup'), {
+      params: new HttpParams().set('code', code.trim()).set('name', name.trim()),
     });
   }
 

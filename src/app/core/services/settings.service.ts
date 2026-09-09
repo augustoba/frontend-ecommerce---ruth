@@ -19,6 +19,10 @@ export interface SiteSettings {
   whatsappClosing: string | null;
   /** Dirección del local (opción "Retiro en el local" del checkout). */
   storeAddress: string | null;
+  /** Texto de la página "Cómo comprar" (texto libre). null = no hay página. */
+  helpText: string | null;
+  /** Preguntas frecuentes: bloques separados por línea en blanco (1ra línea = pregunta). */
+  faqText: string | null;
   /** Un medio de pago aparece en el checkout si está habilitado Y tiene su dato. */
   paymentTransferEnabled: boolean;
   paymentTransferAlias: string | null;
@@ -53,6 +57,8 @@ const DEFAULTS: SiteSettings = {
   whatsappIntro: WHATSAPP_INTRO_DEFAULT,
   whatsappClosing: WHATSAPP_CLOSING_DEFAULT,
   storeAddress: null,
+  helpText: null,
+  faqText: null,
   paymentTransferEnabled: false,
   paymentTransferAlias: null,
   paymentQrTransferEnabled: false,
@@ -126,10 +132,16 @@ export class SettingsService {
     if (link && link.getAttribute('href') !== href) link.setAttribute('href', href);
   }
 
-  update(req: SiteSettings): Observable<boolean> {
+  /**
+   * Guarda cambios de configuración. Acepta un objeto parcial: se mezcla con los
+   * settings actuales antes de mandar el objeto completo al backend (así una
+   * pantalla que sólo edita su parte no pisa el resto de los campos).
+   */
+  update(req: Partial<SiteSettings>): Observable<boolean> {
     this.saving.set(true);
+    const full: SiteSettings = { ...this.settingsSignal(), ...req };
     return new Observable<boolean>((sub) => {
-      this.http.put<SiteSettings>(apiUrl('/admin/settings'), req).subscribe({
+      this.http.put<SiteSettings>(apiUrl('/admin/settings'), full).subscribe({
         next: (s) => {
           this.settingsSignal.set(s);
           this.statusSignal.set('loaded');

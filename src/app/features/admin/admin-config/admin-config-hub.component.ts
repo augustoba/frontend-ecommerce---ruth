@@ -54,6 +54,13 @@ export class AdminConfigHubComponent {
       where: 'Pie de página.',
     },
     {
+      path: '/admin/config/ayuda',
+      icon: '❓',
+      title: 'Cómo comprar + FAQ',
+      desc: 'El paso a paso de la compra y las preguntas frecuentes.',
+      where: 'Página /como-comprar (link en el pie de página).',
+    },
+    {
       path: '/admin/carrusel',
       icon: '🖼️',
       title: 'Carrusel',

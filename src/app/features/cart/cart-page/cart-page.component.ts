@@ -14,6 +14,7 @@ import {
 } from '../../../shared/components/address-picker/address-picker.component';
 import { Product, ProductSize, stockForSize } from '../../../core/models/product.model';
 import { DeliveryMethod, Order, PaymentMethod, PAYMENT_LABELS } from '../../../core/models/order.model';
+import { rememberOrder } from '../../../core/utils/remembered-orders';
 
 @Component({
   selector: 'app-cart-page',
@@ -228,6 +229,7 @@ export class CartPageComponent {
           this.sending.set(false);
           this.currentOrder.set(order);
           this.orderSent.set(true);
+          rememberOrder(order.code, this.customerName());
           this.whatsappService.openOrderChat(order);
         },
         error: () => this.sending.set(false),

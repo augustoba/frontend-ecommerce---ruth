@@ -30,6 +30,21 @@ export interface OrderLine {
   accepted: boolean;
 }
 
+/** Vista pública de un pedido (consulta "mis pedidos" con código + nombre). */
+export interface PublicOrder {
+  code: string;
+  customerName: string;
+  status: OrderStatus;
+  createdAt: string;
+  processedAt?: string | null;
+  deliveryMethod: DeliveryMethod;
+  subtotal: number;
+  discountPercent: number;
+  discountAmount: number;
+  total: number;
+  items: { productName: string; size: string; quantity: number; unitPrice: number }[];
+}
+
 export interface Order {
   id: string;
   /** Código corto para identificar el pedido por WhatsApp, ej: "PED-0007" */

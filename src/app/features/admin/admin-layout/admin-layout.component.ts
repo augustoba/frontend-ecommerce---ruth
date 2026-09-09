@@ -56,6 +56,7 @@ const GROUPS: NavGroup[] = [
       { path: '/admin/config/pagos', label: 'Medios de pago' },
       { path: '/admin/config/redes', label: 'Redes sociales' },
       { path: '/admin/config/nosotros', label: 'Sobre nosotros' },
+      { path: '/admin/config/ayuda', label: 'Cómo comprar + FAQ' },
       { path: '/admin/carrusel', label: 'Carrusel' },
     ],
   },

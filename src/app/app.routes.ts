@@ -27,6 +27,22 @@ export const routes: Routes = [
     title: 'Carrito | Estilos Pequeños',
   },
   {
+    path: 'como-comprar',
+    loadComponent: () =>
+      import('./features/help/como-comprar-page/como-comprar-page.component').then(
+        (m) => m.ComoComprarPageComponent
+      ),
+    title: 'Cómo comprar | Estilos Pequeños',
+  },
+  {
+    path: 'mis-pedidos',
+    loadComponent: () =>
+      import('./features/orders/mis-pedidos-page/mis-pedidos-page.component').then(
+        (m) => m.MisPedidosPageComponent
+      ),
+    title: 'Mis pedidos | Estilos Pequeños',
+  },
+  {
     path: 'admin/login',
     loadComponent: () =>
       import('./features/admin/admin-login/admin-login.component').then(
@@ -201,6 +217,12 @@ export const routes: Routes = [
           ),
         data: { section: 'pagos' },
         title: 'Medios de pago | Admin',
+      },
+      {
+        path: 'config/ayuda',
+        loadComponent: () =>
+          import('./features/admin/admin-help/admin-help.component').then((m) => m.AdminHelpComponent),
+        title: 'Cómo comprar + FAQ | Admin',
       },
       { path: 'ajustes', redirectTo: 'config', pathMatch: 'full' },
       {
