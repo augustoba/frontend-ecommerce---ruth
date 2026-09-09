@@ -4,25 +4,40 @@
 </p>
 
 <div class="grid lg:grid-cols-[1fr_360px] gap-6">
-  <!-- Buscador + líneas -->
+  <!-- Buscador + grilla + líneas -->
   <div>
-    <div class="relative">
-      <input type="search" [ngModel]="search()" (ngModelChange)="search.set($event)"
-        placeholder="Buscar producto por nombre…"
-        class="w-full rounded-full border border-stone-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400" />
-      @if (searchResults().length) {
-        <div class="absolute z-10 mt-1 w-full bg-white rounded-xl ring-1 ring-black/10 shadow-lg overflow-hidden">
-          @for (p of searchResults(); track p.id) {
-            <div class="px-4 py-2.5 border-b border-stone-50 last:border-0">
-              <p class="font-semibold text-stone-800 text-sm">{{ p.name }}</p>
-              <p class="text-xs text-stone-500">{{ p.price | currency: 'ARS' : 'symbol' : '1.0-0' }}</p>
-              <div class="flex flex-wrap gap-1.5 mt-1.5">
-                @for (ss of p.sizeStocks; track ss.size) {
-                  <button type="button" (click)="addProduct(p, ss.size)" [disabled]="ss.stock <= 0"
-                    class="text-xs font-semibold px-2 py-1 rounded-lg ring-1 ring-black/10 hover:enabled:ring-brand-400 disabled:opacity-40 disabled:line-through">
-                    {{ ss.size }} ({{ ss.stock }})
-                  </button>
-                }
+    <input type="search" [ngModel]="search()" (ngModelChange)="search.set($event)"
+      placeholder="Buscar producto por nombre…"
+      class="w-full rounded-full border border-stone-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400" />
+
+    <!-- Grilla de productos (como en la tienda, más compacta) -->
+    <div class="mt-3">
+      @if (catalogStatus() === 'loading' && !visibleProducts().length) {
+        <p class="text-sm text-stone-400 text-center py-8">Cargando productos…</p>
+      } @else if (catalogStatus() === 'error') {
+        <div class="text-center py-8 text-stone-400 bg-white rounded-2xl ring-1 ring-black/5">
+          <p class="font-semibold mb-1">No se pudo cargar el catálogo.</p>
+          <button type="button" (click)="reloadCatalog()" class="text-brand-600 font-semibold hover:underline">Reintentar</button>
+        </div>
+      } @else if (!visibleProducts().length) {
+        <p class="text-sm text-stone-400 text-center py-8">Ningún producto coincide con la búsqueda.</p>
+      } @else {
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[440px] overflow-y-auto pr-1">
+          @for (p of visibleProducts(); track p.id) {
+            <div class="bg-white rounded-xl ring-1 ring-black/5 overflow-hidden flex flex-col">
+              <img [src]="p.imageUrl" [alt]="p.name" class="w-full aspect-square object-cover bg-brand-50" />
+              <div class="p-2 flex flex-col gap-1 flex-1">
+                <p class="text-xs font-semibold text-stone-800 line-clamp-2 leading-tight">{{ p.name }}</p>
+                <p class="text-xs text-brand-600 font-bold">{{ p.price | currency: 'ARS' : 'symbol' : '1.0-0' }}</p>
+                <div class="flex flex-wrap gap-1 mt-auto pt-1">
+                  @for (ss of p.sizeStocks; track ss.size) {
+                    <button type="button" (click)="addProduct(p, ss.size)" [disabled]="ss.stock <= 0"
+                      [attr.title]="ss.stock > 0 ? ss.stock + ' en stock' : 'sin stock'"
+                      class="text-[11px] font-semibold px-1.5 py-0.5 rounded ring-1 ring-black/10 hover:enabled:ring-brand-400 hover:enabled:bg-brand-50 disabled:opacity-40 disabled:line-through">
+                      {{ ss.size }}
+                    </button>
+                  }
+                </div>
               </div>
             </div>
           }
@@ -32,7 +47,7 @@
 
     <div class="mt-4 bg-white rounded-2xl ring-1 ring-black/5 overflow-hidden">
       @if (!lines().length) {
-        <p class="text-sm text-stone-400 text-center py-10">Agregá productos desde el buscador.</p>
+        <p class="text-sm text-stone-400 text-center py-6">Tocá un talle de la grilla para agregarlo a la venta.</p>
       } @else {
         <table class="w-full text-sm">
           <tbody>

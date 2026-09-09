@@ -38,15 +38,17 @@ export class AdminPosComponent {
   readonly paymentMethods: PaymentMethod[] = ['CASH', 'TRANSFER', 'QR_TRANSFER', 'QR_CARD'];
 
   readonly catalogStatus = this.productService.catalogStatus;
+  readonly reloadCatalog = () => this.productService.reloadCatalog();
   private readonly products = this.productService.availableProducts;
 
   readonly search = signal('');
-  readonly searchResults = computed(() => {
+  /** Productos que se muestran en la grilla, filtrados por el buscador. */
+  readonly visibleProducts = computed(() => {
     const term = this.search().trim().toLowerCase();
-    if (!term) return [];
-    return this.products()
-      .filter((p) => p.name.toLowerCase().includes(term))
-      .slice(0, 8);
+    const list = term
+      ? this.products().filter((p) => p.name.toLowerCase().includes(term))
+      : this.products();
+    return [...list].sort((a, b) => a.name.localeCompare(b.name));
   });
 
   readonly lines = signal<PosLine[]>([]);
