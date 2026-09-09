@@ -730,6 +730,24 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
     - **Recibo imprimible:** `/admin/recibo/:id` (logo, fecha, detalle, totales,
       pago) con `window.print()` + CSS `@media print`. Link desde el detalle del
       pedido y tras registrar una venta en el local.
+42. **Ajustes post-tanda (2026-09-09):**
+    - Fix: `authInterceptor` no mandaba el Bearer a `/api/auth/me` → menú del
+      panel vacío y login que rebotaba. Ahora sí.
+    - Fix: `site_settings.help_text/faq_text` como MEDIUMTEXT (VARCHAR grande no
+      entraba en el row-size de MySQL).
+    - `AuthService.has()` fail-open si `/api/auth/me` no responde (backend viejo/
+      caído) — el backend igual valida con `@PreAuthorize`.
+    - **POS:** grilla de productos (foto + precio + talles) además del buscador.
+    - **Métricas por canal:** bloque "Ventas online" vs "Ventas en el local"
+      (`MetricsResponse.byChannel`, calculado desde `Order.channel`).
+    - **Paginación client-side** del catálogo y de las grillas del POS/cambios
+      (de a 12, botón "Ver más").
+    - **Cambios de prenda** (`/admin/cambios`, permiso `POS_USE`): entidad
+      `Exchange` + `ExchangeLine` (DEVUELTA/LLEVADA). Lo devuelto vuelve al
+      stock, lo que se lleva se descuenta (estricto), `difference` = takenTotal −
+      returnedTotal a precio de lista; si es positiva se cobra (con medio de
+      pago). Código `CAM-0001`. Pantalla con toggle "devuelve / se lleva" +
+      listado. schema.sql al día. (Todavía NO suma a métricas.)
 
 ## 12. Backend (`../backend/`) — resumen
 
