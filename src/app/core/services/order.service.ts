@@ -106,6 +106,27 @@ export class OrderService {
     });
   }
 
+  /**
+   * Venta en el local (POS): crea y confirma el pedido en el acto (descuenta
+   * stock). `items` son entradas simples {productId, size, quantity}.
+   */
+  createPos(body: {
+    customerName: string;
+    items: { productId: string; size: string; quantity: number }[];
+    paymentMethod: PaymentMethod | null;
+    couponCode?: string | null;
+  }): Observable<Order> {
+    return this.http
+      .post<Order>(apiUrl('/admin/orders/pos'), {
+        customerName: body.customerName.trim(),
+        items: body.items,
+        deliveryMethod: 'PICKUP',
+        paymentMethod: body.paymentMethod,
+        couponCode: body.couponCode ?? null,
+      })
+      .pipe(tap(() => this.afterMutation()));
+  }
+
   /** Consulta pública del estado de un pedido con el código + el nombre del cliente. */
   lookup(code: string, name: string): Observable<PublicOrder> {
     return this.http.get<PublicOrder>(apiUrl('/orders/lookup'), {

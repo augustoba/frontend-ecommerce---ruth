@@ -45,11 +45,16 @@ export interface PublicOrder {
   items: { productName: string; size: string; quantity: number; unitPrice: number }[];
 }
 
+/** De dónde vino la venta. */
+export type SaleChannel = 'WEB' | 'LOCAL';
+
 export interface Order {
   id: string;
   /** Código corto para identificar el pedido por WhatsApp, ej: "PED-0007" */
   code: string;
   customerName: string;
+  /** WEB (checkout) o LOCAL (venta cargada en el panel). Pedidos viejos: WEB. */
+  channel?: SaleChannel;
   lines: OrderLine[];
   /** Suma de todos los ítems, sin descuento */
   subtotal: number;

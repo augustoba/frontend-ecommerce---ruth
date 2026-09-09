@@ -59,6 +59,17 @@ export const routes: Routes = [
     title: 'Recuperar contraseña | Admin',
   },
   {
+    path: 'admin/recibo/:id',
+    canActivate: [adminGuard, permissionGuard],
+    data: { permission: 'ORDERS_VIEW' },
+    loadComponent: () =>
+      import('./features/admin/admin-receipt/admin-receipt.component').then(
+        (m) => m.AdminReceiptComponent
+      ),
+    resolve: { order: orderResolver },
+    title: 'Recibo',
+  },
+  {
     path: 'admin',
     loadComponent: () =>
       import('./features/admin/admin-layout/admin-layout.component').then(
@@ -105,6 +116,14 @@ export const routes: Routes = [
           ),
         resolve: { product: productResolver },
         title: 'Editar producto | Admin',
+      },
+      {
+        path: 'ventas/nueva',
+        canActivate: [permissionGuard],
+        data: { permission: 'POS_USE' },
+        loadComponent: () =>
+          import('./features/admin/admin-pos/admin-pos.component').then((m) => m.AdminPosComponent),
+        title: 'Venta en el local | Admin',
       },
       {
         path: 'pedidos',
