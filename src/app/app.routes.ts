@@ -126,6 +126,26 @@ export const routes: Routes = [
         title: 'Venta en el local | Admin',
       },
       {
+        path: 'cambios',
+        canActivate: [permissionGuard],
+        data: { permission: 'POS_USE' },
+        loadComponent: () =>
+          import('./features/admin/admin-exchange/admin-exchanges.component').then(
+            (m) => m.AdminExchangesComponent
+          ),
+        title: 'Cambios | Admin',
+      },
+      {
+        path: 'cambios/nuevo',
+        canActivate: [permissionGuard],
+        data: { permission: 'POS_USE' },
+        loadComponent: () =>
+          import('./features/admin/admin-exchange/admin-exchange-new.component').then(
+            (m) => m.AdminExchangeNewComponent
+          ),
+        title: 'Registrar cambio | Admin',
+      },
+      {
         path: 'pedidos',
         canActivate: [permissionGuard],
         data: { permission: 'ORDERS_VIEW' },

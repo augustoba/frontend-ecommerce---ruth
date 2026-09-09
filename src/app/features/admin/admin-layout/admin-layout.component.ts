@@ -34,6 +34,7 @@ const GROUPS: NavGroup[] = [
     items: [
       { path: '/admin/pedidos', label: 'Pedidos', badge: 'pending', permission: 'ORDERS_VIEW' },
       { path: '/admin/ventas/nueva', label: 'Venta en el local', permission: 'POS_USE' },
+      { path: '/admin/cambios', label: 'Cambios', permission: 'POS_USE' },
       { path: '/admin/promociones', label: 'Descuentos', permission: 'DISCOUNTS_MANAGE' },
       { path: '/admin/cupones', label: 'Cupones', permission: 'COUPONS_MANAGE' },
       { path: '/admin/metricas', label: 'Métricas', permission: 'METRICS_VIEW' },
