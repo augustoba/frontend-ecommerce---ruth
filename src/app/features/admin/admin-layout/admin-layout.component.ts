@@ -31,6 +31,7 @@ const GROUPS: NavGroup[] = [
     items: [
       { path: '/admin/pedidos', label: 'Pedidos', badge: 'pending' },
       { path: '/admin/promociones', label: 'Descuentos' },
+      { path: '/admin/cupones', label: 'Cupones' },
       { path: '/admin/metricas', label: 'Métricas' },
     ],
   },

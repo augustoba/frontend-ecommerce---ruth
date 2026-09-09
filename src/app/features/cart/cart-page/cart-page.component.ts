@@ -6,6 +6,8 @@ import { CartService } from '../../../core/services/cart.service';
 import { WhatsappService } from '../../../core/services/whatsapp.service';
 import { OrderService } from '../../../core/services/order.service';
 import { DiscountService } from '../../../core/services/discount.service';
+import { CouponService } from '../../../core/services/coupon.service';
+import { CouponCheck } from '../../../core/models/coupon.model';
 import { SettingsService } from '../../../core/services/settings.service';
 import { QuantityStepperComponent } from '../../../shared/components/quantity-stepper/quantity-stepper.component';
 import {
@@ -27,6 +29,7 @@ export class CartPageComponent {
   private readonly whatsappService = inject(WhatsappService);
   private readonly orderService = inject(OrderService);
   private readonly discountService = inject(DiscountService);
+  private readonly couponService = inject(CouponService);
   private readonly settingsService = inject(SettingsService);
 
   readonly items = this.cartService.items;
@@ -50,7 +53,51 @@ export class CartPageComponent {
   readonly discountPercent = computed(() => this.discount().discountPercent);
   readonly discountBreakdown = computed(() => this.discount().breakdown);
   readonly freeShipping = computed(() => this.discount().freeShipping);
-  readonly finalTotal = computed(() => this.subtotal() - this.discountAmount());
+
+  // --- Cupón ---
+  readonly couponInput = signal('');
+  readonly couponApplied = signal<CouponCheck | null>(null);
+  readonly couponError = signal<string | null>(null);
+  readonly checkingCoupon = signal(false);
+
+  /** Descuento estimado del cupón (el backend recalcula al crear el pedido). */
+  readonly couponDiscount = computed(() => {
+    const c = this.couponApplied();
+    if (!c) return 0;
+    // recalcular sobre el subtotal actual para reflejar cambios en el carrito
+    const raw = c.kind === 'PERCENT' ? Math.round((this.subtotal() * c.value) / 100) : c.value;
+    return Math.min(raw, this.subtotal());
+  });
+
+  applyCoupon(): void {
+    const code = this.couponInput().trim();
+    if (!code || this.checkingCoupon()) return;
+    this.couponError.set(null);
+    this.checkingCoupon.set(true);
+    this.couponService.check(code, this.subtotal()).subscribe({
+      next: (res) => {
+        this.checkingCoupon.set(false);
+        this.couponApplied.set(res);
+        this.couponInput.set('');
+      },
+      error: (err) => {
+        this.checkingCoupon.set(false);
+        this.couponApplied.set(null);
+        this.couponError.set(
+          (err?.error as { message?: string })?.message ?? 'No pudimos aplicar el cupón.'
+        );
+      },
+    });
+  }
+
+  removeCoupon(): void {
+    this.couponApplied.set(null);
+    this.couponError.set(null);
+  }
+
+  readonly finalTotal = computed(
+    () => this.subtotal() - this.discountAmount() - this.couponDiscount()
+  );
 
   /** Próximo escalón por monto todavía no alcanzado, para mostrar "te faltan $X" */
   readonly nextPromo = computed(() => this.discountService.nextAmountTierFor(this.subtotal()));
@@ -223,6 +270,7 @@ export class CartPageComponent {
         shippingLat: isShipping ? (addr?.lat ?? null) : null,
         shippingLng: isShipping ? (addr?.lng ?? null) : null,
         paymentMethod: this.paymentMethod()!,
+        couponCode: this.couponApplied()?.code ?? null,
       })
       .subscribe({
         next: (order) => {

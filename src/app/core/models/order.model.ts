@@ -74,4 +74,8 @@ export interface Order {
   freeShippingNote?: string | null;
   /** Letra chica de los descuentos aplicados (ej: "solo microcentro"). */
   discountNote?: string | null;
+  /** Código de cupón aplicado al pedido (null = ninguno). */
+  couponCode?: string | null;
+  /** Descuento en pesos del cupón (aparte del descuento automático). */
+  couponDiscount?: number | null;
 }

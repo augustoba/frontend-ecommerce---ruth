@@ -158,6 +158,14 @@ export const routes: Routes = [
         title: 'Descuentos | Admin',
       },
       {
+        path: 'cupones',
+        loadComponent: () =>
+          import('./features/admin/admin-coupons/admin-coupons.component').then(
+            (m) => m.AdminCouponsComponent
+          ),
+        title: 'Cupones | Admin',
+      },
+      {
         path: 'metricas',
         loadComponent: () =>
           import('./features/admin/admin-metrics/admin-metrics.component').then(

@@ -13,6 +13,8 @@ export interface CheckoutDetails {
   shippingLat?: number | null;
   shippingLng?: number | null;
   paymentMethod: PaymentMethod;
+  /** Código de cupón escrito en el carrito (opcional). */
+  couponCode?: string | null;
 }
 import { CollectionStore } from '../state/collection-store';
 import { apiUrl } from '../config/site-config';
@@ -100,6 +102,7 @@ export class OrderService {
       shippingLat: details.shippingLat ?? null,
       shippingLng: details.shippingLng ?? null,
       paymentMethod: details.paymentMethod,
+      couponCode: details.couponCode ?? null,
     });
   }
 

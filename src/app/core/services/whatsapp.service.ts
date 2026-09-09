@@ -49,15 +49,21 @@ export class WhatsappService {
     const nameLine =
       order.customerName && order.customerName !== 'Sin nombre' ? `🙋 Nombre: ${order.customerName}\n\n` : '';
 
-    const totalsLines =
-      order.discountAmount > 0
-        ? [
-            `Subtotal: ${this.formatCurrency(order.subtotal)}`,
-            `🎉 Descuento (${order.discountPercent}%): -${this.formatCurrency(order.discountAmount)}`,
-            ...(order.discountNote ? [`   (${order.discountNote})`] : []),
-            `💰 Total: ${this.formatCurrency(order.total)}`,
-          ]
-        : [`💰 Total: ${this.formatCurrency(order.total)}`];
+    const couponAmount = order.couponDiscount ?? 0;
+    const hasAnyDiscount = order.discountAmount > 0 || couponAmount > 0;
+    const totalsLines = hasAnyDiscount
+      ? [
+          `Subtotal: ${this.formatCurrency(order.subtotal)}`,
+          ...(order.discountAmount > 0
+            ? [`🎉 Descuento (${order.discountPercent}%): -${this.formatCurrency(order.discountAmount)}`]
+            : []),
+          ...(order.discountNote ? [`   (${order.discountNote})`] : []),
+          ...(couponAmount > 0
+            ? [`🎟️ Cupón ${order.couponCode ?? ''}: -${this.formatCurrency(couponAmount)}`]
+            : []),
+          `💰 Total: ${this.formatCurrency(order.total)}`,
+        ]
+      : [`💰 Total: ${this.formatCurrency(order.total)}`];
 
     const deliveryLines = this.deliveryLines(order, settings);
     const paymentLines = this.paymentLines(order, settings);
