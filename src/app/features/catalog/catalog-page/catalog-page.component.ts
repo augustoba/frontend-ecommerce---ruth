@@ -67,13 +67,27 @@ export class CatalogPageComponent {
   readonly selectedSize = signal<string>('todos');
   /** { [groupId]: optionId } — sin entrada o '' significa "todas" */
   readonly selectedParams = signal<Record<string, string>>({});
+  /** Rango de precio (ARS). null = sin límite. */
+  readonly minPrice = signal<number | null>(null);
+  readonly maxPrice = signal<number | null>(null);
   /** Orden de la grilla: 'novedades' respeta el orden del backend (más nuevos primero). */
   readonly sortBy = signal<'novedades' | 'precio-asc' | 'precio-desc'>('novedades');
+
+  setMinPrice(value: string): void {
+    const n = Number(value);
+    this.minPrice.set(value === '' || !Number.isFinite(n) || n < 0 ? null : n);
+  }
+  setMaxPrice(value: string): void {
+    const n = Number(value);
+    this.maxPrice.set(value === '' || !Number.isFinite(n) || n < 0 ? null : n);
+  }
 
   readonly hasActiveFilters = computed(
     () =>
       !!this.searchTerm() ||
       this.selectedSize() !== 'todos' ||
+      this.minPrice() !== null ||
+      this.maxPrice() !== null ||
       Object.values(this.selectedParams()).some((v) => !!v)
   );
 
@@ -81,6 +95,8 @@ export class CatalogPageComponent {
     const term = this.searchTerm().trim().toLowerCase();
     const size = this.selectedSize();
     const params = this.selectedParams();
+    const min = this.minPrice();
+    const max = this.maxPrice();
 
     const list = this.productService.availableProducts().filter((product) => {
       const matchesTerm = !term || product.name.toLowerCase().includes(term);
@@ -88,7 +104,9 @@ export class CatalogPageComponent {
       const matchesParams = Object.entries(params).every(
         ([groupId, optionId]) => !optionId || productHasParam(product, groupId, optionId)
       );
-      return matchesTerm && matchesSize && matchesParams;
+      const matchesPrice =
+        (min === null || product.price >= min) && (max === null || product.price <= max);
+      return matchesTerm && matchesSize && matchesParams && matchesPrice;
     });
 
     const sort = this.sortBy();
@@ -117,6 +135,8 @@ export class CatalogPageComponent {
     this.searchTerm.set('');
     this.selectedSize.set('todos');
     this.selectedParams.set({});
+    this.minPrice.set(null);
+    this.maxPrice.set(null);
   }
 
   /** Baja con scroll suave a la grilla del catálogo (evita el salto raro del `href="#..."`). */

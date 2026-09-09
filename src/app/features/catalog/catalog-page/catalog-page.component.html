@@ -61,6 +61,22 @@
         </select>
       }
 
+      <div class="flex items-center gap-2">
+        <input
+          type="number" inputmode="numeric" min="0" placeholder="$ mín"
+          [ngModel]="minPrice()" (ngModelChange)="setMinPrice($event)"
+          aria-label="Precio mínimo"
+          class="w-24 rounded-full border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+        />
+        <span class="text-stone-400 text-sm">a</span>
+        <input
+          type="number" inputmode="numeric" min="0" placeholder="$ máx"
+          [ngModel]="maxPrice()" (ngModelChange)="setMaxPrice($event)"
+          aria-label="Precio máximo"
+          class="w-24 rounded-full border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+        />
+      </div>
+
       <select
         [ngModel]="sortBy()"
         (ngModelChange)="sortBy.set($event)"

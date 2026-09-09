@@ -131,7 +131,19 @@ export class CartPageComponent {
     else this.cartService.updateQuantity(productId, size, available);
   }
 
-  readonly customerName = signal('');
+  readonly customerName = signal(loadStored(CUSTOMER_NAME_KEY));
+
+  /** Guarda el nombre en localStorage para precargarlo la próxima vez. */
+  setCustomerName(value: string): void {
+    this.customerName.set(value);
+    try {
+      if (value.trim()) localStorage.setItem(CUSTOMER_NAME_KEY, value.trim());
+      else localStorage.removeItem(CUSTOMER_NAME_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
+
   readonly deliveryMethod = signal<DeliveryMethod | null>(null);
   readonly shippingAddr = signal<PickedAddress | null>(null);
   readonly shippingReference = signal('');
@@ -220,6 +232,16 @@ export class CartPageComponent {
         },
         error: () => this.sending.set(false),
       });
+  }
+}
+
+const CUSTOMER_NAME_KEY = 'pp_customer_name';
+
+function loadStored(key: string): string {
+  try {
+    return localStorage.getItem(key) ?? '';
+  } catch {
+    return '';
   }
 }
 

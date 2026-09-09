@@ -49,6 +49,15 @@ export class ProductDetailPageComponent {
     this.selectedImageIndex.set(index);
   }
 
+  /** Lightbox de la foto ampliada. */
+  readonly zoomOpen = signal(false);
+  openZoom(): void {
+    this.zoomOpen.set(true);
+  }
+  closeZoom(): void {
+    this.zoomOpen.set(false);
+  }
+
   readonly categoryLabel = computed(() => {
     const p = this.product();
     const opt = p ? (p.params?.['grp-publico'] ?? [])[0] : undefined;
