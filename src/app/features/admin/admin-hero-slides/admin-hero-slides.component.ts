@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HeroSlidesService } from '../../../core/services/hero-slides.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { resizeImageFile } from '../../../core/utils/image-resize';
 
 @Component({
@@ -11,6 +12,7 @@ import { resizeImageFile } from '../../../core/utils/image-resize';
 })
 export class AdminHeroSlidesComponent {
   private readonly heroSlidesService = inject(HeroSlidesService);
+  private readonly confirm = inject(ConfirmService);
 
   readonly slides = this.heroSlidesService.slides;
   readonly status = this.heroSlidesService.status;
@@ -48,9 +50,13 @@ export class AdminHeroSlidesComponent {
     this.heroSlidesService.updateAlt(id, alt);
   }
 
-  remove(id: string): void {
-    const confirmed = window.confirm('¿Sacar esta foto del carrusel?');
-    if (confirmed) this.heroSlidesService.remove(id);
+  async remove(id: string): Promise<void> {
+    const ok = await this.confirm.confirm({
+      message: '¿Sacar esta foto del carrusel?',
+      confirmLabel: 'Sacar',
+      danger: true,
+    });
+    if (ok) this.heroSlidesService.remove(id);
   }
 
   moveUp(id: string): void {

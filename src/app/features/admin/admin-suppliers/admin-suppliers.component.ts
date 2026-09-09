@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { SupplierService } from '../../../core/services/supplier.service';
 import { ProductService } from '../../../core/services/product.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { Supplier, SupplierInput } from '../../../core/models/supplier.model';
 import { Product, margin } from '../../../core/models/product.model';
 
@@ -25,6 +26,7 @@ const EMPTY: Draft = { name: '', phone: '', address: '', notes: '' };
 export class AdminSuppliersComponent {
   private readonly supplierService = inject(SupplierService);
   private readonly productService = inject(ProductService);
+  private readonly confirm = inject(ConfirmService);
 
   readonly suppliers = this.supplierService.suppliers;
   readonly status = this.supplierService.status;
@@ -108,12 +110,14 @@ export class AdminSuppliersComponent {
     this.startNew();
   }
 
-  remove(s: Supplier): void {
-    if (
-      window.confirm(
-        `¿Eliminar el proveedor "${s.name}"? Las prendas asociadas se quedan sin proveedor (no se borran).`
-      )
-    ) {
+  async remove(s: Supplier): Promise<void> {
+    const ok = await this.confirm.confirm({
+      title: 'Eliminar proveedor',
+      message: `¿Eliminar el proveedor "${s.name}"? Las prendas asociadas se quedan sin proveedor (no se borran).`,
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (ok) {
       this.supplierService.remove(s.id);
       if (this.editingId() === s.id) this.startNew();
     }

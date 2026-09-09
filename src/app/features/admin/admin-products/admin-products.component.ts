@@ -7,6 +7,7 @@ import { ParamService } from '../../../core/services/param.service';
 import { SupplierService } from '../../../core/services/supplier.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { Product, margin, totalStock } from '../../../core/models/product.model';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
@@ -24,6 +25,7 @@ export class AdminProductsComponent {
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  private readonly confirm = inject(ConfirmService);
 
   /** true si el usuario puede crear/editar/archivar productos. */
   readonly canManage = () => this.auth.has('PRODUCTS_MANAGE');
@@ -159,12 +161,12 @@ export class AdminProductsComponent {
     });
   }
 
-  remove(id: string, name: string): void {
-    const confirmed = window.confirm(
-      `¿Archivar "${name}"? Sale del catálogo y de los listados, pero se puede restaurar desde "Productos archivados".`
-    );
-    if (confirmed) {
-      this.productService.delete(id);
-    }
+  async remove(id: string, name: string): Promise<void> {
+    const ok = await this.confirm.confirm({
+      title: 'Archivar producto',
+      message: `¿Archivar "${name}"? Sale del catálogo y de los listados, pero se puede restaurar desde "Productos archivados".`,
+      confirmLabel: 'Archivar',
+    });
+    if (ok) this.productService.delete(id);
   }
 }

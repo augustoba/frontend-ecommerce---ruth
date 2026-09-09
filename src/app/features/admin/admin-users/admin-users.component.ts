@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { UserAdminService } from '../../../core/services/user-admin.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { Permission, Role } from '../../../core/models/permission.model';
 
 @Component({
@@ -14,6 +15,7 @@ export class AdminUsersComponent {
   private readonly svc = inject(UserAdminService);
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
+  private readonly confirm = inject(ConfirmService);
 
   readonly users = this.svc.users;
   readonly roles = this.svc.roles;
@@ -76,17 +78,29 @@ export class AdminUsersComponent {
     this.svc.updateUser(id, { enabled: !enabled });
   }
 
-  resetPassword(id: string, username: string): void {
-    const pass = window.prompt(`Contraseña nueva para "${username}" (mínimo 4 caracteres):`);
-    if (pass && pass.length >= 4) {
+  async resetPassword(id: string, username: string): Promise<void> {
+    const pass = await this.confirm.prompt({
+      title: `Cambiar contraseña de ${username}`,
+      message: 'Ingresá la contraseña nueva (mínimo 4 caracteres).',
+      confirmLabel: 'Cambiar',
+      input: { label: 'Contraseña nueva', type: 'password', placeholder: '••••' },
+    });
+    if (pass === null) return;
+    if (pass.length >= 4) {
       this.svc.updateUser(id, { password: pass }, () => this.toast.success('Contraseña cambiada.'));
-    } else if (pass !== null) {
+    } else {
       this.toast.error('La contraseña tiene que tener al menos 4 caracteres.');
     }
   }
 
-  deleteUser(id: string, username: string): void {
-    if (window.confirm(`¿Borrar el usuario "${username}"?`)) this.svc.deleteUser(id);
+  async deleteUser(id: string, username: string): Promise<void> {
+    const ok = await this.confirm.confirm({
+      title: 'Borrar usuario',
+      message: `¿Borrar el usuario "${username}"?`,
+      confirmLabel: 'Borrar',
+      danger: true,
+    });
+    if (ok) this.svc.deleteUser(id);
   }
 
   // --- roles ---
@@ -133,7 +147,13 @@ export class AdminUsersComponent {
     else this.svc.createRole(input, done);
   }
 
-  deleteRole(role: Role): void {
-    if (window.confirm(`¿Borrar el rol "${role.name}"?`)) this.svc.deleteRole(role.id);
+  async deleteRole(role: Role): Promise<void> {
+    const ok = await this.confirm.confirm({
+      title: 'Borrar rol',
+      message: `¿Borrar el rol "${role.name}"?`,
+      confirmLabel: 'Borrar',
+      danger: true,
+    });
+    if (ok) this.svc.deleteRole(role.id);
   }
 }

@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SizeScaleService } from '../../../core/services/size-scale.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 @Component({
   selector: 'app-admin-size-scales',
@@ -10,6 +11,7 @@ import { SizeScaleService } from '../../../core/services/size-scale.service';
 })
 export class AdminSizeScalesComponent {
   private readonly sizeScaleService = inject(SizeScaleService);
+  private readonly confirm = inject(ConfirmService);
 
   readonly scales = this.sizeScaleService.scales;
   readonly status = this.sizeScaleService.status;
@@ -30,10 +32,13 @@ export class AdminSizeScalesComponent {
     if (name.trim()) this.sizeScaleService.updateName(id, name);
   }
 
-  removeScale(id: string, name: string): void {
-    if (window.confirm(`¿Eliminar la escala "${name}"?`)) {
-      this.sizeScaleService.remove(id);
-    }
+  async removeScale(id: string, name: string): Promise<void> {
+    const ok = await this.confirm.confirm({
+      message: `¿Eliminar la escala "${name}"?`,
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (ok) this.sizeScaleService.remove(id);
   }
 
   addScale(): void {

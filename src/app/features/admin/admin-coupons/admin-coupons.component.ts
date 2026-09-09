@@ -3,6 +3,7 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CouponService } from '../../../core/services/coupon.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { CouponInput, CouponKind } from '../../../core/models/coupon.model';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 
@@ -14,6 +15,7 @@ import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.
 export class AdminCouponsComponent {
   private readonly couponService = inject(CouponService);
   private readonly toast = inject(ToastService);
+  private readonly confirm = inject(ConfirmService);
 
   readonly coupons = this.couponService.coupons;
   readonly status = this.couponService.status;
@@ -92,10 +94,14 @@ export class AdminCouponsComponent {
     this.couponService.setEnabled(id, !enabled);
   }
 
-  remove(id: string, code: string): void {
-    if (window.confirm(`¿Borrar el cupón ${code}? Esta acción no se puede deshacer.`)) {
-      this.couponService.delete(id);
-    }
+  async remove(id: string, code: string): Promise<void> {
+    const ok = await this.confirm.confirm({
+      title: 'Borrar cupón',
+      message: `¿Borrar el cupón ${code}? Esta acción no se puede deshacer.`,
+      confirmLabel: 'Borrar',
+      danger: true,
+    });
+    if (ok) this.couponService.delete(id);
   }
 
   async copy(code: string): Promise<void> {

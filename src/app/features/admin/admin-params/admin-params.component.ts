@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ParamService } from '../../../core/services/param.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 @Component({
   selector: 'app-admin-params',
@@ -10,6 +11,7 @@ import { ParamService } from '../../../core/services/param.service';
 })
 export class AdminParamsComponent {
   private readonly paramService = inject(ParamService);
+  private readonly confirm = inject(ConfirmService);
 
   readonly groups = this.paramService.groups;
   readonly status = this.paramService.status;
@@ -42,10 +44,14 @@ export class AdminParamsComponent {
     this.paramService.updateGroup(id, { showInCatalog: value });
   }
 
-  removeGroup(id: string, name: string): void {
-    if (window.confirm(`¿Eliminar la parametría "${name}" y todas sus opciones?`)) {
-      this.paramService.removeGroup(id);
-    }
+  async removeGroup(id: string, name: string): Promise<void> {
+    const ok = await this.confirm.confirm({
+      title: 'Eliminar parametría',
+      message: `¿Eliminar la parametría "${name}" y todas sus opciones?`,
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (ok) this.paramService.removeGroup(id);
   }
 
   addGroup(): void {
@@ -85,9 +91,12 @@ export class AdminParamsComponent {
     this.paramService.updateOption(groupId, optionId, label);
   }
 
-  removeOption(groupId: string, optionId: string, label: string): void {
-    if (window.confirm(`¿Eliminar la opción "${label}"?`)) {
-      this.paramService.removeOption(groupId, optionId);
-    }
+  async removeOption(groupId: string, optionId: string, label: string): Promise<void> {
+    const ok = await this.confirm.confirm({
+      message: `¿Eliminar la opción "${label}"?`,
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (ok) this.paramService.removeOption(groupId, optionId);
   }
 }

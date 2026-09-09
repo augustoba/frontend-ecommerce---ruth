@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { NgTemplateOutlet } from '@angular/common';
 import { DiscountService } from '../../../core/services/discount.service';
 import { ParamService } from '../../../core/services/param.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { Discount } from '../../../core/models/discount.model';
 import { PAYMENT_LABELS, PaymentMethod } from '../../../core/models/order.model';
 
@@ -17,6 +18,7 @@ const PAYMENT_METHODS: PaymentMethod[] = ['TRANSFER', 'QR_TRANSFER', 'QR_CARD', 
 export class AdminPromosComponent {
   private readonly discountService = inject(DiscountService);
   private readonly paramService = inject(ParamService);
+  private readonly confirm = inject(ConfirmService);
 
   readonly amountDiscounts = this.discountService.amountDiscounts;
   readonly paramDiscounts = this.discountService.paramDiscounts;
@@ -95,8 +97,13 @@ export class AdminPromosComponent {
     this.discountService.update(id, { minAmount: Number(value) || 0 });
   }
 
-  remove(id: string): void {
-    if (window.confirm('¿Eliminar este descuento?')) this.discountService.remove(id);
+  async remove(id: string): Promise<void> {
+    const ok = await this.confirm.confirm({
+      message: '¿Eliminar este descuento?',
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (ok) this.discountService.remove(id);
   }
 
   // --- por monto ---

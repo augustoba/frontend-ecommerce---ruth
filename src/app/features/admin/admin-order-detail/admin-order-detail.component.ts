@@ -8,6 +8,7 @@ import { ProductService } from '../../../core/services/product.service';
 import { WhatsappService } from '../../../core/services/whatsapp.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { Order, PAYMENT_LABELS } from '../../../core/models/order.model';
 import { Product, ProductSize, stockForSize } from '../../../core/models/product.model';
 
@@ -25,6 +26,7 @@ export class AdminOrderDetailComponent {
   private readonly whatsapp = inject(WhatsappService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
+  private readonly confirm = inject(ConfirmService);
 
   /** true si el usuario puede confirmar / cancelar / editar líneas. */
   readonly canManage = () => this.auth.has('ORDERS_MANAGE');
@@ -138,22 +140,27 @@ export class AdminOrderDetailComponent {
     this.run(this.orderService.setLines(this.orderId, lines));
   }
 
-  confirmOrder(): void {
+  async confirmOrder(): Promise<void> {
     const order = this.order();
     if (!order || this.stockIssues().length > 0) return;
-    const confirmed = window.confirm(
-      `¿Confirmar el pedido ${order.code}? Se va a descontar el stock de los ${this.acceptedCount()} ítems tildados.`
-    );
-    if (confirmed) this.run(this.orderService.confirm(this.orderId));
+    const ok = await this.confirm.confirm({
+      title: `Confirmar pedido ${order.code}`,
+      message: `Se va a descontar el stock de los ${this.acceptedCount()} ítems tildados.`,
+      confirmLabel: 'Confirmar y descontar',
+    });
+    if (ok) this.run(this.orderService.confirm(this.orderId));
   }
 
-  cancelOrder(): void {
+  async cancelOrder(): Promise<void> {
     const order = this.order();
     if (!order) return;
-    const confirmed = window.confirm(`¿Cancelar el pedido ${order.code} completo? No se va a tocar el stock.`);
-    if (confirmed) {
-      this.run(this.orderService.cancel(this.orderId), () => this.router.navigate(['/admin/pedidos']));
-    }
+    const ok = await this.confirm.confirm({
+      title: `Cancelar pedido ${order.code}`,
+      message: 'Se cancela el pedido completo. No se toca el stock.',
+      confirmLabel: 'Cancelar pedido',
+      danger: true,
+    });
+    if (ok) this.run(this.orderService.cancel(this.orderId), () => this.router.navigate(['/admin/pedidos']));
   }
 
   private run(obs: Observable<Order>, onSuccess?: () => void): void {
