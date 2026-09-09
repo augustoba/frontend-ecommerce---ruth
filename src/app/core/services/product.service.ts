@@ -1,4 +1,4 @@
-import { Injectable, computed, inject } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Product, ProductInput } from '../models/product.model';
@@ -58,8 +58,15 @@ export class ProductService {
     return [...map.values()];
   });
 
+  /** Los más vendidos (para la home). Se carga una vez al arrancar. */
+  readonly bestSellers = signal<Product[]>([]);
+
   constructor() {
     this.publicStore.ensureLoaded();
+    this.http.get<Product[]>(apiUrl('/products/best-sellers?limit=8')).subscribe({
+      next: (list) => this.bestSellers.set(list),
+      error: () => {},
+    });
   }
 
   /** Carga la lista completa (panel). Llamar al entrar a una pantalla de admin. */

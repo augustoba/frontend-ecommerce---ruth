@@ -70,6 +70,16 @@ export const routes: Routes = [
     title: 'Recibo',
   },
   {
+    path: 'admin/recibo-cambio/:id',
+    canActivate: [adminGuard, permissionGuard],
+    data: { permission: 'EXCHANGES_USE' },
+    loadComponent: () =>
+      import('./features/admin/admin-receipt/admin-exchange-receipt.component').then(
+        (m) => m.AdminExchangeReceiptComponent
+      ),
+    title: 'Recibo de cambio',
+  },
+  {
     path: 'admin',
     loadComponent: () =>
       import('./features/admin/admin-layout/admin-layout.component').then(

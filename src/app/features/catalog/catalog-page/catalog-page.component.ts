@@ -31,6 +31,8 @@ export class CatalogPageComponent {
 
   readonly catalogStatus = this.productService.catalogStatus;
   readonly reloadCatalog = () => this.productService.reloadCatalog();
+  /** Los más vendidos — se muestran arriba de la grilla si no hay filtros activos. */
+  readonly bestSellers = this.productService.bestSellers;
 
   /** Grupos de parametrías que se muestran como filtro */
   readonly filterGroups = this.paramService.catalogGroups;

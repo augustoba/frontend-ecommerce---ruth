@@ -136,7 +136,7 @@ export class AdminExchangeNewComponent {
         next: (ex) => {
           this.saving.set(false);
           this.toast.success(`Cambio registrado (${ex.code}). Stock actualizado.`);
-          this.router.navigate(['/admin/cambios']);
+          this.router.navigate(['/admin/recibo-cambio', ex.id]);
         },
         error: () => this.saving.set(false),
       });

@@ -25,6 +25,19 @@
   <app-hero-carousel [slides]="heroSlides()" class="absolute inset-0" />
 </section>
 
+@if (bestSellers().length && !hasActiveFilters()) {
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 pt-8">
+    <h2 class="font-display font-extrabold text-xl sm:text-2xl text-stone-800 mb-4">🔥 Lo más vendido</h2>
+    <div class="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+      @for (product of bestSellers(); track product.id) {
+        <div class="w-40 sm:w-48 shrink-0">
+          <app-product-card [product]="product" />
+        </div>
+      }
+    </div>
+  </section>
+}
+
 <section id="catalogo" class="max-w-6xl mx-auto px-4 sm:px-6 py-8 scroll-mt-20">
   <!-- Filtros -->
   <div class="flex flex-col gap-4 mb-8">

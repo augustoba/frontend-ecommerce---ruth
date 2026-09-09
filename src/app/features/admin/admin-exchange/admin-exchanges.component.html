@@ -28,6 +28,7 @@
           <th class="p-4 font-semibold">Cambio</th>
           <th class="p-4 font-semibold">Detalle</th>
           <th class="p-4 font-semibold text-right">Diferencia</th>
+          <th class="p-4 font-semibold text-right"></th>
         </tr>
       </thead>
       <tbody>
@@ -57,6 +58,10 @@
               } @else {
                 <span class="text-stone-400">sin diferencia</span>
               }
+            </td>
+            <td class="p-4 text-right">
+              <a [routerLink]="['/admin/recibo-cambio', e.id]"
+                class="text-brand-600 hover:underline font-semibold text-xs">Recibo</a>
             </td>
           </tr>
         }
