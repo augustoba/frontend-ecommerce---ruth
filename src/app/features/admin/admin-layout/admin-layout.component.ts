@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { OrderService } from '../../../core/services/order.service';
 import { SettingsService } from '../../../core/services/settings.service';
 import { DashboardService } from '../../../core/services/dashboard.service';
+import { Permission } from '../../../core/models/permission.model';
 
 interface NavItem {
   path: string;
@@ -14,6 +15,8 @@ interface NavItem {
   badge?: 'pending';
   /** Ruta exacta (para no marcar activo en sub-rutas). */
   exact?: boolean;
+  /** Permiso necesario para ver el item (sin permiso = siempre visible). */
+  permission?: Permission;
 }
 
 interface NavGroup {
@@ -29,10 +32,11 @@ const GROUPS: NavGroup[] = [
     label: 'Ventas',
     icon: '🧾',
     items: [
-      { path: '/admin/pedidos', label: 'Pedidos', badge: 'pending' },
-      { path: '/admin/promociones', label: 'Descuentos' },
-      { path: '/admin/cupones', label: 'Cupones' },
-      { path: '/admin/metricas', label: 'Métricas' },
+      { path: '/admin/pedidos', label: 'Pedidos', badge: 'pending', permission: 'ORDERS_VIEW' },
+      { path: '/admin/ventas/nueva', label: 'Venta en el local', permission: 'POS_USE' },
+      { path: '/admin/promociones', label: 'Descuentos', permission: 'DISCOUNTS_MANAGE' },
+      { path: '/admin/cupones', label: 'Cupones', permission: 'COUPONS_MANAGE' },
+      { path: '/admin/metricas', label: 'Métricas', permission: 'METRICS_VIEW' },
     ],
   },
   {
@@ -40,10 +44,10 @@ const GROUPS: NavGroup[] = [
     label: 'Catálogo',
     icon: '📦',
     items: [
-      { path: '/admin/productos', label: 'Productos' },
-      { path: '/admin/parametrias', label: 'Parametrías' },
-      { path: '/admin/talles', label: 'Talles' },
-      { path: '/admin/proveedores', label: 'Proveedores' },
+      { path: '/admin/productos', label: 'Productos', permission: 'PRODUCTS_VIEW' },
+      { path: '/admin/parametrias', label: 'Parametrías', permission: 'PARAMS_MANAGE' },
+      { path: '/admin/talles', label: 'Talles', permission: 'SIZE_SCALES_MANAGE' },
+      { path: '/admin/proveedores', label: 'Proveedores', permission: 'SUPPLIERS_MANAGE' },
     ],
   },
   {
@@ -51,14 +55,15 @@ const GROUPS: NavGroup[] = [
     label: 'Configuración del sitio',
     icon: '🎨',
     items: [
-      { path: '/admin/config', label: 'Vista general', exact: true },
-      { path: '/admin/config/identidad', label: 'Identidad y contacto' },
-      { path: '/admin/config/whatsapp', label: 'Mensaje de WhatsApp' },
-      { path: '/admin/config/pagos', label: 'Medios de pago' },
-      { path: '/admin/config/redes', label: 'Redes sociales' },
-      { path: '/admin/config/nosotros', label: 'Sobre nosotros' },
-      { path: '/admin/config/ayuda', label: 'Cómo comprar + FAQ' },
-      { path: '/admin/carrusel', label: 'Carrusel' },
+      { path: '/admin/config', label: 'Vista general', exact: true, permission: 'SETTINGS_MANAGE' },
+      { path: '/admin/config/identidad', label: 'Identidad y contacto', permission: 'SETTINGS_MANAGE' },
+      { path: '/admin/config/whatsapp', label: 'Mensaje de WhatsApp', permission: 'SETTINGS_MANAGE' },
+      { path: '/admin/config/pagos', label: 'Medios de pago', permission: 'SETTINGS_MANAGE' },
+      { path: '/admin/config/redes', label: 'Redes sociales', permission: 'SETTINGS_MANAGE' },
+      { path: '/admin/config/nosotros', label: 'Sobre nosotros', permission: 'SETTINGS_MANAGE' },
+      { path: '/admin/config/ayuda', label: 'Cómo comprar + FAQ', permission: 'SETTINGS_MANAGE' },
+      { path: '/admin/carrusel', label: 'Carrusel', permission: 'CAROUSEL_MANAGE' },
+      { path: '/admin/usuarios', label: 'Usuarios y roles', permission: 'USERS_MANAGE' },
     ],
   },
 ];
@@ -78,7 +83,15 @@ export class AdminLayoutComponent {
   private readonly settingsService = inject(SettingsService);
   private readonly dashboardService = inject(DashboardService);
 
-  readonly groups = GROUPS;
+  /** Grupos y items visibles según los permisos del usuario. */
+  readonly groups = computed(() => {
+    const has = (p?: Permission) => !p || this.authService.has(p);
+    // referenciar el signal para recomputar cuando llega /me
+    this.authService.me();
+    return GROUPS.map((g) => ({ ...g, items: g.items.filter((it) => has(it.permission)) })).filter(
+      (g) => g.items.length > 0
+    );
+  });
   readonly storeName = computed(() => this.settingsService.settings().storeName);
   readonly logoSrc = this.settingsService.logoSrc;
   readonly pendingOrders = this.orderService.pendingCount;
@@ -124,8 +137,8 @@ export class AdminLayoutComponent {
   readonly drawerOpen = signal(false);
 
   constructor() {
-    this.orderService.ensureLoaded();
-    this.dashboardService.ensureLowStockLoaded();
+    if (this.authService.has('ORDERS_VIEW')) this.orderService.ensureLoaded();
+    if (this.authService.has('PRODUCTS_VIEW')) this.dashboardService.ensureLowStockLoaded();
     // cerrar el menú mobile al navegar
     this.router.events
       .pipe(

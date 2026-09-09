@@ -1,8 +1,17 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, map, of } from 'rxjs';
+import { Observable, map, of, tap } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { apiUrl } from '../config/site-config';
+import { Permission } from '../models/permission.model';
+
+/** Quién soy y qué permisos tengo (de `/api/auth/me`). */
+export interface Me {
+  username: string;
+  roleName: string | null;
+  systemAdmin: boolean;
+  permissions: Permission[];
+}
 
 /** Resultado de un intento de login / recuperación. */
 export interface AuthResult {
@@ -40,10 +49,35 @@ export class AuthService {
 
   private readonly tokenSignal = signal<StoredToken | null>(this.loadStored());
 
+  /** Permisos del usuario logueado (de `/api/auth/me`). null = todavía no cargó. */
+  private readonly meSignal = signal<Me | null>(null);
+  readonly me = this.meSignal.asReadonly();
+
   readonly isAuthenticated = computed(() => {
     const t = this.tokenSignal();
     return !!t && t.expiresAt > Date.now();
   });
+
+  constructor() {
+    if (this.token()) this.loadMe().subscribe();
+  }
+
+  /** ¿El usuario tiene este permiso? (el admin de sistema los tiene todos). */
+  has(permission: Permission): boolean {
+    const m = this.meSignal();
+    return !!m && (m.systemAdmin || m.permissions.includes(permission));
+  }
+
+  /** Carga (o recarga) `/api/auth/me`. Devuelve el Me o null si falla. */
+  loadMe(): Observable<Me | null> {
+    return this.http.get<Me>(apiUrl('/auth/me')).pipe(
+      tap((m) => this.meSignal.set(m)),
+      catchError(() => {
+        this.meSignal.set(null);
+        return of(null);
+      })
+    );
+  }
 
   /** Usuario del token actual (claim `sub` del JWT), o '' */
   readonly username = computed(() => {
@@ -85,6 +119,7 @@ export class AuthService {
       /* ignore */
     }
     this.tokenSignal.set(null);
+    this.meSignal.set(null);
   }
 
   private postToken(url: string, body: unknown): Observable<AuthResult> {
@@ -96,6 +131,7 @@ export class AuthService {
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
         this.tokenSignal.set(stored);
+        this.loadMe().subscribe();
         return { ok: true } as AuthResult;
       }),
       catchError((err: HttpErrorResponse) => {

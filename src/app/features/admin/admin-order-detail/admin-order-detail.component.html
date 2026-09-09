@@ -91,7 +91,7 @@
   </div>
 
   <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-hidden">
-    @if (order.status === 'PENDIENTE') {
+    @if (order.status === 'PENDIENTE' && canManage()) {
       <div class="flex flex-wrap items-center gap-3 p-4 border-b border-stone-100 bg-stone-50/60">
         <p class="text-sm text-stone-500 mr-auto">
           Tildá los ítems que vas a entregar. Los que dejes destildados quedan cancelados y no descuentan stock.
@@ -123,7 +123,7 @@
                 <input
                   type="checkbox"
                   [checked]="line.accepted"
-                  [disabled]="order.status !== 'PENDIENTE' || saving()"
+                  [disabled]="order.status !== 'PENDIENTE' || saving() || !canManage()"
                   (change)="toggleLine($index)"
                   class="w-4 h-4 accent-mint-500"
                 />
@@ -158,7 +158,9 @@
     </div>
   </div>
 
-  @if (order.status === 'PENDIENTE') {
+  @if (order.status === 'PENDIENTE' && !canManage()) {
+    <p class="text-sm text-stone-500 mt-4">Pedido pendiente de revisión. No tenés permiso para confirmarlo o cancelarlo.</p>
+  } @else if (order.status === 'PENDIENTE') {
     @if (stockIssues().length > 0) {
       <div class="mt-6 rounded-2xl bg-red-50 ring-1 ring-red-200 p-4 text-sm text-red-700">
         <p class="font-bold mb-1">No podés confirmar: falta stock en {{ stockIssues().length }} ítem(s).</p>

@@ -6,6 +6,7 @@ import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
 import { SupplierService } from '../../../core/services/supplier.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Product, margin, totalStock } from '../../../core/models/product.model';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
@@ -22,6 +23,10 @@ export class AdminProductsComponent {
   private readonly supplierService = inject(SupplierService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
+
+  /** true si el usuario puede crear/editar/archivar productos. */
+  readonly canManage = () => this.auth.has('PRODUCTS_MANAGE');
 
   /** id del producto que se está duplicando (para deshabilitar el botón). */
   readonly duplicatingId = signal<string | null>(null);

@@ -7,6 +7,7 @@ import { OrderService } from '../../../core/services/order.service';
 import { ProductService } from '../../../core/services/product.service';
 import { WhatsappService } from '../../../core/services/whatsapp.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Order, PAYMENT_LABELS } from '../../../core/models/order.model';
 import { Product, ProductSize, stockForSize } from '../../../core/models/product.model';
 
@@ -23,6 +24,10 @@ export class AdminOrderDetailComponent {
   private readonly productService = inject(ProductService);
   private readonly whatsapp = inject(WhatsappService);
   private readonly toast = inject(ToastService);
+  private readonly auth = inject(AuthService);
+
+  /** true si el usuario puede confirmar / cancelar / editar líneas. */
+  readonly canManage = () => this.auth.has('ORDERS_MANAGE');
 
   private readonly orderId = this.route.snapshot.paramMap.get('id') ?? '';
 

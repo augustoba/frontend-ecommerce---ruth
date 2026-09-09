@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { adminGuard } from './core/guards/admin.guard';
+import { adminGuard, permissionGuard } from './core/guards/admin.guard';
 import { productResolver } from './features/admin/admin-product-form/product.resolver';
 import { orderResolver } from './features/admin/admin-order-detail/order.resolver';
 
@@ -76,6 +76,8 @@ export const routes: Routes = [
       },
       {
         path: 'productos',
+        canActivate: [permissionGuard],
+        data: { permission: 'PRODUCTS_VIEW' },
         loadComponent: () =>
           import('./features/admin/admin-products/admin-products.component').then(
             (m) => m.AdminProductsComponent
@@ -84,6 +86,8 @@ export const routes: Routes = [
       },
       {
         path: 'productos/nuevo',
+        canActivate: [permissionGuard],
+        data: { permission: 'PRODUCTS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-product-form/admin-product-form.component').then(
             (m) => m.AdminProductFormComponent
@@ -93,6 +97,8 @@ export const routes: Routes = [
       },
       {
         path: 'productos/:id/editar',
+        canActivate: [permissionGuard],
+        data: { permission: 'PRODUCTS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-product-form/admin-product-form.component').then(
             (m) => m.AdminProductFormComponent
@@ -102,6 +108,8 @@ export const routes: Routes = [
       },
       {
         path: 'pedidos',
+        canActivate: [permissionGuard],
+        data: { permission: 'ORDERS_VIEW' },
         loadComponent: () =>
           import('./features/admin/admin-orders/admin-orders.component').then(
             (m) => m.AdminOrdersComponent
@@ -110,6 +118,8 @@ export const routes: Routes = [
       },
       {
         path: 'pedidos/:id',
+        canActivate: [permissionGuard],
+        data: { permission: 'ORDERS_VIEW' },
         loadComponent: () =>
           import('./features/admin/admin-order-detail/admin-order-detail.component').then(
             (m) => m.AdminOrderDetailComponent
@@ -119,6 +129,8 @@ export const routes: Routes = [
       },
       {
         path: 'carrusel',
+        canActivate: [permissionGuard],
+        data: { permission: 'CAROUSEL_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-hero-slides/admin-hero-slides.component').then(
             (m) => m.AdminHeroSlidesComponent
@@ -127,6 +139,8 @@ export const routes: Routes = [
       },
       {
         path: 'parametrias',
+        canActivate: [permissionGuard],
+        data: { permission: 'PARAMS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-params/admin-params.component').then(
             (m) => m.AdminParamsComponent
@@ -135,6 +149,8 @@ export const routes: Routes = [
       },
       {
         path: 'proveedores',
+        canActivate: [permissionGuard],
+        data: { permission: 'SUPPLIERS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-suppliers/admin-suppliers.component').then(
             (m) => m.AdminSuppliersComponent
@@ -143,6 +159,8 @@ export const routes: Routes = [
       },
       {
         path: 'talles',
+        canActivate: [permissionGuard],
+        data: { permission: 'SIZE_SCALES_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-size-scales/admin-size-scales.component').then(
             (m) => m.AdminSizeScalesComponent
@@ -151,6 +169,8 @@ export const routes: Routes = [
       },
       {
         path: 'promociones',
+        canActivate: [permissionGuard],
+        data: { permission: 'DISCOUNTS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-promos/admin-promos.component').then(
             (m) => m.AdminPromosComponent
@@ -159,6 +179,8 @@ export const routes: Routes = [
       },
       {
         path: 'cupones',
+        canActivate: [permissionGuard],
+        data: { permission: 'COUPONS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-coupons/admin-coupons.component').then(
             (m) => m.AdminCouponsComponent
@@ -166,7 +188,19 @@ export const routes: Routes = [
         title: 'Cupones | Admin',
       },
       {
+        path: 'usuarios',
+        canActivate: [permissionGuard],
+        data: { permission: 'USERS_MANAGE' },
+        loadComponent: () =>
+          import('./features/admin/admin-users/admin-users.component').then(
+            (m) => m.AdminUsersComponent
+          ),
+        title: 'Usuarios y roles | Admin',
+      },
+      {
         path: 'metricas',
+        canActivate: [permissionGuard],
+        data: { permission: 'METRICS_VIEW' },
         loadComponent: () =>
           import('./features/admin/admin-metrics/admin-metrics.component').then(
             (m) => m.AdminMetricsComponent
@@ -175,6 +209,8 @@ export const routes: Routes = [
       },
       {
         path: 'config',
+        canActivate: [permissionGuard],
+        data: { permission: 'SETTINGS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-config/admin-config-hub.component').then(
             (m) => m.AdminConfigHubComponent
@@ -183,51 +219,58 @@ export const routes: Routes = [
       },
       {
         path: 'config/identidad',
+        canActivate: [permissionGuard],
+        data: { section: 'identity', permission: 'SETTINGS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-config/admin-config-section.component').then(
             (m) => m.AdminConfigSectionComponent
           ),
-        data: { section: 'identity' },
         title: 'Identidad y contacto | Admin',
       },
       {
         path: 'config/redes',
+        canActivate: [permissionGuard],
+        data: { section: 'social', permission: 'SETTINGS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-config/admin-config-section.component').then(
             (m) => m.AdminConfigSectionComponent
           ),
-        data: { section: 'social' },
         title: 'Redes sociales | Admin',
       },
       {
         path: 'config/nosotros',
+        canActivate: [permissionGuard],
+        data: { section: 'about', permission: 'SETTINGS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-config/admin-config-section.component').then(
             (m) => m.AdminConfigSectionComponent
           ),
-        data: { section: 'about' },
         title: 'Sobre nosotros | Admin',
       },
       {
         path: 'config/whatsapp',
+        canActivate: [permissionGuard],
+        data: { section: 'whatsapp', permission: 'SETTINGS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-config/admin-config-section.component').then(
             (m) => m.AdminConfigSectionComponent
           ),
-        data: { section: 'whatsapp' },
         title: 'Mensaje de WhatsApp | Admin',
       },
       {
         path: 'config/pagos',
+        canActivate: [permissionGuard],
+        data: { section: 'pagos', permission: 'SETTINGS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-config/admin-config-section.component').then(
             (m) => m.AdminConfigSectionComponent
           ),
-        data: { section: 'pagos' },
         title: 'Medios de pago | Admin',
       },
       {
         path: 'config/ayuda',
+        canActivate: [permissionGuard],
+        data: { permission: 'SETTINGS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-help/admin-help.component').then((m) => m.AdminHelpComponent),
         title: 'Cómo comprar + FAQ | Admin',

@@ -47,7 +47,7 @@
         }
       </a>
 
-      @for (group of groups; track group.id) {
+      @for (group of groups(); track group.id) {
         <button type="button" (click)="toggleGroup(group.id)"
           class="mt-1 px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors flex items-center gap-2 text-left">
           <span aria-hidden="true">{{ group.icon }}</span>
