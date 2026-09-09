@@ -742,12 +742,27 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       (`MetricsResponse.byChannel`, calculado desde `Order.channel`).
     - **Paginación client-side** del catálogo y de las grillas del POS/cambios
       (de a 12, botón "Ver más").
-    - **Cambios de prenda** (`/admin/cambios`, permiso `POS_USE`): entidad
+    - **Cambios de prenda** (`/admin/cambios`, permiso `EXCHANGES_USE`): entidad
       `Exchange` + `ExchangeLine` (DEVUELTA/LLEVADA). Lo devuelto vuelve al
       stock, lo que se lleva se descuenta (estricto), `difference` = takenTotal −
       returnedTotal a precio de lista; si es positiva se cobra (con medio de
       pago). Código `CAM-0001`. Pantalla con toggle "devuelve / se lleva" +
-      listado. schema.sql al día. (Todavía NO suma a métricas.)
+      listado + recibo imprimible (`/admin/recibo-cambio/:id`).
+43. **Tanda 3 (2026-09-09):**
+    - **Modal de confirmación propio** (`ConfirmService` + `<app-confirm-dialog>`
+      en el root): reemplaza los 13 `window.confirm` y el `window.prompt` del panel.
+    - **Caja** (`/admin/caja`, permiso `CASH_REGISTER_VIEW`): cierre del día por
+      medio de pago, abierto por origen (local / cambios / online). `GET
+      /api/admin/cash-register?date=`. Botón Imprimir.
+    - **Permisos nuevos:** `EXCHANGES_USE`, `CASH_REGISTER_VIEW` (antes iban bajo
+      `POS_USE`). Rol seed "Vendedor" los incluye.
+    - **Métricas:** desglose **por talle** y **por proveedor**; la diferencia
+      cobrada en los cambios suma a la facturación (canal local). Export **CSV**
+      (botón en Métricas, Productos, Pedidos, Cambios — backend `/api/admin/
+      export/*.csv`, salvo Métricas que se arma en el front).
+    - **"Lo más vendido"** en la home: `GET /api/products/best-sellers` (público,
+      top por unidades de los últimos 90 días); fila horizontal arriba de la grilla.
+    - **Paginación** client-side del catálogo y las grillas del POS/cambios.
 
 ## 12. Backend (`../backend/`) — resumen
 
