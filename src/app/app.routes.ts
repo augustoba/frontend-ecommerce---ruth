@@ -136,6 +136,16 @@ export const routes: Routes = [
         title: 'Cambios | Admin',
       },
       {
+        path: 'caja',
+        canActivate: [permissionGuard],
+        data: { permission: 'POS_USE' },
+        loadComponent: () =>
+          import('./features/admin/admin-cash-register/admin-cash-register.component').then(
+            (m) => m.AdminCashRegisterComponent
+          ),
+        title: 'Caja | Admin',
+      },
+      {
         path: 'cambios/nuevo',
         canActivate: [permissionGuard],
         data: { permission: 'POS_USE' },

@@ -1,0 +1,72 @@
+<h1 class="font-display font-extrabold text-2xl text-stone-800 mb-1">Caja</h1>
+<p class="text-sm text-stone-500 mb-5 max-w-2xl">
+  Cuánto dinero debería haber entrado por cada medio de pago en el día: ventas en el local,
+  diferencias de cambios y cobros de pedidos online confirmados ese día.
+</p>
+
+<div class="flex flex-wrap items-end gap-3 mb-5 no-print">
+  <label class="flex flex-col gap-1 text-xs font-semibold text-stone-500">
+    Día
+    <input type="date" [ngModel]="date()" (ngModelChange)="date.set($event); load()"
+      class="rounded-lg border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400" />
+  </label>
+  <button type="button" (click)="print()"
+    class="ml-auto bg-stone-100 hover:bg-stone-200 text-stone-600 font-semibold py-2 px-5 rounded-full text-sm">
+    🖨️ Imprimir
+  </button>
+</div>
+
+@if (loading()) {
+  <p class="text-sm text-stone-400">Cargando…</p>
+} @else if (error()) {
+  <div class="text-center py-12 text-stone-400 bg-white rounded-2xl ring-1 ring-black/5">
+    <p class="font-semibold mb-2">No se pudo cargar la caja.</p>
+    <button type="button" (click)="load()" class="text-brand-600 font-semibold hover:underline">Reintentar</button>
+  </div>
+} @else if (data()) {
+ @if (data(); as d) {
+  <div class="cash bg-white rounded-2xl ring-1 ring-black/5 overflow-x-auto">
+    <table class="w-full text-sm min-w-[560px]">
+      <thead>
+        <tr class="text-left text-stone-500 border-b border-stone-100">
+          <th class="p-4 font-semibold">Medio de pago</th>
+          <th class="p-4 font-semibold text-right">Local</th>
+          <th class="p-4 font-semibold text-right">Cambios</th>
+          <th class="p-4 font-semibold text-right">Online</th>
+          <th class="p-4 font-semibold text-right">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of d.rows; track r.method) {
+          <tr class="border-b border-stone-50 last:border-0">
+            <td class="p-4 font-semibold text-stone-800">{{ r.label }}</td>
+            <td class="p-4 text-right text-stone-600">{{ r.local | currency: 'ARS' : 'symbol' : '1.0-0' }}</td>
+            <td class="p-4 text-right text-stone-600">{{ r.exchanges | currency: 'ARS' : 'symbol' : '1.0-0' }}</td>
+            <td class="p-4 text-right text-stone-600">{{ r.online | currency: 'ARS' : 'symbol' : '1.0-0' }}</td>
+            <td class="p-4 text-right font-bold text-stone-800">{{ r.total | currency: 'ARS' : 'symbol' : '1.0-0' }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="5" class="p-8 text-center text-stone-400">No hubo movimientos este día.</td></tr>
+        }
+      </tbody>
+      @if (d.rows.length) {
+        <tfoot>
+          <tr class="border-t-2 border-stone-200 bg-stone-50/60">
+            <td class="p-4 font-display font-extrabold text-stone-800">Total del día</td>
+            <td class="p-4 text-right font-semibold text-stone-700">{{ d.total.local | currency: 'ARS' : 'symbol' : '1.0-0' }}</td>
+            <td class="p-4 text-right font-semibold text-stone-700">{{ d.total.exchanges | currency: 'ARS' : 'symbol' : '1.0-0' }}</td>
+            <td class="p-4 text-right font-semibold text-stone-700">{{ d.total.online | currency: 'ARS' : 'symbol' : '1.0-0' }}</td>
+            <td class="p-4 text-right font-display font-extrabold text-lg text-brand-600">
+              {{ d.total.total | currency: 'ARS' : 'symbol' : '1.0-0' }}
+            </td>
+          </tr>
+        </tfoot>
+      }
+    </table>
+  </div>
+  <p class="text-xs text-stone-400 mt-3">
+    "Online" son pedidos de la web que confirmaste hoy — el pago pudo haberse cobrado antes.
+    Si algún pedido no tiene medio de pago cargado, cae en "Sin especificar".
+  </p>
+ }
+}
