@@ -698,6 +698,38 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
     elegí envío"). `DiscountService` sumó `activePaymentDiscounts` y
     `bestFreeShippingFor`. El agregar-descuento del panel ganó el tilde
     "acumulable" (antes sólo se toggleaba después de crear).
+41. **Tanda de mejoras 2026-09-09** (sesión larga; front + back, todo commiteado
+    sin pushear). Detalle en la memoria `mejoras-roadmap.md`:
+    - **Rate limiting del login** (`LoginAttemptService`, 429 + `Retry-After`,
+      cuenta regresiva en el form; config `app.login-throttle.*`).
+    - **Quick wins:** "últimas X unidades" en tarjeta/ficha · validar stock en el
+      carrito (+ `@Max(999)`; NO se valida al crear el pedido, sí al confirmar) ·
+      duplicar producto (`POST /api/admin/products/{id}/duplicate`) · filtros
+      server-side en `/admin/productos` (`ProductRepository.search`) · soft-delete
+      de productos (`Product.deleted`, "Archivar" + sección "Productos archivados")
+      · "Abrir WhatsApp / Copiar resumen" desde `/admin/pedidos/:id`.
+    - **UX cliente:** filtro por precio en el catálogo · recordar el nombre en el
+      checkout · zoom (lightbox) en la ficha · `/como-comprar` + FAQ (editable en
+      `/admin/config/ayuda`; `help_text`/`faq_text` en `site_settings`) ·
+      `/mis-pedidos` (consulta por código + nombre, `GET /api/orders/lookup`,
+      `localStorage` `pp_my_orders`). Links en el footer.
+    - **Cupones** (`/admin/cupones`): entidad `Coupon`, códigos que el cliente
+      escribe en el carrito/POS (% o monto, mínimo, tope de usos, vencimiento,
+      "combinable con promos"). `GET /api/coupons/{code}` valida sin consumir;
+      se consume al crear el pedido. `Order` sumó `couponCode`/`couponDiscount`.
+    - **Roles y permisos (RBAC por objetos):** `Permission` (14) + `Role`
+      (personalizable; "Administrador" system = todos) + `AdminUser.role`.
+      `@PreAuthorize` por endpoint, `permissionGuard` por ruta, menú filtrado,
+      `GET /api/auth/me`. `/admin/usuarios` (ABM de usuarios y roles). Seed:
+      rol "Vendedor". Login admin sigue siendo `admin`/`ruth123` (rol
+      Administrador).
+    - **Venta en el local (POS):** `/admin/ventas/nueva` (permiso `POS_USE`) —
+      buscador de productos, líneas, pago, cupón, descuentos; `POST
+      /api/admin/orders/pos` crea + confirma en el acto. `Order.channel`
+      (WEB/LOCAL); suma a métricas.
+    - **Recibo imprimible:** `/admin/recibo/:id` (logo, fecha, detalle, totales,
+      pago) con `window.print()` + CSS `@media print`. Link desde el detalle del
+      pedido y tras registrar una venta en el local.
 
 ## 12. Backend (`../backend/`) — resumen
 
