@@ -3,6 +3,7 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { OrderService } from '../../../core/services/order.service';
+import { ExportService } from '../../../core/services/export.service';
 import { OrderStatus } from '../../../core/models/order.model';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
@@ -15,6 +16,16 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
 })
 export class AdminOrdersComponent {
   private readonly orderService = inject(OrderService);
+  private readonly exporter = inject(ExportService);
+
+  exportCsv(): void {
+    this.exporter.download('/admin/export/orders.csv', 'pedidos.csv', {
+      search: this.search().trim() || undefined,
+      status: this.statusFilter() || undefined,
+      from: this.from() || undefined,
+      to: this.to() || undefined,
+    });
+  }
 
   readonly orders = this.orderService.orders;
   readonly status = this.orderService.status;

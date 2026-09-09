@@ -8,6 +8,7 @@ import { SupplierService } from '../../../core/services/supplier.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { ExportService } from '../../../core/services/export.service';
 import { Product, margin, totalStock } from '../../../core/models/product.model';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
@@ -26,6 +27,11 @@ export class AdminProductsComponent {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   private readonly confirm = inject(ConfirmService);
+  private readonly exporter = inject(ExportService);
+
+  exportCsv(): void {
+    this.exporter.download('/admin/export/products.csv', 'productos.csv');
+  }
 
   /** true si el usuario puede crear/editar/archivar productos. */
   readonly canManage = () => this.auth.has('PRODUCTS_MANAGE');

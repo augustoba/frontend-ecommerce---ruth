@@ -5,6 +5,7 @@ import { MetricsService } from '../../../core/services/metrics.service';
 import { ParamService } from '../../../core/services/param.service';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { monthLabel, monthShort } from '../../../core/models/metrics.model';
+import { downloadCsv } from '../../../core/utils/csv';
 
 type Preset = 'mes' | 'trimestre' | 'anio-actual' | 'anio' | 'custom';
 
@@ -64,6 +65,40 @@ export class AdminMetricsComponent {
   );
 
   readonly isEmpty = computed(() => this.status() === 'loaded' && (this.metrics()?.totals.units ?? 0) === 0);
+
+  /** Exporta las métricas del período a un CSV (varias secciones). */
+  exportCsv(): void {
+    const m = this.metrics();
+    if (!m) return;
+    const rows: unknown[][] = [];
+    rows.push(['Métricas', `${m.from} a ${m.to}`]);
+    rows.push([]);
+    rows.push(['Totales', 'Facturación', 'Prendas', 'Pedidos']);
+    rows.push(['', m.totals.revenue, m.totals.units, m.totals.orders]);
+    rows.push([]);
+    rows.push(['Por canal', 'Facturación', 'Prendas', 'Pedidos']);
+    rows.push(['Online', m.byChannel.web.revenue, m.byChannel.web.units, m.byChannel.web.orders]);
+    rows.push(['Local', m.byChannel.local.revenue, m.byChannel.local.units, m.byChannel.local.orders]);
+    rows.push([]);
+    rows.push(['Por mes', 'Facturación', 'Prendas', 'Pedidos']);
+    for (const b of m.byMonth) rows.push([b.month, b.revenue, b.units, b.orders]);
+    rows.push([]);
+    rows.push(['Más vendidos', 'Prendas', 'Facturación']);
+    for (const p of m.topProducts) rows.push([p.productName, p.units, p.revenue]);
+    rows.push([]);
+    rows.push(['Menos vendidos', 'Prendas', 'Facturación']);
+    for (const p of m.bottomProducts) rows.push([p.productName, p.units, p.revenue]);
+    rows.push([]);
+    rows.push([`Por ${m.byGroup.groupName}`, 'Prendas', 'Facturación']);
+    for (const r of m.byGroup.rows) rows.push([r.label, r.units, r.revenue]);
+    rows.push([]);
+    rows.push(['Por talle', 'Prendas', 'Facturación']);
+    for (const r of m.bySize) rows.push([r.label, r.units, r.revenue]);
+    rows.push([]);
+    rows.push(['Por proveedor', 'Prendas', 'Facturación']);
+    for (const r of m.bySupplier) rows.push([r.label, r.units, r.revenue]);
+    downloadCsv(`metricas-${m.from}_${m.to}.csv`, rows);
+  }
 
   constructor() {
     this.paramService.ensureLoaded();
