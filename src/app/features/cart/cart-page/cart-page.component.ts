@@ -113,6 +113,24 @@ export class CartPageComponent {
     return hints;
   });
 
+  /**
+   * Líneas del carrito cuya cantidad ya no entra en el stock actual (el stock
+   * pudo bajar después de agregar la prenda). Se muestra un aviso y no se deja
+   * comprar hasta ajustarlas.
+   */
+  readonly stockProblems = computed(() =>
+    this.items()
+      .map((item) => ({ item, available: stockForSize(item.product, item.size) }))
+      .filter((x) => x.item.quantity > x.available)
+  );
+  readonly hasStockProblems = computed(() => this.stockProblems().length > 0);
+
+  /** Ajusta la cantidad de una línea al stock disponible (o la saca si es 0). */
+  fixToStock(productId: string, size: ProductSize, available: number): void {
+    if (available <= 0) this.cartService.remove(productId, size);
+    else this.cartService.updateQuantity(productId, size, available);
+  }
+
   readonly customerName = signal('');
   readonly deliveryMethod = signal<DeliveryMethod | null>(null);
   readonly shippingAddr = signal<PickedAddress | null>(null);
@@ -137,6 +155,7 @@ export class CartPageComponent {
     () => this.referenceRequired() && !this.shippingReference().trim()
   );
   readonly canSend = computed(() => {
+    if (this.hasStockProblems()) return false;
     if (!this.deliveryMethod() || this.shippingAddressMissing() || this.referenceMissing()) return false;
     // si el negocio todavía no cargó medios de pago, se coordina por WhatsApp
     if (this.paymentOptions().length === 0) return true;

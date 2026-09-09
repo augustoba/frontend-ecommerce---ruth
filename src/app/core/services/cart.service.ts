@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { CartItem } from '../models/cart-item.model';
-import { Product, ProductSize } from '../models/product.model';
+import { Product, ProductSize, stockForSize } from '../models/product.model';
 import { ProductService } from './product.service';
 
 const STORAGE_KEY = 'pp_cart';
@@ -45,12 +45,15 @@ export class CartService {
   readonly isEmpty = computed(() => this.items().length === 0);
 
   add(product: Product, size: ProductSize, quantity = 1): void {
+    const stock = stockForSize(product, size);
     this.entries.update((list) => {
       const existing = list.find((e) => e.productId === product.id && e.size === size);
       if (existing) {
-        return list.map((e) => (e === existing ? { ...e, quantity: e.quantity + quantity } : e));
+        const capped = stock > 0 ? Math.min(existing.quantity + quantity, stock) : existing.quantity;
+        return list.map((e) => (e === existing ? { ...e, quantity: capped } : e));
       }
-      return [...list, { productId: product.id, size, quantity }];
+      const capped = stock > 0 ? Math.min(quantity, stock) : quantity;
+      return [...list, { productId: product.id, size, quantity: capped }];
     });
     this.persist();
   }
