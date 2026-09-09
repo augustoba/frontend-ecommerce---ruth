@@ -5,6 +5,8 @@ export type Permission =
   | 'ORDERS_VIEW'
   | 'ORDERS_MANAGE'
   | 'POS_USE'
+  | 'EXCHANGES_USE'
+  | 'CASH_REGISTER_VIEW'
   | 'PARAMS_MANAGE'
   | 'SIZE_SCALES_MANAGE'
   | 'SUPPLIERS_MANAGE'

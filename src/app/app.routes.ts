@@ -128,7 +128,7 @@ export const routes: Routes = [
       {
         path: 'cambios',
         canActivate: [permissionGuard],
-        data: { permission: 'POS_USE' },
+        data: { permission: 'EXCHANGES_USE' },
         loadComponent: () =>
           import('./features/admin/admin-exchange/admin-exchanges.component').then(
             (m) => m.AdminExchangesComponent
@@ -138,7 +138,7 @@ export const routes: Routes = [
       {
         path: 'caja',
         canActivate: [permissionGuard],
-        data: { permission: 'POS_USE' },
+        data: { permission: 'CASH_REGISTER_VIEW' },
         loadComponent: () =>
           import('./features/admin/admin-cash-register/admin-cash-register.component').then(
             (m) => m.AdminCashRegisterComponent
