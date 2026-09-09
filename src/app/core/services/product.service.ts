@@ -45,6 +45,11 @@ export class ProductService {
     this.adminStore.loadPage(n);
   }
 
+  /** Fija los filtros del listado del panel (server-side) y recarga desde la página 0. */
+  setAdminQuery(params: Record<string, string | number | null | undefined>): void {
+    this.adminStore.setQuery(params);
+  }
+
   /** Unión de ambas listas, sin duplicados (para getById desde cualquier contexto) */
   private readonly all = computed(() => {
     const map = new Map<string, Product>();
@@ -103,6 +108,16 @@ export class ProductService {
 
   delete(id: string): void {
     this.mutate(this.http.delete(apiUrl(`/admin/products/${id}`)));
+  }
+
+  /** Productos archivados (soft-delete). Lista aparte, no entra en el listado paginado. */
+  fetchArchived(): Observable<Product[]> {
+    return this.http.get<Product[]>(apiUrl('/admin/products/archived'));
+  }
+
+  /** Restaura un producto archivado (queda oculto: hay que republicarlo a mano). */
+  restore(id: string, onSuccess?: () => void): void {
+    this.mutate(this.http.post(apiUrl(`/admin/products/${id}/restore`), {}), onSuccess);
   }
 
   toggleActive(id: string): void {

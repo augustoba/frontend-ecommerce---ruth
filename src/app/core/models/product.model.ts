@@ -40,6 +40,8 @@ export interface Product {
    * alertas de "por reponer" del panel.
    */
   discontinued: boolean;
+  /** true = producto archivado (soft-delete). No aparece en catálogo ni en los listados del panel. */
+  deleted: boolean;
   createdAt: string;
 
   /**
@@ -60,7 +62,7 @@ export interface Product {
  * Datos con los que se crea/edita un producto desde el panel. `imageUrl` no se
  * manda: el backend lo deriva de `images[0]`.
  */
-export type ProductInput = Omit<Product, 'id' | 'createdAt' | 'imageUrl'>;
+export type ProductInput = Omit<Product, 'id' | 'createdAt' | 'imageUrl' | 'deleted'>;
 
 /** Stock total del producto sumando todos los talles */
 export function totalStock(product: Pick<Product, 'sizeStocks'>): number {

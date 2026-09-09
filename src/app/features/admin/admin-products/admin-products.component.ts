@@ -1,5 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
@@ -11,7 +12,7 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
 
 @Component({
   selector: 'app-admin-products',
-  imports: [CurrencyPipe, RouterLink, SkeletonComponent, PaginationComponent],
+  imports: [CurrencyPipe, FormsModule, RouterLink, SkeletonComponent, PaginationComponent],
   templateUrl: './admin-products.component.html',
   styleUrl: './admin-products.component.css',
 })
@@ -34,10 +35,79 @@ export class AdminProductsComponent {
   readonly totalElements = this.productService.adminTotalElements;
   readonly goToPage = (n: number) => this.productService.loadAdminPage(n);
 
+  readonly paramGroups = this.paramService.groups;
+  readonly suppliers = this.supplierService.suppliers;
+
+  // --- filtros ---
+  readonly search = signal('');
+  readonly supplierFilter = signal('');
+  /** 'grupoId:opcionId' de una parametría, o '' */
+  readonly paramFilter = signal('');
+  readonly statusFilter = signal<'' | 'true' | 'false'>('');
+  readonly noStock = signal(false);
+
+  readonly hasFilters = computed(
+    () =>
+      !!this.search() ||
+      !!this.supplierFilter() ||
+      !!this.paramFilter() ||
+      !!this.statusFilter() ||
+      this.noStock()
+  );
+
+  // --- archivados ---
+  readonly showArchived = signal(false);
+  readonly archived = signal<Product[]>([]);
+  readonly archivedLoading = signal(false);
+
   constructor() {
     this.productService.ensureAdminLoaded();
     this.paramService.ensureLoaded();
     this.supplierService.ensureLoaded();
+  }
+
+  applyFilters(): void {
+    const [groupId, optionId] = this.paramFilter().split(':');
+    this.productService.setAdminQuery({
+      search: this.search().trim(),
+      supplierId: this.supplierFilter(),
+      active: this.statusFilter(),
+      groupId: groupId || '',
+      optionId: optionId || '',
+      noStock: this.noStock() ? 'true' : '',
+    });
+  }
+
+  clearFilters(): void {
+    this.search.set('');
+    this.supplierFilter.set('');
+    this.paramFilter.set('');
+    this.statusFilter.set('');
+    this.noStock.set(false);
+    this.applyFilters();
+  }
+
+  toggleArchived(): void {
+    this.showArchived.update((v) => !v);
+    if (this.showArchived() && !this.archived().length) this.loadArchived();
+  }
+
+  private loadArchived(): void {
+    this.archivedLoading.set(true);
+    this.productService.fetchArchived().subscribe({
+      next: (list) => {
+        this.archived.set(list);
+        this.archivedLoading.set(false);
+      },
+      error: () => this.archivedLoading.set(false),
+    });
+  }
+
+  restore(id: string): void {
+    this.productService.restore(id, () => {
+      this.toast.success('Producto restaurado (quedó oculto — republicalo cuando quieras).');
+      this.archived.update((list) => list.filter((p) => p.id !== id));
+    });
   }
 
   stockTotal(product: Product): number {
@@ -85,7 +155,9 @@ export class AdminProductsComponent {
   }
 
   remove(id: string, name: string): void {
-    const confirmed = window.confirm(`¿Eliminar "${name}"? Esta acción no se puede deshacer.`);
+    const confirmed = window.confirm(
+      `¿Archivar "${name}"? Sale del catálogo y de los listados, pero se puede restaurar desde "Productos archivados".`
+    );
     if (confirmed) {
       this.productService.delete(id);
     }
