@@ -19,13 +19,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((err: HttpErrorResponse) => {
       const isAdminApi = req.url.includes('/api/admin/');
-      const isLogin = req.url.includes('/api/auth/login');
+      const isAuth = req.url.includes('/api/auth/');
 
       if (err.status === 401 && isAdminApi) {
         auth.logout();
         router.navigate(['/admin/login']);
         toast.error('Tu sesión expiró. Volvé a ingresar.');
-      } else if (!isLogin) {
+      } else if (!isAuth) {
+        // El login / recuperación muestran su propio mensaje (incluye el 429).
         toast.error(messageFor(err));
       }
       return throwError(() => err);

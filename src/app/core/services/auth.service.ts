@@ -1,8 +1,19 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, map, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { apiUrl } from '../config/site-config';
+
+/** Resultado de un intento de login / recuperación. */
+export interface AuthResult {
+  ok: boolean;
+  /** Mensaje para mostrarle al usuario (del backend si vino, o genérico). */
+  message?: string;
+  /** true si el backend respondió 429 (demasiados intentos). */
+  blocked?: boolean;
+  /** Segundos a esperar antes de reintentar (header Retry-After). */
+  retryAfterSeconds?: number;
+}
 
 const STORAGE_KEY = 'pp_admin_token';
 
@@ -46,12 +57,12 @@ export class AuthService {
     return t && t.expiresAt > Date.now() ? t.token : null;
   }
 
-  login(username: string, password: string): Observable<boolean> {
+  login(username: string, password: string): Observable<AuthResult> {
     return this.postToken(apiUrl('/auth/login'), { username, password });
   }
 
   /** Recuperar la cuenta con la frase de recuperación → setea la pass nueva y loguea. */
-  recover(username: string, recoveryPhrase: string, newPassword: string): Observable<boolean> {
+  recover(username: string, recoveryPhrase: string, newPassword: string): Observable<AuthResult> {
     return this.postToken(apiUrl('/auth/recover'), { username, recoveryPhrase, newPassword });
   }
 
@@ -76,7 +87,7 @@ export class AuthService {
     this.tokenSignal.set(null);
   }
 
-  private postToken(url: string, body: unknown): Observable<boolean> {
+  private postToken(url: string, body: unknown): Observable<AuthResult> {
     return this.http.post<LoginResponse>(url, body).pipe(
       map((res) => {
         const stored: StoredToken = {
@@ -85,9 +96,21 @@ export class AuthService {
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
         this.tokenSignal.set(stored);
-        return true;
+        return { ok: true } as AuthResult;
       }),
-      catchError(() => of(false))
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 429) {
+          const header = Number(err.headers?.get('Retry-After'));
+          const bodyMsg = (err.error as { message?: string } | null)?.message;
+          return of<AuthResult>({
+            ok: false,
+            blocked: true,
+            message: bodyMsg || 'Demasiados intentos. Esperá un rato antes de reintentar.',
+            retryAfterSeconds: Number.isFinite(header) && header > 0 ? header : 900,
+          });
+        }
+        return of<AuthResult>({ ok: false });
+      })
     );
   }
 
