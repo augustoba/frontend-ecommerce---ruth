@@ -85,9 +85,10 @@ export class AdminLayoutComponent {
 
   /** Grupos y items visibles según los permisos del usuario. */
   readonly groups = computed(() => {
-    const has = (p?: Permission) => !p || this.authService.has(p);
-    // referenciar el signal para recomputar cuando llega /me
+    // referenciar los signals para recomputar cuando cambian
     this.authService.me();
+    this.authService.permissionsUnavailable();
+    const has = (p?: Permission) => !p || this.authService.has(p);
     return GROUPS.map((g) => ({ ...g, items: g.items.filter((it) => has(it.permission)) })).filter(
       (g) => g.items.length > 0
     );

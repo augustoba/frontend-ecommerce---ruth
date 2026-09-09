@@ -53,6 +53,17 @@ export class AuthService {
   private readonly meSignal = signal<Me | null>(null);
   readonly me = this.meSignal.asReadonly();
 
+  /**
+   * Estado de la carga de permisos:
+   *  - 'idle'/'loading': todavía no sabemos.
+   *  - 'loaded': `me` tiene los permisos reales.
+   *  - 'unavailable': el backend no respondió `/api/auth/me` (versión vieja, caído,
+   *    red). En ese caso `has()` deja pasar todo — el backend igual valida cada
+   *    endpoint con `@PreAuthorize`, así que no se pierde seguridad, sólo se evita
+   *    dejar al admin sin menú por un problema de red.
+   */
+  private readonly meStatus = signal<'idle' | 'loading' | 'loaded' | 'unavailable'>('idle');
+
   readonly isAuthenticated = computed(() => {
     const t = this.tokenSignal();
     return !!t && t.expiresAt > Date.now();
@@ -65,15 +76,28 @@ export class AuthService {
   /** ¿El usuario tiene este permiso? (el admin de sistema los tiene todos). */
   has(permission: Permission): boolean {
     const m = this.meSignal();
-    return !!m && (m.systemAdmin || m.permissions.includes(permission));
+    if (m) return m.systemAdmin || m.permissions.includes(permission);
+    // Sin datos de permisos: si el backend no contestó, no bloqueamos (fail-open);
+    // si todavía está cargando, esperamos (el guard hace await de loadMe()).
+    return this.meStatus() === 'unavailable';
   }
+
+  /** true si no pudimos determinar los permisos (backend viejo o caído). */
+  readonly permissionsUnavailable = computed(() => this.meStatus() === 'unavailable');
 
   /** Carga (o recarga) `/api/auth/me`. Devuelve el Me o null si falla. */
   loadMe(): Observable<Me | null> {
+    this.meStatus.set('loading');
     return this.http.get<Me>(apiUrl('/auth/me')).pipe(
-      tap((m) => this.meSignal.set(m)),
-      catchError(() => {
+      tap((m) => {
+        this.meSignal.set(m);
+        this.meStatus.set('loaded');
+      }),
+      catchError((err: HttpErrorResponse) => {
         this.meSignal.set(null);
+        // 401/403 → token inválido o sin acceso: no fingir permisos.
+        this.meStatus.set(err.status === 401 || err.status === 403 ? 'loaded' : 'unavailable');
+        if (err.status === 401) this.logout();
         return of(null);
       })
     );
@@ -120,6 +144,7 @@ export class AuthService {
     }
     this.tokenSignal.set(null);
     this.meSignal.set(null);
+    this.meStatus.set('idle');
   }
 
   private postToken(url: string, body: unknown): Observable<AuthResult> {
