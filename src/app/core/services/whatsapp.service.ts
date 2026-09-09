@@ -35,7 +35,11 @@ export class WhatsappService {
     window.open(url, '_blank', 'noopener');
   }
 
-  private buildOrderMessage(order: Order): string {
+  /**
+   * Texto plano del resumen del pedido (el mismo que va al mensaje de WhatsApp).
+   * Lo usa el panel para "copiar resumen" / reenviarlo a mano.
+   */
+  buildOrderMessage(order: Order): string {
     const settings = this.settingsService.settings();
     const lines = order.lines.map((line, index) => {
       const subtotal = this.formatCurrency(line.unitPrice * line.quantity);

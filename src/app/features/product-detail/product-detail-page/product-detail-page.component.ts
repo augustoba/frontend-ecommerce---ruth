@@ -75,6 +75,16 @@ export class ProductDetailPageComponent {
     return !p || totalStock(p) <= 0;
   });
 
+  /** "Últimas X unidades" cuando el stock total está por debajo del umbral del producto. */
+  readonly lowStockLabel = computed(() => {
+    const p = this.product();
+    if (!p) return '';
+    const total = totalStock(p);
+    const threshold = p.lowStockThreshold ?? 3;
+    if (total <= 0 || total > threshold) return '';
+    return total === 1 ? '¡Última unidad disponible!' : `¡Quedan sólo ${total} unidades!`;
+  });
+
   /** Stock disponible para el talle actualmente seleccionado */
   readonly stockForSelectedSize = computed(() => {
     const p = this.product();

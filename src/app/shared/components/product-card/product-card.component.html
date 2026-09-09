@@ -22,6 +22,12 @@
       >
         Sin stock
       </span>
+    } @else if (lowStockLabel) {
+      <span
+        class="absolute bottom-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full"
+      >
+        {{ lowStockLabel }}
+      </span>
     }
   </div>
 

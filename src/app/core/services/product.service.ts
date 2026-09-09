@@ -81,6 +81,26 @@ export class ProductService {
     this.mutate(this.http.put(apiUrl(`/admin/products/${id}`), input), onSuccess);
   }
 
+  /**
+   * Duplica un producto en el backend (copia todo salvo el stock, queda oculto)
+   * y devuelve el producto nuevo. Recarga las listas al terminar.
+   */
+  duplicate(id: string): Observable<Product> {
+    const req = this.http.post<Product>(apiUrl(`/admin/products/${id}/duplicate`), {});
+    return new Observable<Product>((sub) => {
+      const s = req.subscribe({
+        next: (created) => {
+          this.adminStore.reload();
+          this.publicStore.load();
+          sub.next(created);
+          sub.complete();
+        },
+        error: (err) => sub.error(err),
+      });
+      return () => s.unsubscribe();
+    });
+  }
+
   delete(id: string): void {
     this.mutate(this.http.delete(apiUrl(`/admin/products/${id}`)));
   }

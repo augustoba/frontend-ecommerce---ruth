@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
 import { SupplierService } from '../../../core/services/supplier.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { Product, margin, totalStock } from '../../../core/models/product.model';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
@@ -18,6 +19,11 @@ export class AdminProductsComponent {
   private readonly productService = inject(ProductService);
   private readonly paramService = inject(ParamService);
   private readonly supplierService = inject(SupplierService);
+  private readonly toast = inject(ToastService);
+  private readonly router = inject(Router);
+
+  /** id del producto que se está duplicando (para deshabilitar el botón). */
+  readonly duplicatingId = signal<string | null>(null);
 
   readonly products = this.productService.products;
   readonly status = this.productService.adminStatus;
@@ -60,6 +66,22 @@ export class AdminProductsComponent {
 
   toggleActive(id: string): void {
     this.productService.toggleActive(id);
+  }
+
+  duplicate(id: string): void {
+    if (this.duplicatingId()) return;
+    this.duplicatingId.set(id);
+    this.productService.duplicate(id).subscribe({
+      next: (created) => {
+        this.duplicatingId.set(null);
+        this.toast.success('Producto duplicado. Editá la copia y cargale el stock.');
+        this.router.navigate(['/admin/productos', created.id, 'editar']);
+      },
+      error: () => {
+        this.duplicatingId.set(null);
+        this.toast.error('No se pudo duplicar el producto.');
+      },
+    });
   }
 
   remove(id: string, name: string): void {

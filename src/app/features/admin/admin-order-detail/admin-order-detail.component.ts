@@ -5,6 +5,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { OrderService } from '../../../core/services/order.service';
 import { ProductService } from '../../../core/services/product.service';
+import { WhatsappService } from '../../../core/services/whatsapp.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { Order, PAYMENT_LABELS } from '../../../core/models/order.model';
 import { Product, ProductSize, stockForSize } from '../../../core/models/product.model';
 
@@ -19,6 +21,8 @@ export class AdminOrderDetailComponent {
   private readonly router = inject(Router);
   private readonly orderService = inject(OrderService);
   private readonly productService = inject(ProductService);
+  private readonly whatsapp = inject(WhatsappService);
+  private readonly toast = inject(ToastService);
 
   private readonly orderId = this.route.snapshot.paramMap.get('id') ?? '';
 
@@ -83,6 +87,25 @@ export class AdminOrderDetailComponent {
     const product = this.lineProducts()[productId];
     if (!product) return null;
     return stockForSize(product, size);
+  }
+
+  /** Abre WhatsApp con el resumen del pedido ya redactado (para reenviarlo al cliente). */
+  openWhatsapp(): void {
+    const order = this.order();
+    if (order) this.whatsapp.openOrderChat(order);
+  }
+
+  /** Copia el texto del resumen del pedido al portapapeles. */
+  async copySummary(): Promise<void> {
+    const order = this.order();
+    if (!order) return;
+    const text = this.whatsapp.buildOrderMessage(order);
+    try {
+      await navigator.clipboard.writeText(text);
+      this.toast.success('Resumen del pedido copiado.');
+    } catch {
+      this.toast.error('No se pudo copiar. Copialo a mano desde el mensaje de WhatsApp.');
+    }
   }
 
   toggleLine(index: number): void {

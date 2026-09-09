@@ -24,4 +24,12 @@ export class ProductCardComponent {
   get outOfStock(): boolean {
     return totalStock(this.product()) <= 0;
   }
+
+  /** Aviso "últimas X unidades" cuando el stock total está por debajo del umbral. */
+  get lowStockLabel(): string {
+    const total = totalStock(this.product());
+    const threshold = this.product().lowStockThreshold ?? 3;
+    if (total <= 0 || total > threshold) return '';
+    return total === 1 ? '¡Última unidad!' : `Quedan ${total}`;
+  }
 }

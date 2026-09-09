@@ -25,6 +25,23 @@
     </span>
   </div>
 
+  <div class="flex flex-wrap gap-2 mb-6">
+    <button
+      type="button"
+      (click)="openWhatsapp()"
+      class="text-sm font-semibold bg-mint-100 text-mint-700 hover:bg-mint-200 px-4 py-2 rounded-full transition-colors"
+    >
+      💬 Abrir WhatsApp con el resumen
+    </button>
+    <button
+      type="button"
+      (click)="copySummary()"
+      class="text-sm font-semibold bg-stone-100 text-stone-600 hover:bg-stone-200 px-4 py-2 rounded-full transition-colors"
+    >
+      📋 Copiar resumen
+    </button>
+  </div>
+
   <div class="flex flex-wrap gap-x-6 gap-y-1 text-sm text-stone-600 mb-4">
     <p>Subtotal: <span class="font-semibold">{{ order.subtotal | currency: 'ARS' : 'symbol' : '1.0-0' }}</span></p>
     @if (order.discountAmount > 0) {

@@ -92,6 +92,14 @@
                 </a>
                 <button
                   type="button"
+                  (click)="duplicate(product.id)"
+                  [disabled]="duplicatingId()"
+                  class="text-stone-400 hover:text-brand-600 font-semibold disabled:opacity-50"
+                >
+                  {{ duplicatingId() === product.id ? 'Duplicando…' : 'Duplicar' }}
+                </button>
+                <button
+                  type="button"
                   (click)="remove(product.id, product.name)"
                   class="text-stone-400 hover:text-red-500 font-semibold"
                 >
