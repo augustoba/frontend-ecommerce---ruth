@@ -6,10 +6,17 @@ export interface SalesMetrics {
   /** Campo de fecha usado para ubicar cada venta en el tiempo (`processedAt`). */
   basis: string;
   totals: MetricsTotals;
+  /** Cuánto se vendió por la web (checkout) y cuánto en el local (POS). */
+  byChannel: ChannelBreakdown;
   byMonth: MonthBucket[];
   topProducts: ProductStat[];
   bottomProducts: ProductStat[];
   byGroup: GroupBreakdown;
+}
+
+export interface ChannelBreakdown {
+  web: MetricsTotals;
+  local: MetricsTotals;
 }
 
 export interface MetricsTotals {

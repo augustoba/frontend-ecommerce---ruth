@@ -19,7 +19,7 @@
           <p class="font-semibold mb-1">No se pudo cargar el catálogo.</p>
           <button type="button" (click)="reloadCatalog()" class="text-brand-600 font-semibold hover:underline">Reintentar</button>
         </div>
-      } @else if (!visibleProducts().length) {
+      } @else if (!matchingProducts().length) {
         <p class="text-sm text-stone-400 text-center py-8">Ningún producto coincide con la búsqueda.</p>
       } @else {
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[440px] overflow-y-auto pr-1">
@@ -42,6 +42,12 @@
             </div>
           }
         </div>
+        @if (hasMore()) {
+          <button type="button" (click)="showMore()"
+            class="mt-2 w-full text-sm font-semibold text-brand-600 hover:underline py-1">
+            Ver más productos ({{ matchingProducts().length - visibleProducts().length }} más)
+          </button>
+        }
       }
     </div>
 

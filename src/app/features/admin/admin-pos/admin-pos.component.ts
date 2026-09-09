@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -42,14 +42,31 @@ export class AdminPosComponent {
   private readonly products = this.productService.availableProducts;
 
   readonly search = signal('');
-  /** Productos que se muestran en la grilla, filtrados por el buscador. */
-  readonly visibleProducts = computed(() => {
+  /** Productos que matchean el buscador (ordenados por nombre). */
+  readonly matchingProducts = computed(() => {
     const term = this.search().trim().toLowerCase();
     const list = term
       ? this.products().filter((p) => p.name.toLowerCase().includes(term))
       : this.products();
     return [...list].sort((a, b) => a.name.localeCompare(b.name));
   });
+
+  /** Paginación client-side de la grilla. */
+  private readonly PAGE_SIZE = 12;
+  readonly shownCount = signal(this.PAGE_SIZE);
+  readonly visibleProducts = computed(() => this.matchingProducts().slice(0, this.shownCount()));
+  readonly hasMore = computed(() => this.matchingProducts().length > this.shownCount());
+  showMore(): void {
+    this.shownCount.update((n) => n + this.PAGE_SIZE);
+  }
+
+  constructor() {
+    // Al cambiar el buscador, volver a la primera "página" de la grilla.
+    effect(() => {
+      this.search();
+      this.shownCount.set(this.PAGE_SIZE);
+    });
+  }
 
   readonly lines = signal<PosLine[]>([]);
   readonly customerName = signal('');

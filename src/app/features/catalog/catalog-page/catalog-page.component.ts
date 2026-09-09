@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ProductCardComponent } from '../../../shared/components/product-card/product-card.component';
 import { HeroCarouselComponent } from '../../../shared/components/hero-carousel/hero-carousel.component';
@@ -114,6 +114,28 @@ export class CatalogPageComponent {
     if (sort === 'precio-desc') return [...list].sort((a, b) => b.price - a.price);
     return list;
   });
+
+  /** Paginación client-side: cuántos productos se muestran (crece con "Ver más"). */
+  private readonly PAGE_SIZE = 12;
+  readonly shownCount = signal(this.PAGE_SIZE);
+  readonly visibleProducts = computed(() => this.filteredProducts().slice(0, this.shownCount()));
+  readonly hasMore = computed(() => this.filteredProducts().length > this.shownCount());
+  showMore(): void {
+    this.shownCount.update((n) => n + this.PAGE_SIZE);
+  }
+
+  constructor() {
+    // Al cambiar cualquier filtro/orden, volver a la primera "página".
+    effect(() => {
+      this.searchTerm();
+      this.selectedSize();
+      this.selectedParams();
+      this.minPrice();
+      this.maxPrice();
+      this.sortBy();
+      this.shownCount.set(this.PAGE_SIZE);
+    });
+  }
 
   paramValue(groupId: string): string {
     return this.selectedParams()[groupId] ?? '';
