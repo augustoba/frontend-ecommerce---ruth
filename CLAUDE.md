@@ -47,13 +47,15 @@ si conviene tocar también este archivo o el `README.md`).
 - El logo real del comercio (sombrilla + corazones, paleta pastel
   rosa/celeste/durazno) está en `public/logo.jpeg` — lo pasó el cliente,
   coincide con su marca real de WhatsApp/redes. Es el **fallback**: desde
-  `/admin/config/identidad` se puede subir otro (queda en `site_settings.logo_url`
-  como data URI); todo lee de `SettingsService.logoSrc`.
-- Las imágenes de productos y del carrusel de la home son **íconos SVG
+  `/admin/config/identidad` se puede subir otro (se sube a Cloudinary y la URL
+  queda en `site_settings.logo_url`); todo lee de `SettingsService.logoSrc`.
+- Las imágenes de productos y del carrusel de la home eran **íconos SVG
   generados por código** (backend `DataSeeder` / `clothing-icons.ts`), no
-  fotos reales. El cliente todavía no mandó fotos de sus productos. Cada
-  producto tiene **galería** (`images[]`, la 1ra es portada) editable desde
-  el form de producto; el carrusel desde `/admin/carrusel`.
+  fotos reales. Cada producto tiene **galería** (`images[]`, la 1ra es portada)
+  + un link de video de YouTube opcional, editables desde el form de producto;
+  el carrusel desde `/admin/carrusel`. Las subidas de fotos del panel (producto,
+  carrusel, logo, QRs de pago) van a **Cloudinary** (unsigned upload; config en
+  `site-config.ts` → `SITE_CONFIG.cloudinary`). Ver PROYECTO.md §44.
 - La paleta de colores del sitio (naranja/celeste/menta, en `src/styles.css`)
   quedó como **posible ajuste pendiente** para acercarla a los tonos
   exactos del logo — ofrecido, no confirmado.

@@ -8,6 +8,9 @@
 <p class="text-sm text-stone-500 mb-6">
   Estas son las fotos que van pasando arriba de todo en la página de inicio. Subí una foto desde tu compu o
   celular, escribí una descripción corta y agregala. Podés reordenarlas o sacarlas cuando quieras.
+  <br />
+  Se recortan solas a formato apaisado (tira ancha). Para que se vean nítidas, usá fotos de al menos
+  1600&nbsp;px de ancho y con lo importante en el centro. JPG, PNG o WebP.
 </p>
 
 <!-- Agregar foto -->
@@ -26,14 +29,17 @@
   <input
     id="file"
     type="file"
-    accept="image/*"
+    accept="image/jpeg,image/png,image/webp"
     (change)="onFileSelected($event)"
-    [disabled]="uploading()"
+    [disabled]="uploading() || !canUpload"
     class="text-sm"
   />
 
+  @if (!canUpload) {
+    <p class="text-xs text-stone-400 mt-2">La subida de fotos todavía no está configurada.</p>
+  }
   @if (uploading()) {
-    <p class="text-sm text-brand-600 font-semibold mt-3">Procesando la foto…</p>
+    <p class="text-sm text-brand-600 font-semibold mt-3">Subiendo la foto…</p>
   }
   @if (error()) {
     <p class="text-sm text-red-500 font-semibold mt-3">{{ error() }}</p>
@@ -45,7 +51,7 @@
   <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
     @for (slide of slides(); track slide.id; let i = $index; let first = $first; let last = $last) {
       <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-hidden">
-        <img [src]="slide.imageUrl" [alt]="slide.alt" class="w-full h-36 object-cover bg-brand-50" />
+        <img [src]="slide.imageUrl" [alt]="slide.alt" class="w-full aspect-[21/9] object-cover bg-brand-50" />
         <div class="p-3">
           <input
             type="text"

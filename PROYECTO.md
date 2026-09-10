@@ -60,13 +60,17 @@ otro dominio.
 
 ## 4. Configuración clave — `src/app/core/config/site-config.ts`
 
-Este archivo quedó reducido a **una sola cosa**: la base de la API.
+Config que **no** puede venir del backend (hace falta para saber a dónde llamar,
+o son claves públicas de un servicio externo).
 
 | Campo | Valor actual | Qué es |
 |---|---|---|
 | `apiBaseUrl` | `''` (vacío) | Base del backend. Vacío = usa el proxy del dev-server. En prod, la URL del backend si va en otro dominio. |
+| `cloudinary.cloudName` | `''` (vacío) | "Cloud name" de la cuenta de Cloudinary (subida de fotos de productos). Público. |
+| `cloudinary.uploadPreset` | `''` (vacío) | Nombre de un **unsigned upload preset** de Cloudinary. Público. Vacío = el form de producto sólo deja agregar fotos por URL. |
 
-También exporta `apiUrl(path)` → `` `${apiBaseUrl}/api${path}` ``.
+También exporta `apiUrl(path)` → `` `${apiBaseUrl}/api${path}` `` y
+`cloudinaryConfigured()`.
 
 **El nombre de la tienda, el número de WhatsApp, el texto de "sobre nosotros"
 y las redes ya NO viven en el código.** Son configurables desde
@@ -124,8 +128,10 @@ Valores por defecto (fallback si el backend no responde) en
   `src/app/core/assets/clothing-icons.ts`), **no son fotos reales**.
   - Cada producto tiene una **galería** (`images[]`, la primera es la portada).
     Se administra desde el form de producto (`/admin/productos/:id/editar`):
-    agregar por URL o subir del disco (se redimensiona a data URI), reordenar,
-    quitar. La ficha de producto muestra la galería con miniaturas.
+    agregar por URL o subir del celu (se redimensiona y va a **Cloudinary**,
+    sección 44), reordenar, quitar. La ficha muestra la galería con miniaturas
+    y, si el producto tiene `videoUrl` (link de YouTube, opcional), el video
+    embebido debajo de las fotos.
   - El carrusel de la home se administra desde `/admin/carrusel`.
 - Debajo: buscador + filtros dinámicos generados desde las parametrías
   marcadas como "filtro en la tienda" (Público como botones, el resto como
@@ -211,10 +217,11 @@ src/app/
   (`orderResolver`) — no depende de que el pedido esté en la página cargada.
 - `/admin/productos` — listado **paginado** (20 por página). `nuevo` / `:id/editar`
   — CRUD con stock por talle, **galería de fotos** (agregar por URL o subir del
-  disco, reordenar, quitar; la primera es la portada) y **umbral de stock bajo**
-  propio (vacío = default global 3). El form de edición usa un *resolver*.
+  celu → Cloudinary, reordenar, quitar; la primera es la portada), **link de
+  video** de YouTube (opcional) y **umbral de stock bajo** propio (vacío =
+  default global 3). El form de edición usa un *resolver*.
 - `/admin/carrusel` — fotos del carrusel de la home: subir foto (se redimensiona
-  sola a máx. 1600px de ancho antes de mandarla), editar descripción, reordenar,
+  sola y va a **Cloudinary**, sección 44), editar descripción, reordenar,
   eliminar.
 - `/admin/parametrias` — grupos de clasificación de prendas (ver sección 9ter).
 - `/admin/talles` — escalas de talle editables (ver sección 9quinquies).
@@ -322,12 +329,13 @@ src/app/
   en la ruta. Edita sólo su parte de `SiteSettings`, y al guardar la mezcla con
   el resto (el `PUT /api/admin/settings` pide el objeto completo). El botón
   "Guardar" se deshabilita si no hay cambios (`dirty`).
-- **Logo:** se sube del disco → `resizeImageFile(..., 512, 0.9, 'image/png'|'image/jpeg')`
-  (conserva el PNG con transparencia) → data URI en `site_settings.logo_url`
-  (`MEDIUMTEXT`; null = `logo.jpeg`, el archivo estático). `SettingsService.logoSrc`
-  lo resuelve; lo usan header, footer, home, login, recuperar, layout del admin y
-  el `<app-site-preview>`. También actualiza el **favicon** en vivo
-  (`SettingsService.applyFavicon`).
+- **Logo y QRs de pago:** se suben del disco → `resizeImageFile(...)` → **Cloudinary**
+  (sección 44, carpetas `estilos-pequenos/logo` y `.../pagos`) → la URL queda en
+  `site_settings.logo_url` / `payment_qr_*` (`MEDIUMTEXT`; los data-URI viejos
+  siguen funcionando). Logo null = `logo.jpeg`, el archivo estático.
+  `SettingsService.logoSrc` lo resuelve; lo usan header, footer, home, login,
+  recuperar, layout del admin y el `<app-site-preview>`. También actualiza el
+  **favicon** en vivo (`SettingsService.applyFavicon`).
 - **Mensaje de WhatsApp:** `whatsappIntro` (saludo) y `whatsappClosing` (cierre,
   ej: cómo pagar) — texto libre con tokens `{tienda}` y `{codigo}` (ver
   `applyWhatsappTokens` en `whatsapp.service.ts`). El detalle del pedido y los
@@ -411,7 +419,10 @@ Pendientes, por prioridad:
 - [ ] **Open Graph / meta tags dinámicos** (compartir productos en WhatsApp con
       preview). Pausado: depende del hosting (los bots no ejecutan JS → SSR/
       prerender o endpoint de meta por User-Agent). Junto con SSR.
-- [ ] **Imágenes a storage externo** (Cloudinary/S3/disco) en vez de data-URI.
+- [x] **Imágenes a storage externo** — Cloudinary (unsigned upload desde el
+      front, sección 44): productos, carrusel, logo y QRs de pago. Config en
+      `site-config.ts`. Migración de los data-URI existentes:
+      `frontend/scripts/migrate-images-to-cloudinary.mjs`.
 - [x] **Entrega (retiro/envío) + medio de pago** en el checkout (hecho 2026-09-08,
       sección 9 y 36). Pendiente: **cotizar el envío** (hoy es "a coordinar"; a
       futuro zonas con precio). El geocoder ya es Nominatim/OSM (georef-ar no
@@ -763,6 +774,45 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
     - **"Lo más vendido"** en la home: `GET /api/products/best-sellers` (público,
       top por unidades de los últimos 90 días); fila horizontal arriba de la grilla.
     - **Paginación** client-side del catálogo y las grillas del POS/cambios.
+44. **Fotos a Cloudinary + video de YouTube por producto (2026-09-10):**
+    - **Subida a Cloudinary:** todas las subidas de imágenes del panel dejaron de
+      guardar data-URI. Redimensionan en el navegador (`resizeImageFile`) y suben
+      a Cloudinary con un **unsigned upload preset**, guardando la URL del CDN.
+      Cada lugar tiene su carpeta (via param `folder` en la subida):
+      - Form de producto (`/admin/productos/:id/editar`) → `estilos-pequenos/productos`,
+        nombre `<slug-del-nombre>-<n>` (n = posición al subir; reordenar no renombra).
+        Sin recorte (la ficha las muestra 4:5 con `object-cover`).
+      - Carrusel (`/admin/carrusel`) → `estilos-pequenos/carrusel`, `carrusel-<n>`.
+        Se **recortan al subir** a 21:9 centrado (`resizeImageFile(..., aspectRatio)`),
+        y la franja de la home pasó a `aspect-[16/10] sm:aspect-[21/9] max-h-[440px]`.
+      - Config del sitio (`/admin/config/identidad` y `/config/pagos`) → logo en
+        `estilos-pequenos/logo` (`logo`), QRs en `estilos-pequenos/pagos`
+        (`qr-transferencia` / `qr-tarjeta`).
+      Config pública en `site-config.ts` → `SITE_CONFIG.cloudinary`
+      (`cloudName` + `uploadPreset`); si está vacía, esos botones quedan
+      deshabilitados (en el form de producto se puede seguir agregando fotos por
+      URL). Cuenta actual: cloud `jitutkbc`, preset `estilospequenos` (unsigned,
+      carpeta `estilos-pequenos/productos`). Nuevos:
+      `core/services/cloudinary.service.ts` (`upload(file, {folder, publicId})`),
+      `core/utils/slugify.ts`. Como la subida es unsigned no se puede sobrescribir
+      ni pasar transformaciones: si el `publicId` ya existe, Cloudinary le agrega
+      un sufijo random; el recorte del carrusel se hace client-side antes de subir.
+    - **Validación de archivo:** `image-resize.ts` sumó `validateImageFile()`
+      (solo JPG/PNG/WebP, máx. 15 MB, imagen decodificable) — se llama en los 3
+      lugares antes de procesar, y `resizeImageFile` también valida. Los `accept`
+      de los inputs pasaron a `image/jpeg,image/png,image/webp`.
+    - **Migración de los data-URI existentes:**
+      `frontend/scripts/migrate-images-to-cloudinary.mjs` (Node, sin tocar el
+      backend: se loguea por la API REST, sube cada data-URI a Cloudinary y hace
+      el `PUT` correspondiente). Cubre productos, carrusel y settings
+      (logo + QRs). Idempotente, tiene `--dry-run`.
+    - **Video:** el producto sumó `videoUrl` (opcional). Se carga como link de
+      YouTube en el form; la ficha (`product-detail`) lo muestra embebido
+      (`youtube-nocookie.com/embed/...`, debajo de las fotos). El video **no** va
+      a Cloudinary (el plan free quema créditos con video). Nuevo:
+      `core/utils/youtube.ts`. Backend: `Product.videoUrl` (`VARCHAR(500)`),
+      `ProductRequest`/`ProductResponse`, `schema.sql`/`setup.sql`; sin migración
+      (`ddl-auto=update`).
 
 ## 12. Backend (`../backend/`) — resumen
 

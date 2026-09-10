@@ -42,6 +42,22 @@
             }
           </div>
         }
+
+        @if (videoEmbedUrl(); as video) {
+          <div class="mt-4">
+            <p class="font-semibold text-stone-800 mb-2">Video de la prenda</p>
+            <div class="rounded-2xl overflow-hidden bg-stone-900 aspect-video">
+              <iframe
+                [src]="video"
+                title="Video del producto"
+                class="w-full h-full"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+              ></iframe>
+            </div>
+          </div>
+        }
       </div>
 
       <div class="flex flex-col">

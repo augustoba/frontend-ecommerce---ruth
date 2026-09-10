@@ -31,6 +31,8 @@ export interface Product {
   sizeStocks: SizeStock[];
   /** Fotos del producto, en orden. La primera es la portada. Siempre hay al menos una. */
   images: string[];
+  /** Link a un video de la prenda (YouTube). Opcional. Se muestra embebido en la ficha. */
+  videoUrl?: string;
   /** Portada (primera de `images`). La calcula el backend; sirve para tarjetas y carrito. */
   imageUrl: string;
   active: boolean;

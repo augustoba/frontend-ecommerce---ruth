@@ -4,13 +4,21 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SettingsService, SiteSettings } from '../../../core/services/settings.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { resizeImageFile } from '../../../core/utils/image-resize';
+import { CloudinaryService } from '../../../core/services/cloudinary.service';
+import { resizeImageFile, validateImageFile } from '../../../core/utils/image-resize';
 import { SitePreviewComponent, PreviewFocus } from '../../../shared/components/site-preview/site-preview.component';
 
 type Section = 'identity' | 'social' | 'about' | 'whatsapp' | 'pagos';
 
-/** Campos de `SiteSettings` que guardan una imagen como data URI. */
+/** Campos de `SiteSettings` que guardan la URL de una imagen (Cloudinary). */
 type ImageField = 'logoUrl' | 'paymentQrTransferImage' | 'paymentQrCardImage';
+
+/** Carpeta y nombre en Cloudinary para cada campo de imagen. */
+const IMAGE_UPLOAD: Record<ImageField, { folder: string; publicId: string }> = {
+  logoUrl: { folder: 'estilos-pequenos/logo', publicId: 'logo' },
+  paymentQrTransferImage: { folder: 'estilos-pequenos/pagos', publicId: 'qr-transferencia' },
+  paymentQrCardImage: { folder: 'estilos-pequenos/pagos', publicId: 'qr-tarjeta' },
+};
 
 const META: Record<Section, { title: string; blurb: string; focus: PreviewFocus[] }> = {
   identity: {
@@ -47,7 +55,6 @@ const META: Record<Section, { title: string; blurb: string; focus: PreviewFocus[
   },
 };
 
-const MAX_IMAGE_BYTES = 1_500_000;
 
 /**
  * Una sección del panel de configuración del sitio. Edita sólo su parte de
@@ -64,6 +71,9 @@ export class AdminConfigSectionComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly settingsService = inject(SettingsService);
   private readonly toast = inject(ToastService);
+  private readonly cloudinary = inject(CloudinaryService);
+
+  readonly canUpload = this.cloudinary.configured;
 
   readonly section = (this.route.snapshot.data['section'] as Section) ?? 'identity';
   readonly meta = META[this.section];
@@ -106,18 +116,28 @@ export class AdminConfigSectionComponent {
     input.value = '';
     if (!file) return;
 
+    if (!this.cloudinary.configured) {
+      this.error.set('La subida de imágenes todavía no está configurada (ver site-config.ts).');
+      return;
+    }
+
+    const invalid = validateImageFile(file);
+    if (invalid) {
+      this.error.set(invalid);
+      return;
+    }
+
     this.error.set(null);
     this.uploading.set(field);
     try {
       const type = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-      const dataUrl = await resizeImageFile(file, maxWidth, 0.9, type);
-      if (dataUrl.length > MAX_IMAGE_BYTES) {
-        this.error.set('La imagen quedó muy pesada. Probá con un archivo más chico o más simple.');
-        return;
-      }
-      this.patch(field, dataUrl);
-    } catch {
-      this.error.set('No se pudo procesar la imagen. Probá con un JPG o PNG.');
+      const resized = await resizeImageFile(file, maxWidth, 0.9, type);
+      const { secureUrl } = await this.cloudinary.upload(resized, IMAGE_UPLOAD[field]);
+      this.patch(field, secureUrl);
+    } catch (e) {
+      this.error.set(
+        e instanceof Error ? `No se pudo subir la imagen: ${e.message}` : 'No se pudo subir la imagen.'
+      );
     } finally {
       this.uploading.set(null);
     }
