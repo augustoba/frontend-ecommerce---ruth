@@ -7,6 +7,7 @@ import { ExchangeService } from '../../../core/services/exchange.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Product, stockForSize } from '../../../core/models/product.model';
 import { PaymentMethod, PAYMENT_LABELS } from '../../../core/models/order.model';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 
 interface XLine {
   product: Product;
@@ -21,7 +22,7 @@ interface XLine {
  */
 @Component({
   selector: 'app-admin-exchange-new',
-  imports: [CurrencyPipe, FormsModule],
+  imports: [CurrencyPipe, FormsModule, CldImagePipe],
   templateUrl: './admin-exchange-new.component.html',
 })
 export class AdminExchangeNewComponent {

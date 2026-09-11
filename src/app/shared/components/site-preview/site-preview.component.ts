@@ -6,6 +6,7 @@ import {
   WHATSAPP_CLOSING_DEFAULT,
 } from '../../../core/services/settings.service';
 import { applyWhatsappTokens } from '../../../core/services/whatsapp.service';
+import { CldImagePipe } from '../../pipes/cld-image.pipe';
 
 /** Qué parte de la tienda resaltar en la previsualización. */
 export type PreviewFocus = 'header' | 'about' | 'social' | 'whatsapp';
@@ -19,6 +20,7 @@ export type PreviewFocus = 'header' | 'about' | 'social' | 'whatsapp';
 @Component({
   selector: 'app-site-preview',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CldImagePipe],
   templateUrl: './site-preview.component.html',
 })
 export class SitePreviewComponent {

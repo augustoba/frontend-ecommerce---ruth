@@ -12,6 +12,7 @@ import { resizeImageFile, validateImageFile } from '../../../core/utils/image-re
 import { CloudinaryService } from '../../../core/services/cloudinary.service';
 import { slugify } from '../../../core/utils/slugify';
 import { youtubeId } from '../../../core/utils/youtube';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 
 /** Precio de venta = costo + markup%. null si falta el costo o el %. */
 function priceFromMarkup(cost: number, markupPercent: number): number | null {
@@ -22,7 +23,7 @@ function priceFromMarkup(cost: number, markupPercent: number): number | null {
 
 @Component({
   selector: 'app-admin-product-form',
-  imports: [ReactiveFormsModule, FormsModule, RouterLink],
+  imports: [ReactiveFormsModule, FormsModule, RouterLink, CldImagePipe],
   templateUrl: './admin-product-form.component.html',
   styleUrl: './admin-product-form.component.css',
 })

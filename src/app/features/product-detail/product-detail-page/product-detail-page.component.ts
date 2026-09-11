@@ -9,10 +9,11 @@ import { ParamService } from '../../../core/services/param.service';
 import { ProductSize, stockForSize, totalStock } from '../../../core/models/product.model';
 import { youtubeEmbedUrl } from '../../../core/utils/youtube';
 import { QuantityStepperComponent } from '../../../shared/components/quantity-stepper/quantity-stepper.component';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 
 @Component({
   selector: 'app-product-detail-page',
-  imports: [CurrencyPipe, RouterLink, QuantityStepperComponent],
+  imports: [CurrencyPipe, RouterLink, QuantityStepperComponent, CldImagePipe],
   templateUrl: './product-detail-page.component.html',
   styleUrl: './product-detail-page.component.css',
 })

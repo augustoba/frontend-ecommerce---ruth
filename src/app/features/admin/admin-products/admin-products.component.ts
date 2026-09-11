@@ -11,11 +11,12 @@ import { ConfirmService } from '../../../core/services/confirm.service';
 import { ExportService } from '../../../core/services/export.service';
 import { Product, margin, totalStock } from '../../../core/models/product.model';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-admin-products',
-  imports: [CurrencyPipe, FormsModule, RouterLink, SkeletonComponent, PaginationComponent],
+  imports: [CurrencyPipe, FormsModule, RouterLink, SkeletonComponent, PaginationComponent, CldImagePipe],
   templateUrl: './admin-products.component.html',
   styleUrl: './admin-products.component.css',
 })

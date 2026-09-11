@@ -51,7 +51,7 @@
   <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
     @for (slide of slides(); track slide.id; let i = $index; let first = $first; let last = $last) {
       <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-hidden">
-        <img [src]="slide.imageUrl" [alt]="slide.alt" class="w-full aspect-[21/9] object-cover bg-brand-50" />
+        <img [src]="slide.imageUrl | cldImg: 500" [alt]="slide.alt" class="w-full aspect-[21/9] object-cover bg-brand-50" />
         <div class="p-3">
           <input
             type="text"

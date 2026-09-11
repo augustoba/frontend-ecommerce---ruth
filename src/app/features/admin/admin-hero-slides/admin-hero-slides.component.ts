@@ -4,13 +4,14 @@ import { HeroSlidesService } from '../../../core/services/hero-slides.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { CloudinaryService } from '../../../core/services/cloudinary.service';
 import { resizeImageFile, validateImageFile } from '../../../core/utils/image-resize';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 
 /** Proporción a la que se recortan las fotos del carrusel (ancho/alto). */
 const CARRUSEL_ASPECT = 21 / 9;
 
 @Component({
   selector: 'app-admin-hero-slides',
-  imports: [FormsModule],
+  imports: [FormsModule, CldImagePipe],
   templateUrl: './admin-hero-slides.component.html',
   styleUrl: './admin-hero-slides.component.css',
 })

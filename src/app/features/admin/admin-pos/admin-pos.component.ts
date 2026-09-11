@@ -10,6 +10,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { Product, stockForSize } from '../../../core/models/product.model';
 import { PaymentMethod, PAYMENT_LABELS } from '../../../core/models/order.model';
 import { CouponCheck } from '../../../core/models/coupon.model';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 
 interface PosLine {
   product: Product;
@@ -23,7 +24,7 @@ interface PosLine {
  */
 @Component({
   selector: 'app-admin-pos',
-  imports: [CurrencyPipe, FormsModule],
+  imports: [CurrencyPipe, FormsModule, CldImagePipe],
   templateUrl: './admin-pos.component.html',
 })
 export class AdminPosComponent {

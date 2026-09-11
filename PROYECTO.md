@@ -801,6 +801,14 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       (solo JPG/PNG/WebP, máx. 15 MB, imagen decodificable) — se llama en los 3
       lugares antes de procesar, y `resizeImageFile` también valida. Los `accept`
       de los inputs pasaron a `image/jpeg,image/png,image/webp`.
+    - **Entrega optimizada:** `shared/pipes/cld-image.pipe.ts` (`| cldImg: <ancho>`)
+      inserta `f_auto,q_auto[,w_<n>,c_limit]` en la URL de Cloudinary al mostrarla
+      — sirve WebP/AVIF al ancho justo (tarjetas 400, ficha 900, hero 1920, logos
+      64-300, miniaturas 96-300). Las URLs que no son de Cloudinary (data URI,
+      `logo.jpeg`, URL pegada a mano) pasan sin tocar. Aplicado en product-card,
+      ficha, carrito, hero, header/footer/site-preview y las pantallas del panel
+      que muestran fotos. Baja el tráfico ~5-10× → clave para no pasar los 25
+      créditos/mes del plan free.
     - **Migración de los data-URI existentes:**
       `frontend/scripts/migrate-images-to-cloudinary.mjs` (Node, sin tocar el
       backend: se loguea por la API REST, sube cada data-URI a Cloudinary y hace

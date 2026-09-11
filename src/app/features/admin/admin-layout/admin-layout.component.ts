@@ -5,6 +5,7 @@ import { filter, map, startWith } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { OrderService } from '../../../core/services/order.service';
 import { SettingsService } from '../../../core/services/settings.service';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 import { DashboardService } from '../../../core/services/dashboard.service';
 import { Permission } from '../../../core/models/permission.model';
 
@@ -74,7 +75,7 @@ const STORAGE_KEY = 'ep_admin_menu_open';
 
 @Component({
   selector: 'app-admin-layout',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, CldImagePipe],
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.css',
 })

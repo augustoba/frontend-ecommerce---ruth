@@ -2,7 +2,7 @@
 <section class="bg-gradient-to-b from-brand-100 to-brand-50 border-b border-brand-100">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 flex flex-col items-center text-center">
     <img
-      [src]="logoSrc()"
+      [src]="logoSrc() | cldImg: 300"
       [alt]="storeName()"
       class="h-28 w-28 sm:h-36 sm:w-36 rounded-full object-cover bg-white ring-4 ring-white shadow-xl"
     />

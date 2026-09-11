@@ -7,6 +7,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { CloudinaryService } from '../../../core/services/cloudinary.service';
 import { resizeImageFile, validateImageFile } from '../../../core/utils/image-resize';
 import { SitePreviewComponent, PreviewFocus } from '../../../shared/components/site-preview/site-preview.component';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 
 type Section = 'identity' | 'social' | 'about' | 'whatsapp' | 'pagos';
 
@@ -64,7 +65,7 @@ const META: Record<Section, { title: string; blurb: string; focus: PreviewFocus[
 @Component({
   selector: 'app-admin-config-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, FormsModule, RouterLink, SitePreviewComponent],
+  imports: [NgClass, FormsModule, RouterLink, SitePreviewComponent, CldImagePipe],
   templateUrl: './admin-config-section.component.html',
 })
 export class AdminConfigSectionComponent {

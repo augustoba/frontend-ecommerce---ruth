@@ -11,7 +11,7 @@
         <span class="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-red-400 ring-2 ring-stone-900"></span>
       }
     </button>
-    <img [src]="logoSrc()" alt="" class="h-7 w-7 rounded-full object-cover bg-white" />
+    <img [src]="logoSrc() | cldImg: 64" alt="" class="h-7 w-7 rounded-full object-cover bg-white" />
     <span class="font-display font-extrabold truncate">{{ storeName() }}</span>
   </div>
 
@@ -26,7 +26,7 @@
     [class.-translate-x-full]="!drawerOpen()"
   >
     <div class="p-5 flex items-start gap-3">
-      <img [src]="logoSrc()" alt="Estilos Pequeños" class="h-9 w-9 rounded-full object-cover shrink-0 bg-white" />
+      <img [src]="logoSrc() | cldImg: 96" alt="Estilos Pequeños" class="h-9 w-9 rounded-full object-cover shrink-0 bg-white" />
       <div class="min-w-0">
         <p class="font-display font-extrabold truncate">{{ storeName() }}</p>
         <p class="text-xs text-stone-400">Panel de administración</p>

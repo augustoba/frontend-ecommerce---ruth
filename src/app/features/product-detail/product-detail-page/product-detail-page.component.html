@@ -11,7 +11,7 @@
             class="block w-full h-full cursor-zoom-in"
             aria-label="Ampliar foto"
           >
-            <img [src]="mainImage()" [alt]="p.name" class="w-full h-full object-cover" />
+            <img [src]="mainImage() | cldImg: 900" [alt]="p.name" class="w-full h-full object-cover" />
           </button>
           <span class="absolute bottom-2 right-2 bg-white/85 text-stone-600 text-xs font-semibold px-2 py-1 rounded-full pointer-events-none">
             🔍 Ampliar
@@ -37,7 +37,7 @@
                 [class.ring-brand-500]="$index === selectedImageIndex()"
                 [class.ring-transparent]="$index !== selectedImageIndex()"
               >
-                <img [src]="img" alt="" class="w-full h-full object-cover" />
+                <img [src]="img | cldImg: 160" alt="" class="w-full h-full object-cover" />
               </button>
             }
           </div>
@@ -169,7 +169,7 @@
       class="fixed inset-0 z-50 bg-stone-900/90 flex items-center justify-center p-4 cursor-zoom-out"
       (click)="closeZoom()"
     >
-      <img [src]="mainImage()" [alt]="p.name" class="max-w-full max-h-full object-contain rounded-lg" />
+      <img [src]="mainImage() | cldImg: 1600" [alt]="p.name" class="max-w-full max-h-full object-contain rounded-lg" />
       <button
         type="button"
         (click)="closeZoom()"

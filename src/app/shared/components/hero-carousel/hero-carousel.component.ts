@@ -1,4 +1,5 @@
 import { Component, computed, DestroyRef, inject, input, OnInit, signal } from '@angular/core';
+import { CldImagePipe } from '../../pipes/cld-image.pipe';
 
 export interface HeroSlide {
   imageUrl: string;
@@ -7,6 +8,7 @@ export interface HeroSlide {
 
 @Component({
   selector: 'app-hero-carousel',
+  imports: [CldImagePipe],
   templateUrl: './hero-carousel.component.html',
   styleUrl: './hero-carousel.component.css',
 })

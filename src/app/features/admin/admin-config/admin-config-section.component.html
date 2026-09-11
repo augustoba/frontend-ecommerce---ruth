@@ -21,7 +21,7 @@
 
         <span class="block text-sm font-semibold text-stone-700 mb-1.5">Logo del negocio</span>
         <div class="flex items-center gap-4 mb-4">
-          <img [src]="draft().logoUrl || 'logo.jpeg'" alt="logo actual"
+          <img [src]="(draft().logoUrl || 'logo.jpeg') | cldImg: 128" alt="logo actual"
             class="h-16 w-16 rounded-full object-cover ring-1 ring-stone-200 bg-white shrink-0" />
           <div class="flex flex-col gap-1.5">
             <label class="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 cursor-pointer hover:underline">
@@ -136,7 +136,7 @@
           </label>
           <div class="flex items-center gap-4">
             @if (draft().paymentQrTransferImage) {
-              <img [src]="draft().paymentQrTransferImage" alt="QR transferencia"
+              <img [src]="draft().paymentQrTransferImage | cldImg: 300" alt="QR transferencia"
                 class="h-20 w-20 rounded-lg object-contain ring-1 ring-stone-200 bg-white shrink-0" />
             }
             <div class="flex flex-col gap-1.5">
@@ -168,7 +168,7 @@
           </label>
           <div class="flex items-center gap-4 mb-3">
             @if (draft().paymentQrCardImage) {
-              <img [src]="draft().paymentQrCardImage" alt="QR tarjeta"
+              <img [src]="draft().paymentQrCardImage | cldImg: 300" alt="QR tarjeta"
                 class="h-20 w-20 rounded-lg object-contain ring-1 ring-stone-200 bg-white shrink-0" />
             }
             <div class="flex flex-col gap-1.5">
