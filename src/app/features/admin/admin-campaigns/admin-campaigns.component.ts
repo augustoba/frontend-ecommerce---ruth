@@ -8,6 +8,9 @@ import { ConfirmService } from '../../../core/services/confirm.service';
 import { MarketingConfig, MarketingReason, MarketingSendStatus, PreviewResult } from '../../../core/models/marketing.model';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { resizeImageFile } from '../../../core/utils/image-resize';
+
+const MAX_IMAGE_BYTES = 1_500_000;
 
 /**
  * Panel de campañas automáticas de cupón por email: configuración (segmentos,
@@ -48,6 +51,37 @@ export class AdminCampaignsComponent {
     this.draft.update((d) => ({ ...d, [key]: value }));
   }
 
+  // --- imagen del mail ---
+  readonly uploadingImage = signal(false);
+  readonly imageError = signal<string | null>(null);
+
+  async onImageSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    this.imageError.set(null);
+    this.uploadingImage.set(true);
+    try {
+      const type = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+      const dataUrl = await resizeImageFile(file, 1200, 0.85, type);
+      if (dataUrl.length > MAX_IMAGE_BYTES) {
+        this.imageError.set('La imagen quedó muy pesada. Probá con un archivo más chico o más simple.');
+        return;
+      }
+      this.patch('emailImageUrl', dataUrl);
+    } catch {
+      this.imageError.set('No se pudo procesar la imagen. Probá con un JPG o PNG.');
+    } finally {
+      this.uploadingImage.set(false);
+    }
+  }
+
+  removeImage(): void {
+    this.patch('emailImageUrl', null);
+  }
+
   saveConfig(): void {
     if (this.savingConfig()) return;
     this.marketingService.updateConfig(this.draft(), () => {
@@ -73,6 +107,13 @@ export class AdminCampaignsComponent {
         this.toast.error('No se pudo calcular la vista previa.');
       },
     });
+  }
+
+  /** Los que no entraron por el tope de hoy no se pierden: al no quedar registrados como
+   *  enviados, mañana vuelven a aparecer como candidatos (si siguen calificando) y
+   *  entran en la cuenta del día siguiente, así hasta que se vacía la lista. */
+  pendingTomorrow(p: PreviewResult): number {
+    return Math.max(0, p.totalQualifying - p.willBeEmailedToday);
   }
 
   // --- envío manual ---

@@ -21,12 +21,6 @@ export class AdminAccountComponent {
   readonly pwError = signal<string | null>(null);
   readonly pwSaving = signal(false);
 
-  // cambiar frase de recuperación
-  readonly recCurPass = signal('');
-  readonly newPhrase = signal('');
-  readonly recError = signal<string | null>(null);
-  readonly recSaving = signal(false);
-
   changePassword(): void {
     if (this.pwSaving()) return;
     this.pwError.set(null);
@@ -50,27 +44,5 @@ export class AdminAccountComponent {
         this.pwError.set('No se pudo cambiar. ¿La contraseña actual es correcta?');
       }
     });
-  }
-
-  changeRecovery(): void {
-    if (this.recSaving()) return;
-    this.recError.set(null);
-    if (this.newPhrase().trim().length < 4) {
-      this.recError.set('La frase de recuperación tiene que tener al menos 4 caracteres.');
-      return;
-    }
-    this.recSaving.set(true);
-    this.authService
-      .changeRecoveryPhrase(this.recCurPass(), this.newPhrase().trim())
-      .subscribe((ok) => {
-        this.recSaving.set(false);
-        if (ok) {
-          this.toast.success('Frase de recuperación actualizada.');
-          this.recCurPass.set('');
-          this.newPhrase.set('');
-        } else {
-          this.recError.set('No se pudo cambiar. ¿La contraseña actual es correcta?');
-        }
-      });
   }
 }

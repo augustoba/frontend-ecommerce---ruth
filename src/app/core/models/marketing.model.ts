@@ -10,6 +10,11 @@ export interface MarketingConfig {
   dailyEmailCap: number;
   couponValidityDays: number;
   cooldownDays: number;
+  /** Admiten {tienda}, {codigo}, {porcentaje} y {vencimiento}. null/vacío = texto por defecto. */
+  emailSubject: string | null;
+  emailBody: string | null;
+  /** Imagen que se muestra arriba del mail (data URI). null = sin imagen. */
+  emailImageUrl: string | null;
 }
 
 export interface CandidatePreview {

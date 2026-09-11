@@ -129,20 +129,21 @@ export class AuthService {
     return this.postToken(apiUrl('/auth/login'), { dni, password });
   }
 
-  /** Recuperar la cuenta con la frase de recuperación → setea la pass nueva y loguea. */
-  recover(dni: string, recoveryPhrase: string, newPassword: string): Observable<AuthResult> {
-    return this.postToken(apiUrl('/auth/recover'), { dni, recoveryPhrase, newPassword });
+  /**
+   * "Olvidé mi contraseña": le pide al backend que le mande una contraseña
+   * nueva por mail (no queda logueado; hay que entrar con esa y cambiarla).
+   * Responde igual exista o no el DNI, así que `ok: true` no confirma nada.
+   */
+  forgotPassword(dni: string): Observable<AuthResult> {
+    return this.http.post(apiUrl('/auth/forgot-password'), { dni }).pipe(
+      map(() => ({ ok: true }) as AuthResult),
+      catchError((err: HttpErrorResponse) => this.handleAuthError(err))
+    );
   }
 
   changePassword(currentPassword: string, newPassword: string): Observable<boolean> {
     return this.http
       .put(apiUrl('/admin/account/password'), { currentPassword, newPassword })
-      .pipe(map(() => true), catchError(() => of(false)));
-  }
-
-  changeRecoveryPhrase(currentPassword: string, recoveryPhrase: string): Observable<boolean> {
-    return this.http
-      .put(apiUrl('/admin/account/recovery'), { currentPassword, recoveryPhrase })
       .pipe(map(() => true), catchError(() => of(false)));
   }
 
@@ -169,20 +170,22 @@ export class AuthService {
         this.loadMe().subscribe();
         return { ok: true } as AuthResult;
       }),
-      catchError((err: HttpErrorResponse) => {
-        if (err.status === 429) {
-          const header = Number(err.headers?.get('Retry-After'));
-          const bodyMsg = (err.error as { message?: string } | null)?.message;
-          return of<AuthResult>({
-            ok: false,
-            blocked: true,
-            message: bodyMsg || 'Demasiados intentos. Esperá un rato antes de reintentar.',
-            retryAfterSeconds: Number.isFinite(header) && header > 0 ? header : 900,
-          });
-        }
-        return of<AuthResult>({ ok: false });
-      })
+      catchError((err: HttpErrorResponse) => this.handleAuthError(err))
     );
+  }
+
+  private handleAuthError(err: HttpErrorResponse): Observable<AuthResult> {
+    if (err.status === 429) {
+      const header = Number(err.headers?.get('Retry-After'));
+      const bodyMsg = (err.error as { message?: string } | null)?.message;
+      return of<AuthResult>({
+        ok: false,
+        blocked: true,
+        message: bodyMsg || 'Demasiados intentos. Esperá un rato antes de reintentar.',
+        retryAfterSeconds: Number.isFinite(header) && header > 0 ? header : 900,
+      });
+    }
+    return of<AuthResult>({ ok: false });
   }
 
   private loadStored(): StoredToken | null {

@@ -8,6 +8,11 @@
       <p class="text-sm text-brand-100 mt-3 leading-relaxed">
         {{ settings().aboutText }}
       </p>
+      @if (settings().storeAddress) {
+        <p class="text-sm text-brand-100 mt-3 flex items-center gap-1.5">
+          <span aria-hidden="true">📍</span> {{ settings().storeAddress }}
+        </p>
+      }
     </div>
 
     <div>

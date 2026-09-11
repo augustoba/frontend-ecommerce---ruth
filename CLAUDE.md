@@ -42,7 +42,8 @@ si conviene tocar también este archivo o el `README.md`).
   hace falta **levantar los dos** (ver PROYECTO.md sección 3). Login por **DNI**
   (no username, desde 2026-09-11): admin normal (Ruth) `11111111` / `ruth123`;
   superadmin (Augusto) `33756194` / `augusto123` (ve además la config de
-  plataforma y el servicio de mail, ver PROYECTO.md #45). Solo el carrito y el
+  plataforma y el servicio de mail, ver PROYECTO.md #45-46). Recuperar
+  contraseña es por mail (no hay frase de recuperación). Solo el carrito y el
   token quedan en `localStorage`.
 
 ## Detalles que no están en el código y conviene recordar

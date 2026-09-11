@@ -17,6 +17,9 @@ const DEFAULTS: MarketingConfig = {
   dailyEmailCap: 250,
   couponValidityDays: 30,
   cooldownDays: 30,
+  emailSubject: null,
+  emailBody: null,
+  emailImageUrl: null,
 };
 
 /**

@@ -83,11 +83,10 @@ Valores por defecto (fallback si el backend no responde) en
   colapsables (Ventas, Catálogo, **Configuración del sitio**) + Mi cuenta y "Ver
   tienda" abajo. En mobile es un drawer con botón hamburguesa. El estado abierto
   de cada grupo se recuerda en `localStorage` (`ep_admin_menu_open`).
-- `/admin/recuperar` — si el admin se olvidó la contraseña: usuario + **frase de
-  recuperación** + contraseña nueva (no usa email).
-- `/admin/cuenta` — cambiar la contraseña y la frase de recuperación (piden la
-  contraseña actual). ⚠️ **La frase de recuperación inicial es
-  `frase-de-recuperacion-cambiar` — cambiala.**
+- `/admin/recuperar` — si el admin se olvidó la contraseña: sólo pide el **DNI**;
+  si existe, le llega un mail con una contraseña nueva (desde 2026-09-11, ver
+  PROYECTO.md #46 — antes era con una "frase de recuperación", se sacó).
+- `/admin/cuenta` — cambiar la contraseña (pide la actual).
 - `/admin/config` ("🎨 Configuración del sitio") — hub con sub-páginas: identidad
   y contacto (nombre + WhatsApp), redes sociales, "sobre nosotros" y carrusel.
   Cada una con **previsualización en vivo** de cómo queda en la tienda. Sin
@@ -228,9 +227,9 @@ src/app/
   aplica solo el que más ahorra; si todos son acumulables, se combinan en
   cascada) + un texto de **detalle** ("letra chica") + **fechas de vigencia**.
   Ya no hay "modo de combinación" global.
-- `/admin/cuenta` — cambiar contraseña y frase de recuperación.
-- `/admin/recuperar` — recuperar la cuenta con la frase de recuperación (ruta
-  pública, fuera del layout del admin).
+- `/admin/cuenta` — cambiar contraseña.
+- `/admin/recuperar` — recuperar la cuenta por DNI, te manda una contraseña
+  nueva por mail (ruta pública, fuera del layout del admin).
 - `/admin/config` (+ `/config/identidad`, `/config/redes`, `/config/nosotros`) —
   configuración del sitio con previsualización en vivo (ver sección 9sexies).
 - `/admin/metricas` — métricas de ventas por período (ver sección 9septies).
@@ -388,8 +387,12 @@ src/app/
 
 - [ ] Cargar el número de WhatsApp real desde `/admin/ajustes` antes de publicar
       (hoy hay un placeholder, `5491122334455`).
-- [ ] Cambiar la contraseña (`ruth123`) y la **frase de recuperación**
-      (`frase-de-recuperacion-cambiar`) del admin — desde `/admin/cuenta`.
+- [ ] Cambiar la contraseña de Ruth (`ruth123`) y de Augusto (`augusto123`)
+      antes de publicar — desde `/admin/cuenta`, o pedir una nueva por mail
+      desde `/admin/recuperar` (ya no hay frase de recuperación).
+- [ ] Verificar un remitente propio en Brevo (dominio del negocio, no un Gmail)
+      para que los mails de campaña no caigan en spam — cargarlo en
+      `/admin/config/servicios`.
 - [ ] En prod: definir `JWT_SECRET` (≥32 chars) y `apiBaseUrl` si el backend
       va en otro dominio.
 - [ ] Sumar fotos reales de los productos y del carrusel (hoy son íconos SVG).
@@ -818,15 +821,46 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       no usa el `JavaMailSender` autoconfigurado por Spring — arma uno al
       vuelo con lo que esté guardado en la base. Las variables de entorno
       `BREVO_SMTP_*`/`MARKETING_FROM_EMAIL` sólo sirven como semilla inicial.
-    - **"Quién está logueado":** el layout del panel muestra nombre + rol del
-      usuario actual (`AuthService.displayName`).
+    - **"Quién está logueado":** al principio se mostraba nombre + rol abajo
+      en el sidebar del admin — pasó muy desapercibido, se rehizo como cartel
+      global (ver #46).
     - **Pendiente:** se necesitó resetear la base local (`admin_user` cambió
       de forma — columna `username` fuera, `dni`/`nombre`/`apellido`/`email`
       nuevas y NOT NULL). `database/schema.sql`/`seed.sql` actualizados;
       `database/setup.sql` sigue con drift previo sin resolver (preexistente).
-    - **Reportado, no resuelto en esta tanda:** la dirección del local
-      (`storeAddress`) no se está viendo en el checkout aunque esté cargada
-      — revisar el signal `deliveryMethod`/timing en `cart-page.component.ts`.
+    - **Reportado en esta tanda, resuelto en #46:** la dirección del local no
+      se veía en el footer de la tienda.
+46. **Cartel de sesión global + contenido del mail editable + recuperar
+    contraseña por mail + dirección en el footer (2026-09-11, misma sesión
+    que #45, pasadas siguientes):**
+    - **Cartel "conectado como"**: se sacó de abajo del sidebar del admin
+      (pasaba desapercibido) y se movió a un componente nuevo,
+      `shared/components/session-banner`, montado en `AppComponent` — se ve
+      como una franja arriba de **toda** la página (panel y tienda pública),
+      con link a "Ir al panel" y "Salir". Se ve incluso navegando la tienda
+      logueado.
+    - **Contenido del mail de campaña editable** (`/admin/campanias`): nueva
+      sección "Contenido del mail" — asunto, mensaje e imagen opcional (mismo
+      mecanismo de subida que el logo/QR de `/admin/config`, `resizeImageFile`),
+      con los tokens `{tienda}`/`{codigo}`/`{porcentaje}`/`{vencimiento}`.
+      `MarketingConfig` (modelo/servicio) sumó `emailSubject`/`emailBody`/
+      `emailImageUrl`. El mail pasó a HTML con la imagen embebida.
+    - **Vista previa de campaña**: nuevo cartel "Quedan para después" — aclara
+      que a los que no entran por el tope diario no se los pierde (vuelven a
+      aparecer al otro día si siguen calificando; ver detalle en el backend
+      PROYECTO.md #23). No fue necesario ningún cambio de backend para esto,
+      ya funcionaba así — sólo se hizo visible en el frontend.
+    - **Recuperar contraseña por mail**: se sacó la "frase de recuperación".
+      `/admin/recuperar` ahora sólo pide el DNI; si existe, llega un mail con
+      una contraseña nueva para entrar y cambiarla después desde "Mi cuenta"
+      (que también perdió su sección de frase de recuperación).
+      `AuthService.recover()`/`changeRecoveryPhrase()` → `forgotPassword()`.
+    - **Dirección en el footer**: `FooterComponent` muestra
+      `settings().storeAddress` (si está cargada) debajo del texto "sobre
+      nosotros", en todas las páginas de la tienda.
+    - Probado en vivo: pedido de prueba con cupón de campaña (mail con imagen
+      y contenido personalizado) y mail de recuperación de contraseña, ambos
+      contra Brevo real — después limpiados/revertidos en la base.
 
 ## 12. Backend (`../backend/`) — resumen
 

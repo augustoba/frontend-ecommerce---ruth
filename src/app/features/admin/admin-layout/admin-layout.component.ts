@@ -98,8 +98,6 @@ export class AdminLayoutComponent {
     );
   });
   readonly storeName = computed(() => this.settingsService.settings().storeName);
-  readonly currentUserLabel = this.authService.displayName;
-  readonly currentUserRole = computed(() => this.authService.me()?.roleName ?? '');
   readonly logoSrc = this.settingsService.logoSrc;
   readonly pendingOrders = this.orderService.pendingCount;
   readonly lowStockCount = this.dashboardService.lowStockCount;

@@ -73,12 +73,6 @@
         }
       }
 
-      @if (currentUserLabel()) {
-        <p class="mt-2 px-4 text-xs text-stone-500">
-          Conectado como <span class="text-stone-300 font-semibold">{{ currentUserLabel() }}</span>
-          @if (currentUserRole()) { · {{ currentUserRole() }} }
-        </p>
-      }
       <a routerLink="/admin/cuenta" routerLinkActive="bg-stone-700 text-white"
         class="mt-1 px-4 py-2.5 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800 hover:text-white transition-colors flex items-center gap-2">
         ⚙️ Mi cuenta
