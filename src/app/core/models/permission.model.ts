@@ -7,6 +7,7 @@ export type Permission =
   | 'POS_USE'
   | 'EXCHANGES_USE'
   | 'CASH_REGISTER_VIEW'
+  | 'SHIFTS_MANAGE'
   | 'PARAMS_MANAGE'
   | 'SIZE_SCALES_MANAGE'
   | 'SUPPLIERS_MANAGE'

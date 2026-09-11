@@ -861,6 +861,53 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
     - Probado en vivo: pedido de prueba con cupón de campaña (mail con imagen
       y contenido personalizado) y mail de recuperación de contraseña, ambos
       contra Brevo real — después limpiados/revertidos en la base.
+47. **QR por producto + quién vendió/cobró + turnos con cierre de caja
+    (2026-09-11, misma sesión que #45-46, tanda siguiente).**
+    - **Escanear QR en el POS**: nuevo componente `admin-pos-scanner` (modal,
+      `@zxing/browser` `BrowserQRCodeReader.decodeFromConstraints` con
+      `facingMode: 'environment'`) — botón "📷 Escanear" en
+      `/admin/ventas/nueva` junto al buscador. Decodifica la URL del QR, saca
+      el `id` del final, lo busca en `productService.availableProducts()` y
+      si lo encuentra hace `search.set(producto.nombre)` (reusa la grilla de
+      talles ya existente, no hay selector nuevo); si no, error corto y sigue
+      escaneando. Limpia el `MediaStream`/reader al cerrar el modal.
+    - **QR imprimible por producto**: nueva ruta `/admin/qr-producto/:id`
+      (permiso `PRODUCTS_VIEW`), componente `admin-product-qr` — mismo patrón
+      de impresión que `admin-receipt` (`window.print()` + `.no-print` +
+      `@media print`). El QR (librería `qrcode`, `QRCode.toDataURL`) codifica
+      `{origin}/producto/{id}` (la ficha pública ya existía). Botón "🏷️ QR"
+      nuevo en la fila de `/admin/productos`.
+    - **POS en dos pasos (armar/cobrar)**: checkbox nuevo "Dejar pendiente de
+      cobro (lo cobra otra persona)" en `/admin/ventas/nueva`, destildado por
+      defecto. Destildado (caso normal, un solo empleado): `createPos(...)` +
+      `confirm(...)` en el mismo click, como siempre. Tildado: sólo arma el
+      pedido (`PENDIENTE`) y limpia el form — el pedido aparece en
+      `/admin/pedidos` y el botón "Confirmar" de siempre pasa a ser el paso
+      de "cobrar" (mismo endpoint, ahora registra quién cobra).
+    - **Quién armó/cobró**: `Order` sumó `createdByName?`/`confirmedByName?`
+      (sólo el nombre, no el DNI). Se muestran en `admin-order-detail`
+      ("Armó: X" / "Cobró: Y") y en el recibo `admin-receipt` ("Vendió: X" /
+      "Cobró: Y") — sólo si vienen, y sólo "Cobró" si es distinto de "Armó"
+      (si es la misma persona no se repite el dato).
+    - **Turnos** (`/admin/turnos`, permiso nuevo `SHIFTS_MANAGE`, ítem nuevo
+      en el menú "Ventas" después de "Caja"): `shift.model.ts` +
+      `shift.service.ts` (current/open/close/list, mismo estilo que
+      `cash-register.service.ts`, historial paginado con `CollectionStore`).
+      Componente `admin-shifts`: si no hay turno abierto, botón "Abrir turno";
+      si hay uno, "Cerrar turno" + la caja de **ese turno en vivo**
+      (`cashRegisterService.forShift(id)`); historial de turnos con "Ver caja"
+      (modal con la misma tabla + imprimir). La tabla de caja se factorizó a
+      un componente nuevo reusable `cash-register-table` (antes vivía inline
+      en `admin-cash-register`, ahora la comparten los dos).
+    - Se restartearon `ng serve` y el backend a mitad de esta tanda: habían
+      quedado corriendo con el código de *antes* de estos cambios (nuevas
+      rutas/endpoints devolvían 404 / caían al wildcard `**`→`/`) — si el
+      panel "pierde" una ruta o feature nueva después de un rato largo
+      corriendo, sospechar de esto antes que del código.
+    - Probado en vivo: turno abierto → venta dejada pendiente → confirmada
+      desde `/admin/pedidos` → la caja del turno reflejó el total → turno
+      cerrado (con "Ver caja" desde el historial) → QR de un producto
+      impreso. Todo limpiado/revertido de la base real después.
 
 ## 12. Backend (`../backend/`) — resumen
 

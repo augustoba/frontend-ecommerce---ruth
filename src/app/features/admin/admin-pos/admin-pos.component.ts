@@ -10,6 +10,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { Product, stockForSize } from '../../../core/models/product.model';
 import { PaymentMethod, PAYMENT_LABELS } from '../../../core/models/order.model';
 import { CouponCheck } from '../../../core/models/coupon.model';
+import { AdminPosScannerComponent } from '../admin-pos-scanner/admin-pos-scanner.component';
 
 interface PosLine {
   product: Product;
@@ -23,7 +24,7 @@ interface PosLine {
  */
 @Component({
   selector: 'app-admin-pos',
-  imports: [CurrencyPipe, FormsModule],
+  imports: [CurrencyPipe, FormsModule, AdminPosScannerComponent],
   templateUrl: './admin-pos.component.html',
 })
 export class AdminPosComponent {
@@ -42,6 +43,14 @@ export class AdminPosComponent {
   private readonly products = this.productService.availableProducts;
 
   readonly search = signal('');
+  readonly scannerOpen = signal(false);
+
+  /** Al escanear un QR válido: filtra la grilla a ese producto para elegir el talle. */
+  onProductScanned(product: Product): void {
+    this.scannerOpen.set(false);
+    this.search.set(product.name);
+  }
+
   /** Productos que matchean el buscador (ordenados por nombre). */
   readonly matchingProducts = computed(() => {
     const term = this.search().trim().toLowerCase();
@@ -74,6 +83,8 @@ export class AdminPosComponent {
   readonly customerEmail = signal('');
   readonly paymentMethod = signal<PaymentMethod | null>('CASH');
   readonly saving = signal(false);
+  /** Si lo va a cobrar otra persona después (cajero distinto del vendedor). */
+  readonly leavePending = signal(false);
 
   // cupón
   readonly couponInput = signal('');
@@ -157,6 +168,7 @@ export class AdminPosComponent {
     return this.lines().length > 0 && !!this.paymentMethod() && !this.saving();
   }
 
+  /** Arma el pedido. Si `leavePending` no está tildado, lo cobra en el mismo paso (comportamiento de siempre). */
   register(): void {
     if (!this.canSave) return;
     this.saving.set(true);
@@ -174,11 +186,32 @@ export class AdminPosComponent {
       })
       .subscribe({
         next: (order) => {
-          this.saving.set(false);
-          this.toast.success(`Venta registrada (${order.code}). Stock descontado.`);
-          this.router.navigate(['/admin/recibo', order.id]);
+          if (this.leavePending()) {
+            this.saving.set(false);
+            this.toast.success(`Pedido armado (${order.code}), pendiente de cobro.`);
+            this.resetForm();
+            return;
+          }
+          this.orderService.confirm(order.id).subscribe({
+            next: (confirmed) => {
+              this.saving.set(false);
+              this.toast.success(`Venta registrada (${confirmed.code}). Stock descontado.`);
+              this.router.navigate(['/admin/recibo', confirmed.id]);
+            },
+            error: () => this.saving.set(false),
+          });
         },
         error: () => this.saving.set(false),
       });
+  }
+
+  /** Después de dejar un pedido armado pendiente de cobro, limpia para la próxima venta. */
+  private resetForm(): void {
+    this.lines.set([]);
+    this.customerName.set('');
+    this.customerEmail.set('');
+    this.coupon.set(null);
+    this.couponInput.set('');
+    this.leavePending.set(false);
   }
 }

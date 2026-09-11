@@ -28,4 +28,9 @@ export class CashRegisterService {
     if (date) params = params.set('date', date);
     return this.http.get<CashRegister>(apiUrl('/admin/cash-register'), { params });
   }
+
+  /** Caja de un turno puntual: sólo lo que esa persona cobró/procesó en su ventana. */
+  forShift(shiftId: string): Observable<CashRegister> {
+    return this.http.get<CashRegister>(apiUrl(`/admin/cash-register/shift/${shiftId}`));
+  }
 }

@@ -128,6 +128,27 @@ export const routes: Routes = [
         title: 'Editar producto | Admin',
       },
       {
+        path: 'qr-producto/:id',
+        canActivate: [permissionGuard],
+        data: { permission: 'PRODUCTS_VIEW' },
+        loadComponent: () =>
+          import('./features/admin/admin-product-qr/admin-product-qr.component').then(
+            (m) => m.AdminProductQrComponent
+          ),
+        resolve: { product: productResolver },
+        title: 'QR del producto | Admin',
+      },
+      {
+        path: 'turnos',
+        canActivate: [permissionGuard],
+        data: { permission: 'SHIFTS_MANAGE' },
+        loadComponent: () =>
+          import('./features/admin/admin-shifts/admin-shifts.component').then(
+            (m) => m.AdminShiftsComponent
+          ),
+        title: 'Turnos | Admin',
+      },
+      {
         path: 'ventas/nueva',
         canActivate: [permissionGuard],
         data: { permission: 'POS_USE' },

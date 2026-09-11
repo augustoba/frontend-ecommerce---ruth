@@ -1,12 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CashRegister, CashRegisterService } from '../../../core/services/cash-register.service';
+import { CashRegisterTableComponent } from '../cash-register-table/cash-register-table.component';
 
 /** Cierre de caja del día: cuánto dinero debería haber por cada medio de pago. */
 @Component({
   selector: 'app-admin-cash-register',
-  imports: [CurrencyPipe, FormsModule],
+  imports: [FormsModule, CashRegisterTableComponent],
   templateUrl: './admin-cash-register.component.html',
 })
 export class AdminCashRegisterComponent {

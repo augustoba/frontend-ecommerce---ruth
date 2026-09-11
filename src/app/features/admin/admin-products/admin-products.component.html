@@ -152,6 +152,12 @@
                   >
                     Editar
                   </a>
+                  <a
+                    [routerLink]="['/admin/qr-producto', product.id]"
+                    class="text-stone-400 hover:text-brand-600 font-semibold"
+                  >
+                    🏷️ QR
+                  </a>
                   <button
                     type="button"
                     (click)="duplicate(product.id)"

@@ -85,4 +85,8 @@ export interface Order {
   couponCode?: string | null;
   /** Descuento en pesos del cupón (aparte del descuento automático). */
   couponDiscount?: number | null;
+  /** Quién armó el pedido (null en el checkout web público). */
+  createdByName?: string | null;
+  /** Quién lo confirmó/cobró (null hasta que se confirma). */
+  confirmedByName?: string | null;
 }

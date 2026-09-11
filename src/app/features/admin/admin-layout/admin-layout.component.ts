@@ -36,6 +36,7 @@ const GROUPS: NavGroup[] = [
       { path: '/admin/ventas/nueva', label: 'Venta en el local', permission: 'POS_USE' },
       { path: '/admin/cambios', label: 'Cambios', permission: 'EXCHANGES_USE' },
       { path: '/admin/caja', label: 'Caja', permission: 'CASH_REGISTER_VIEW' },
+      { path: '/admin/turnos', label: 'Turnos', permission: 'SHIFTS_MANAGE' },
       { path: '/admin/promociones', label: 'Descuentos', permission: 'DISCOUNTS_MANAGE' },
       { path: '/admin/cupones', label: 'Cupones', permission: 'COUPONS_MANAGE' },
       { path: '/admin/campanias', label: 'Campañas', permission: 'MARKETING_MANAGE' },

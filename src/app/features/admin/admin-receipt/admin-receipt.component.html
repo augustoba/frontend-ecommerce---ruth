@@ -27,6 +27,13 @@
       {{ order.channel === 'LOCAL' ? 'Venta en el local' : 'Pedido online' }} ·
       {{ order.deliveryMethod === 'SHIPPING' ? 'Envío a domicilio' : 'Retiro en el local' }}
     </p>
+    @if (order.createdByName || order.confirmedByName) {
+      <p class="text-xs text-stone-500">
+        @if (order.createdByName) { Vendió: {{ order.createdByName }} }
+        @if (order.createdByName && order.confirmedByName && order.createdByName !== order.confirmedByName) { · }
+        @if (order.confirmedByName && order.confirmedByName !== order.createdByName) { Cobró: {{ order.confirmedByName }} }
+      </p>
+    }
 
     <table class="w-full text-sm mt-4">
       <thead>
