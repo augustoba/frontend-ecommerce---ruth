@@ -13,6 +13,10 @@
     </button>
     <img [src]="logoSrc() | cldImg: 64" alt="" class="h-7 w-7 rounded-full object-cover bg-white" />
     <span class="font-display font-extrabold truncate">{{ storeName() }}</span>
+    <span class="ml-auto text-right text-xs leading-tight min-w-0">
+      <span class="block font-semibold truncate max-w-[9rem]">{{ displayName() }}</span>
+      <span class="block text-stone-400 truncate max-w-[9rem]">{{ roleLabel() }}</span>
+    </span>
   </div>
 
   <!-- Backdrop del drawer (mobile) -->
@@ -91,7 +95,17 @@
     </div>
   </aside>
 
-  <main class="flex-1 p-4 sm:p-8 min-w-0">
-    <router-outlet />
+  <main class="flex-1 min-w-0">
+    <div class="hidden sm:flex sticky top-0 z-30 items-center justify-end gap-2 bg-white/90 backdrop-blur border-b border-stone-100 px-8 py-2.5">
+      <span class="h-7 w-7 rounded-full bg-brand-100 text-brand-700 font-bold text-xs flex items-center justify-center shrink-0">
+        {{ userInitial() }}
+      </span>
+      <span class="text-sm font-semibold text-stone-700">{{ displayName() }}</span>
+      <span class="text-stone-300">·</span>
+      <span class="text-sm text-stone-500">{{ roleLabel() }}</span>
+    </div>
+    <div class="p-4 sm:p-8">
+      <router-outlet />
+    </div>
   </main>
 </div>

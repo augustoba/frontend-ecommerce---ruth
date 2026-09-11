@@ -18,6 +18,8 @@ interface NavItem {
   exact?: boolean;
   /** Permiso necesario para ver el item (sin permiso = siempre visible). */
   permission?: Permission;
+  /** true = sólo lo ve el superadmin, sin importar sus permisos normales. */
+  superAdminOnly?: boolean;
 }
 
 interface NavGroup {
@@ -69,6 +71,15 @@ const GROUPS: NavGroup[] = [
       { path: '/admin/usuarios', label: 'Usuarios y roles', permission: 'USERS_MANAGE' },
     ],
   },
+  {
+    id: 'superadmin',
+    label: 'Superadmin',
+    icon: '🔒',
+    items: [
+      { path: '/admin/superadmin/cloudinary', label: 'Cloudinary', superAdminOnly: true },
+      { path: '/admin/superadmin/mail', label: 'Mail (SMTP)', superAdminOnly: true },
+    ],
+  },
 ];
 
 const STORAGE_KEY = 'ep_admin_menu_open';
@@ -92,11 +103,20 @@ export class AdminLayoutComponent {
     this.authService.me();
     this.authService.permissionsUnavailable();
     const has = (p?: Permission) => !p || this.authService.has(p);
-    return GROUPS.map((g) => ({ ...g, items: g.items.filter((it) => has(it.permission)) })).filter(
-      (g) => g.items.length > 0
-    );
+    const visible = (it: NavItem) => has(it.permission) && (!it.superAdminOnly || this.authService.isSuperAdmin());
+    return GROUPS.map((g) => ({ ...g, items: g.items.filter(visible) })).filter((g) => g.items.length > 0);
   });
   readonly storeName = computed(() => this.settingsService.settings().storeName);
+
+  /** Nombre a mostrar arriba de todo el panel: nombre real o, si no hay, el usuario/DNI. */
+  readonly displayName = computed(() => {
+    const m = this.authService.me();
+    if (!m) return '';
+    const full = [m.firstName, m.lastName].filter(Boolean).join(' ');
+    return full || m.username;
+  });
+  readonly roleLabel = computed(() => this.authService.me()?.roleName ?? '');
+  readonly userInitial = computed(() => (this.displayName()[0] ?? '?').toUpperCase());
   readonly logoSrc = this.settingsService.logoSrc;
   readonly pendingOrders = this.orderService.pendingCount;
   readonly lowStockCount = this.dashboardService.lowStockCount;

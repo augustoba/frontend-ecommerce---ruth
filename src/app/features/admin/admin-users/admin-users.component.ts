@@ -29,6 +29,9 @@ export class AdminUsersComponent {
   readonly tab = signal<'usuarios' | 'roles'>('usuarios');
 
   // --- alta de usuario ---
+  readonly newFirstName = signal('');
+  readonly newLastName = signal('');
+  /** DNI: es lo que la persona va a usar para loguearse. */
   readonly newUsername = signal('');
   readonly newPassword = signal('');
   readonly newRoleId = signal('');
@@ -58,16 +61,27 @@ export class AdminUsersComponent {
     const password = this.newPassword();
     const roleId = this.newRoleId();
     if (username.length < 3 || password.length < 4 || !roleId) {
-      this.toast.error('Completá usuario (3+), contraseña (4+) y rol.');
+      this.toast.error('Completá DNI (3+), contraseña (4+) y rol.');
       return;
     }
-    this.svc.createUser({ username, password, roleId }, () => {
-      this.toast.success('Usuario creado.');
-      this.newUsername.set('');
-      this.newPassword.set('');
-      this.newRoleId.set('');
-      this.userFormOpen.set(false);
-    });
+    this.svc.createUser(
+      {
+        username,
+        password,
+        roleId,
+        firstName: this.newFirstName().trim() || undefined,
+        lastName: this.newLastName().trim() || undefined,
+      },
+      () => {
+        this.toast.success('Usuario creado.');
+        this.newFirstName.set('');
+        this.newLastName.set('');
+        this.newUsername.set('');
+        this.newPassword.set('');
+        this.newRoleId.set('');
+        this.userFormOpen.set(false);
+      }
+    );
   }
 
   changeUserRole(id: string, roleId: string): void {

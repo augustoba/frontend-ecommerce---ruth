@@ -38,23 +38,34 @@ export interface RoleInput {
 
 export interface AdminUser {
   id: string;
+  /** DNI para cuentas nuevas (ver AdminUser.java); las viejas pueden tener otro texto. */
   username: string;
   roleId: string | null;
   roleName: string | null;
   systemAdmin: boolean;
   enabled: boolean;
   createdAt: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
 }
 
 export interface CreateUserInput {
+  /** DNI del usuario: es lo que va a usar para loguearse. */
   username: string;
   password: string;
   roleId: string;
   enabled?: boolean;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
 }
 
 export interface UpdateUserInput {
   roleId?: string;
   enabled?: boolean;
   password?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
 }

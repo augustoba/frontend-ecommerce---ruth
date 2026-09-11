@@ -34,8 +34,12 @@
 
   @if (userFormOpen()) {
     <div class="bg-white rounded-2xl ring-1 ring-black/5 p-5 mb-5 grid sm:grid-cols-3 gap-3">
+      <input type="text" [ngModel]="newFirstName()" (ngModelChange)="newFirstName.set($event)"
+        placeholder="Nombre" class="rounded-lg border border-stone-200 px-3 py-2 text-sm" />
+      <input type="text" [ngModel]="newLastName()" (ngModelChange)="newLastName.set($event)"
+        placeholder="Apellido" class="rounded-lg border border-stone-200 px-3 py-2 text-sm" />
       <input type="text" [ngModel]="newUsername()" (ngModelChange)="newUsername.set($event)"
-        placeholder="Usuario" class="rounded-lg border border-stone-200 px-3 py-2 text-sm" />
+        placeholder="DNI" class="rounded-lg border border-stone-200 px-3 py-2 text-sm" />
       <input type="password" [ngModel]="newPassword()" (ngModelChange)="newPassword.set($event)"
         placeholder="Contraseña" class="rounded-lg border border-stone-200 px-3 py-2 text-sm" />
       <select [ngModel]="newRoleId()" (ngModelChange)="newRoleId.set($event)"
@@ -51,10 +55,11 @@
   }
 
   <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-x-auto" [class.opacity-60]="saving()">
-    <table class="w-full text-sm min-w-[620px]">
+    <table class="w-full text-sm min-w-[720px]">
       <thead>
         <tr class="text-left text-stone-500 border-b border-stone-100">
-          <th class="p-4 font-semibold">Usuario</th>
+          <th class="p-4 font-semibold">Nombre</th>
+          <th class="p-4 font-semibold">DNI</th>
           <th class="p-4 font-semibold">Rol</th>
           <th class="p-4 font-semibold">Estado</th>
           <th class="p-4 font-semibold text-right">Acciones</th>
@@ -64,9 +69,10 @@
         @for (u of users(); track u.id) {
           <tr class="border-b border-stone-50 last:border-0">
             <td class="p-4 font-semibold text-stone-800">
-              {{ u.username }}
+              {{ u.firstName || u.lastName ? (u.firstName ?? '') + ' ' + (u.lastName ?? '') : '—' }}
               @if (u.username === myUsername()) { <span class="text-xs text-stone-400">(vos)</span> }
             </td>
+            <td class="p-4 text-stone-600">{{ u.username }}</td>
             <td class="p-4">
               @if (u.systemAdmin && u.username === myUsername()) {
                 <span class="text-stone-600">{{ u.roleName }}</span>

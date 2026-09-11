@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { SITE_CONFIG, cloudinaryConfigured } from '../config/site-config';
+import { Injectable, inject } from '@angular/core';
+import { SettingsService } from './settings.service';
 
 export interface CloudinaryUpload {
   /** URL https servida por el CDN de Cloudinary. Es lo que se guarda en la base. */
@@ -24,14 +24,16 @@ export interface CloudinaryUploadOptions {
 
 /**
  * Sube imágenes a Cloudinary directo desde el navegador usando un
- * **unsigned upload preset** (no expone el API secret). Config en
- * `site-config.ts` → `SITE_CONFIG.cloudinary`.
+ * **unsigned upload preset** (no expone el API secret). Cuenta cargada desde
+ * `SettingsService` (editable por un superadmin en `/admin/superadmin/cloudinary`).
  */
 @Injectable({ providedIn: 'root' })
 export class CloudinaryService {
-  /** true si `site-config.ts` tiene cargado el cloud name y el preset. */
+  private readonly settingsService = inject(SettingsService);
+
+  /** true si hay cuenta de Cloudinary cargada. */
   get configured(): boolean {
-    return cloudinaryConfigured();
+    return this.settingsService.cloudinaryConfigured();
   }
 
   /**
@@ -39,9 +41,9 @@ export class CloudinaryService {
    * un data URI (ej: el que devuelve `resizeImageFile`).
    */
   async upload(file: File | string, options: CloudinaryUploadOptions = {}): Promise<CloudinaryUpload> {
-    const { cloudName, uploadPreset } = SITE_CONFIG.cloudinary;
+    const { cloudinaryCloudName: cloudName, cloudinaryUploadPreset: uploadPreset } = this.settingsService.settings();
     if (!cloudName || !uploadPreset) {
-      throw new Error('Cloudinary no está configurado (ver site-config.ts).');
+      throw new Error('Cloudinary no está configurado (lo carga el superadmin desde el panel).');
     }
 
     const form = new FormData();

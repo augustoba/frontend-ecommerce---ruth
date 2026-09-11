@@ -36,47 +36,129 @@ Sin dependencias de pasarela de pago en el proyecto.
 
 ## 3. Cómo correr el proyecto en local
 
-**Necesitás los dos: backend + frontend.**
+**Necesitás los dos: backend + frontend, y MySQL corriendo.** Rutas reales en
+esta máquina (el nombre de la carpeta del backend no coincide con lo que dice
+este documento en otros lados — `../backend/` — es así de una tanda vieja):
 
 ```bash
-# 1) backend  (con MySQL corriendo)
-cd "C:\Users\august0\Desktop\proyectos\ecommerce ruth\backend"
-./mvnw spring-boot:run          # http://localhost:8080
+# 0) (sólo la primera vez) config local del backend — gitignored, no se sube
+cd "C:\proyectos\ecommerce ruth\backend-ecommer-ruth"
+copy src\main\resources\application-local.yml.example src\main\resources\application-local.yml
+# Editá application-local.yml: usuario/contraseña de tu MySQL, un JWT secret
+# largo, y (opcional pero recomendado) tu cuenta superadmin — ver más abajo.
+
+# 1) backend (con MySQL corriendo)
+cd "C:\proyectos\ecommerce ruth\backend-ecommer-ruth"
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local     # http://localhost:8080
 
 # 2) frontend
-cd "C:\Users\august0\Desktop\proyectos\ecommerce ruth\frontend-ecommerce---ruth"
-npm start                       # http://localhost:4200
+cd "C:\proyectos\ecommerce ruth\frontend"
+npm start                                                    # http://localhost:4200
 ```
 
 El frontend llama a `/api/*` y el dev-server lo redirige al backend
 (`proxy.conf.json` — se toma solo, sin flags). Si el backend está caído,
 la tienda muestra "no se pudo conectar" y estados de error con "reintentar".
 
-Login del admin: **`admin` / `ruth123`**.
+**Logins del panel** (`http://localhost:4200/admin`):
+- Cuenta de la tienda (Ruth): **`admin` / `ruth123`** — rol Administrador,
+  ve todo lo de la tienda (productos, pedidos, POS, config del sitio, etc.)
+  pero **no** ve el menú "🔒 Superadmin".
+- Tu cuenta superadmin: el DNI que hayas cargado en `application-local.yml`
+  (o en las env vars `SUPERADMIN_USER`/`SUPERADMIN_PASSWORD`/
+  `SUPERADMIN_FIRST_NAME`/`SUPERADMIN_LAST_NAME`) + la contraseña que
+  elegiste. Se siembra sola al arrancar el backend si esas 4 variables están
+  cargadas (si faltan, no se crea ninguna cuenta superadmin y
+  `/admin/superadmin/**` queda inaccesible para todos, vos incluido). Ver
+  ítem 45/46 del historial para el detalle técnico.
 
 Build de producción del frontend: `npm run build` → `dist/ecommerce-ninos/`.
-En prod, poné la URL del backend en `apiBaseUrl` (site-config.ts) si va en
-otro dominio.
+En prod, poné la URL del backend en `apiBaseUrl` (`site-config.ts`) si va en
+otro dominio, y las env vars de arriba (`ADMIN_*`, `SUPERADMIN_*`, `DB_*`,
+`JWT_SECRET`, `CORS_ORIGINS`) en el servidor donde corra el backend.
 
-## 4. Configuración clave — `src/app/core/config/site-config.ts`
+## 3bis. Levantar un sitio NUEVO con esta misma base (checklist)
 
-Config que **no** puede venir del backend (hace falta para saber a dónde llamar,
-o son claves públicas de un servicio externo).
+Pensado para cuando este mismo código sirva de plantilla para otro comercio:
+la idea es que armar un sitio nuevo sea **configurar, no programar**.
 
-| Campo | Valor actual | Qué es |
-|---|---|---|
-| `apiBaseUrl` | `''` (vacío) | Base del backend. Vacío = usa el proxy del dev-server. En prod, la URL del backend si va en otro dominio. |
-| `cloudinary.cloudName` | `''` (vacío) | "Cloud name" de la cuenta de Cloudinary (subida de fotos de productos). Público. |
-| `cloudinary.uploadPreset` | `''` (vacío) | Nombre de un **unsigned upload preset** de Cloudinary. Público. Vacío = el form de producto sólo deja agregar fotos por URL. |
+1. Cloná los dos repos, cambiá el nombre/branding que sí vive en código
+   (`public/logo.jpeg` como fallback, paleta en `src/styles.css`, nombre del
+   paquete Java si aplica) — esto es lo único que todavía requiere tocar código.
+2. Base de datos nueva + `application-local.yml` (o env vars en el server)
+   con las credenciales de esa base.
+3. Arrancá el backend una vez para que siembre las tablas y el admin inicial
+   (`ADMIN_USER`/`ADMIN_PASSWORD` — cambialo del default `admin`/`ruth123`) y
+   tu cuenta superadmin (`SUPERADMIN_USER`=tu DNI, `SUPERADMIN_PASSWORD`,
+   `SUPERADMIN_FIRST_NAME`, `SUPERADMIN_LAST_NAME`).
+4. Entrá como superadmin y cargá, **sin tocar código**:
+   - `/admin/superadmin/cloudinary` — cuenta de Cloudinary de ESE sitio (ver
+     pasos en la sección siguiente). Sin esto, subir fotos queda deshabilitado
+     (se puede seguir cargando por URL mientras tanto).
+   - `/admin/superadmin/mail` — SMTP de ESE sitio (Brevo u otro). El envío en
+     sí todavía no está conectado del lado del backend (pendiente, sección 12).
+5. Entrá como el admin de la tienda (o creá uno nuevo desde `/admin/usuarios`
+   con nombre/apellido/DNI) y cargá desde `/admin/config`: nombre de la
+   tienda, WhatsApp, dirección, redes, medios de pago, "sobre nosotros",
+   mensaje de WhatsApp, carrusel.
 
-También exporta `apiUrl(path)` → `` `${apiBaseUrl}/api${path}` `` y
-`cloudinaryConfigured()`.
+## 4. Configurar servicios externos (Cloudinary, mail)
 
-**El nombre de la tienda, el número de WhatsApp, el texto de "sobre nosotros"
-y las redes ya NO viven en el código.** Son configurables desde
-`/admin/config` y los guarda el backend (`site_settings`). Ver sección 9sexies.
-Valores por defecto (fallback si el backend no responde) en
-`src/app/core/services/settings.service.ts` → `DEFAULTS`.
+### Cloudinary (fotos del panel: productos, carrusel, logo, QRs)
+
+Cuenta actual del sitio: cloud `jitutkbc` — ya cargada en `site_settings`
+desde `/admin/superadmin/cloudinary`. Para esa misma cuenta o una nueva:
+
+1. Entrá a **https://cloudinary.com** → "Sign up free" (o el login si ya
+   tenés cuenta — la actual la armó el cliente).
+2. En el **Dashboard** (primera pantalla al loguearte) copiá el **Cloud name**.
+3. Andá a **Settings → Upload → Upload presets → Add upload preset**.
+   - **Signing Mode: Unsigned** (obligatorio — es lo que permite subir desde
+     el navegador sin exponer el API secret).
+   - Opcional pero recomendable: carpeta por defecto, formatos permitidos
+     (jpg, png, webp), límite de tamaño.
+   - Guardá y copiá el **nombre del preset**.
+4. En el panel: **`/admin/superadmin/cloudinary`** → pegá Cloud name + preset
+   → Guardar. Ya queda disponible para subir fotos en todo el panel (no hace
+   falta redesplegar nada).
+
+### Mail / SMTP (recuperar cuenta por mail — Brevo)
+
+Elegido por volumen bajo (recuperación de cuenta de un puñado de usuarios
+internos, no mailing masivo): **300 mails/día gratis para siempre, sin
+tarjeta**. Alternativas si hiciera falta más volumen o dominio propio: Resend
+(3000/mes gratis) o Gmail con "contraseña de aplicación" (más frágil, no
+recomendado para producción).
+
+1. Entrá a **https://www.brevo.com** → "Sign up free" (cuenta nueva,
+   independiente por cada sitio si querés separarlos — o la misma cuenta con
+   remitentes distintos por sitio).
+2. Verificá un remitente: menú **Senders, Domains & Dedicated IPs → Senders**
+   → agregá el mail (o el dominio propio, si lo tenés, para mejor entrega) →
+   confirmá el mail de verificación que te llega.
+3. Andá a **SMTP & API** (menú izquierdo) → pestaña **SMTP** → ahí están el
+   **SMTP server** (host), el **Port**, el **Login** y podés generar una
+   **SMTP key** (es la "contraseña" — Brevo la muestra sólo una vez al
+   generarla, copiala en el momento).
+4. En el panel: **`/admin/superadmin/mail`** → cargá host, puerto, login,
+   SMTP key, y el mail/nombre de remitente → Guardar. La SMTP key no se
+   vuelve a mostrar después de guardada (por seguridad) — si la perdés, generás
+   una nueva en Brevo y la volvés a pegar.
+5. **Nota:** cargar esto no activa el envío todavía — falta conectar el
+   `MailService` del backend a `/api/auth/recover` (pendiente, ver sección 12
+   / historial ítem 46). Una vez conectado, este paso no cambia: es el mismo
+   lugar donde se cargan las credenciales.
+
+### Ex-`SITE_CONFIG.cloudinary` (histórico)
+
+Hasta el ítem 45 (2026-09-11) Cloudinary estaba hardcodeado en
+`src/app/core/config/site-config.ts`. Ese archivo ahora sólo tiene
+`apiBaseUrl` (no puede venir del backend: hace falta para saber a dónde
+llamar) y `apiUrl(path)`. Todo lo demás —nombre de la tienda, WhatsApp,
+"sobre nosotros", redes, Cloudinary, mail— vive en `site_settings` y se
+edita desde el panel (`/admin/config` o `/admin/superadmin/*`). Fallback si
+el backend no responde: `src/app/core/services/settings.service.ts` →
+`DEFAULTS`.
 
 ## 5. Panel de administración
 
@@ -821,6 +903,90 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       `core/utils/youtube.ts`. Backend: `Product.videoUrl` (`VARCHAR(500)`),
       `ProductRequest`/`ProductResponse`, `schema.sql`/`setup.sql`; sin migración
       (`ddl-auto=update`).
+
+45. **Superadmin + Cloudinary editable (2026-09-11):** primer paso de una charla
+    más larga con el cliente sobre convertir el sitio en plantilla reusable
+    (config editable en vez de tocar código) y separar un nivel de acceso
+    "superadmin" (solo Augusto) del admin de la tienda (Ruth). Quedan
+    pendientes en la misma charla: usuarios con nombre/apellido/DNI + login por
+    DNI + recuperación por mail; vendedor vs. cobrador en la venta + turnos
+    (apertura automática al loguearse, cierre manual, métricas por turno,
+    varios turnos/día); historial de costo por producto + foto del costo al
+    momento de la venta (para que subir el costo no recalcule el margen de
+    ventas viejas); QR por prenda/talle para cargar al POS escaneando (a futuro).
+    - **`AdminUser.superAdmin`** (boolean, default false): eje aparte de
+      `Permission`/`Role` — **no se puede otorgar desde `/admin/usuarios`**
+      (esa ABM no lo expone ni en `UserResponse` ni en los DTOs de alta/edición),
+      sólo sembrando la cuenta por env vars (`SUPERADMIN_USER`/`SUPERADMIN_PASSWORD`,
+      `AuthService.ensureSuperAdmin()`, se llama desde `DataSeeder` — no hace nada
+      si faltan las env vars). `JwtAuthFilter` agrega la authority `SUPERADMIN`
+      cuando corresponde; `/api/auth/me` la expone (`MeResponse.superAdmin`).
+    - **Cloudinary pasó de hardcodeado (`site-config.ts`) a editable**:
+      `site_settings` sumó `cloudinaryCloudName`/`cloudinaryUploadPreset`
+      (default `jitutkbc`/`estilospequenos`, los que ya estaban hardcodeados).
+      Lectura pública vía `GET /api/settings` (cualquier sesión de admin los
+      necesita para poder subir fotos); edición aparte y protegida:
+      `GET`/`PUT /api/admin/settings/cloudinary` con
+      `@PreAuthorize("hasAuthority('SUPERADMIN')")` — el `PUT /api/admin/settings`
+      general (`SETTINGS_MANAGE`, lo tiene Ruth) nunca toca esos dos campos.
+      Frontend: `SettingsService.cloudinaryConfigured` + `updateCloudinaryConfig()`;
+      `CloudinaryService` ya no importa `SITE_CONFIG.cloudinary` (que se borró de
+      `site-config.ts`, ahora sólo tiene `apiBaseUrl`), lee del `SettingsService`.
+    - **Pantalla nueva** `/admin/superadmin/cloudinary`
+      (`AdminSuperadminCloudinaryComponent`), gateada por el guard nuevo
+      `superAdminGuard` (`core/guards/admin.guard.ts`) — redirige a `/admin` si
+      `auth.isSuperAdmin()` es false. Grupo de menú nuevo "🔒 Superadmin" en
+      `admin-layout.component.ts` (`NavItem.superAdminOnly`): sólo aparece si
+      `AuthService.isSuperAdmin()`, así Ruth ni sabe que existe.
+    - **Pendiente para vos:** setear `SUPERADMIN_USER`/`SUPERADMIN_PASSWORD` (env
+      vars, o en `application-local.yml` en local — hay un ejemplo comentado en
+      `application-local.yml.example`) con tu usuario y una contraseña fuerte;
+      sin eso no se siembra ninguna cuenta superadmin y `/admin/superadmin/**`
+      queda inaccesible para todos. Nota aparte: este archivo dice `../backend/`
+      pero la carpeta real en esta máquina es `../backend-ecommer-ruth/` — quedó
+      así de antes, no lo tocamos en esta tanda.
+46. **Nombre/apellido/DNI en AdminUser, primer paso de login por DNI
+    (2026-09-11):** arranque del ítem 2 de la cola (usuarios con nombre/apellido/
+    DNI, login por DNI, recuperación por mail). Hecho en esta tanda:
+    - `AdminUser` sumó `firstName`, `lastName`, `email` (los 3 opcionales, para
+      no romper cuentas viejas). La columna `username` **sigue llamándose así**
+      pero ahora es el DNI para cuentas nuevas — no se renombró para no arriesgar
+      el login/JWT (`sub`) ni las cuentas existentes con username libre (ej. "admin").
+      `/admin/usuarios` (alta y edición) pide Nombre/Apellido además de DNI y
+      contraseña; el login relabeleado "Usuario / DNI" (ambos conviven mientras
+      no se migren las cuentas viejas). `/api/auth/me` devuelve `firstName`/
+      `lastName` (para un futuro saludo en el panel).
+    - **Recuperación por mail:** el campo `email` está guardado pero **todavía
+      no se conecta** — la recuperación sigue siendo por frase secreta
+      (`recoveryHash`). Falta decidir proveedor SMTP (SendGrid, Mailgun, Gmail
+      con app password, etc.) antes de armar el envío — es una cuenta externa
+      nueva, no lo resolví solo.
+    - **Se creó tu cuenta superadmin** (Augusto Basaury): DNI `33756194` como
+      username, `firstName`/`lastName` seteados, contraseña **bcrypt** (nunca
+      texto plano) vía `app.superadmin.*` en `application-local.yml` (gitignored,
+      no llegó al repo) + `AuthService.ensureSuperAdmin()`. Verificado con
+      `POST /api/auth/login` + `GET /api/auth/me` (`superAdmin: true`) y se
+      backfillearon `cloudinaryCloudName`/`cloudinaryUploadPreset` (`jitutkbc`/
+      `estilospequenos`) en la fila de `site_settings` que ya existía en esta
+      base local (los defaults nuevos del código sólo aplican a una fila creada
+      de cero). Para otra máquina/el deploy real hace falta repetir el seed con
+      `SUPERADMIN_USER=33756194` `SUPERADMIN_PASSWORD=<la tuya>`
+      `SUPERADMIN_FIRST_NAME=Augusto` `SUPERADMIN_LAST_NAME=Basaury`.
+    - **Quién está logueado, en todas las páginas del panel**: barra nueva en
+      `admin-layout` (desktop: franja sticky arriba del contenido; mobile:
+      badge a la derecha del logo en la barra superior) con nombre + rol
+      (ej. "Juana · Vendedor"). `displayName` cae al username/DNI si la cuenta
+      no tiene nombre/apellido cargado (cuentas viejas).
+    - **Scaffolding de SMTP (Brevo elegido)**: `site_settings` sumó
+      `smtpHost`/`smtpPort`/`smtpUsername`/`smtpPassword`/`smtpFromEmail`/
+      `smtpFromName`. A diferencia de Cloudinary, `smtpPassword` es secreto de
+      verdad — `GET /api/admin/settings/mail` (`SUPERADMIN`) nunca la devuelve,
+      sólo `passwordSet: boolean`; `PUT` con password vacío no la pisa (mismo
+      patrón que cambiar la contraseña de un `AdminUser`). Pantalla
+      `/admin/superadmin/mail`. **Falta conectar el envío real** (no hay
+      `MailService`/`JavaMailSender` todavía ni se usa en `/api/auth/recover`)
+      — pendiente hasta tener credenciales reales de Brevo cargadas para poder
+      probarlo.
 
 ## 12. Backend (`../backend/`) — resumen
 

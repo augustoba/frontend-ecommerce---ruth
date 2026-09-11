@@ -118,7 +118,7 @@ export class AdminConfigSectionComponent {
     if (!file) return;
 
     if (!this.cloudinary.configured) {
-      this.error.set('La subida de imágenes todavía no está configurada (ver site-config.ts).');
+      this.error.set('La subida de imágenes todavía no está configurada (falta cargar Cloudinary).');
       return;
     }
 
