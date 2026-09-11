@@ -192,6 +192,25 @@ export class CartPageComponent {
     }
   }
 
+  /** Opcional: para enterarse de descuentos. No bloquea la compra si está vacío o no se completó. */
+  readonly customerEmail = signal(loadStored(CUSTOMER_EMAIL_KEY));
+
+  setCustomerEmail(value: string): void {
+    this.customerEmail.set(value);
+    try {
+      if (value.trim()) localStorage.setItem(CUSTOMER_EMAIL_KEY, value.trim());
+      else localStorage.removeItem(CUSTOMER_EMAIL_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  /** Sólo avisa si está mal escrito; nunca bloquea el envío (el campo es opcional). */
+  readonly emailInvalid = computed(() => {
+    const v = this.customerEmail().trim();
+    return v.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  });
+
   readonly deliveryMethod = signal<DeliveryMethod | null>(null);
   readonly shippingAddr = signal<PickedAddress | null>(null);
   readonly shippingReference = signal('');
@@ -271,6 +290,7 @@ export class CartPageComponent {
         shippingLng: isShipping ? (addr?.lng ?? null) : null,
         paymentMethod: this.paymentMethod()!,
         couponCode: this.couponApplied()?.code ?? null,
+        customerEmail: this.customerEmail().trim() || null,
       })
       .subscribe({
         next: (order) => {
@@ -286,6 +306,7 @@ export class CartPageComponent {
 }
 
 const CUSTOMER_NAME_KEY = 'pp_customer_name';
+const CUSTOMER_EMAIL_KEY = 'pp_customer_email';
 
 function loadStored(key: string): string {
   try {

@@ -34,14 +34,20 @@
 
   @if (userFormOpen()) {
     <div class="bg-white rounded-2xl ring-1 ring-black/5 p-5 mb-5 grid sm:grid-cols-3 gap-3">
-      <input type="text" [ngModel]="newUsername()" (ngModelChange)="newUsername.set($event)"
-        placeholder="Usuario" class="rounded-lg border border-stone-200 px-3 py-2 text-sm" />
+      <input type="text" [ngModel]="newNombre()" (ngModelChange)="newNombre.set($event)"
+        placeholder="Nombre" class="rounded-lg border border-stone-200 px-3 py-2 text-sm" />
+      <input type="text" [ngModel]="newApellido()" (ngModelChange)="newApellido.set($event)"
+        placeholder="Apellido" class="rounded-lg border border-stone-200 px-3 py-2 text-sm" />
+      <input type="text" inputmode="numeric" [ngModel]="newDni()" (ngModelChange)="newDni.set($event)"
+        placeholder="DNI" class="rounded-lg border border-stone-200 px-3 py-2 text-sm" />
+      <input type="email" [ngModel]="newEmail()" (ngModelChange)="newEmail.set($event)"
+        placeholder="Email" class="rounded-lg border border-stone-200 px-3 py-2 text-sm" />
       <input type="password" [ngModel]="newPassword()" (ngModelChange)="newPassword.set($event)"
         placeholder="Contraseña" class="rounded-lg border border-stone-200 px-3 py-2 text-sm" />
       <select [ngModel]="newRoleId()" (ngModelChange)="newRoleId.set($event)"
         class="rounded-lg border border-stone-200 px-3 py-2 text-sm">
         <option value="">Rol…</option>
-        @for (r of roles(); track r.id) { <option [value]="r.id">{{ r.name }}</option> }
+        @for (r of assignableRoles(); track r.id) { <option [value]="r.id">{{ r.name }}</option> }
       </select>
       <button type="button" (click)="createUser()" [disabled]="saving()"
         class="sm:col-span-3 justify-self-start bg-brand-500 hover:bg-brand-600 disabled:bg-stone-300 text-white font-bold py-2 px-6 rounded-full text-sm">
@@ -51,10 +57,12 @@
   }
 
   <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-x-auto" [class.opacity-60]="saving()">
-    <table class="w-full text-sm min-w-[620px]">
+    <table class="w-full text-sm min-w-[720px]">
       <thead>
         <tr class="text-left text-stone-500 border-b border-stone-100">
-          <th class="p-4 font-semibold">Usuario</th>
+          <th class="p-4 font-semibold">Nombre</th>
+          <th class="p-4 font-semibold">DNI</th>
+          <th class="p-4 font-semibold">Email</th>
           <th class="p-4 font-semibold">Rol</th>
           <th class="p-4 font-semibold">Estado</th>
           <th class="p-4 font-semibold text-right">Acciones</th>
@@ -64,22 +72,24 @@
         @for (u of users(); track u.id) {
           <tr class="border-b border-stone-50 last:border-0">
             <td class="p-4 font-semibold text-stone-800">
-              {{ u.username }}
-              @if (u.username === myUsername()) { <span class="text-xs text-stone-400">(vos)</span> }
+              {{ u.nombre }} {{ u.apellido }}
+              @if (u.id === myId()) { <span class="text-xs text-stone-400">(vos)</span> }
             </td>
+            <td class="p-4 text-stone-500">{{ u.dni }}</td>
+            <td class="p-4 text-stone-500">{{ u.email }}</td>
             <td class="p-4">
-              @if (u.systemAdmin && u.username === myUsername()) {
+              @if (u.systemAdmin && u.id === myId()) {
                 <span class="text-stone-600">{{ u.roleName }}</span>
               } @else {
                 <select [ngModel]="u.roleId" (ngModelChange)="changeUserRole(u.id, $event)"
                   class="rounded-lg border border-stone-200 px-2 py-1 text-sm">
-                  @for (r of roles(); track r.id) { <option [value]="r.id">{{ r.name }}</option> }
+                  @for (r of assignableRoles(); track r.id) { <option [value]="r.id">{{ r.name }}</option> }
                 </select>
               }
             </td>
             <td class="p-4">
               <button type="button" (click)="toggleUserEnabled(u.id, u.enabled)"
-                [disabled]="u.username === myUsername()"
+                [disabled]="u.id === myId()"
                 [class.bg-mint-100]="u.enabled" [class.text-mint-600]="u.enabled"
                 [class.bg-stone-100]="!u.enabled" [class.text-stone-500]="!u.enabled"
                 class="text-xs font-bold px-2.5 py-1 rounded-full disabled:opacity-60">
@@ -88,10 +98,10 @@
             </td>
             <td class="p-4">
               <div class="flex items-center justify-end gap-3">
-                <button type="button" (click)="resetPassword(u.id, u.username)"
+                <button type="button" (click)="resetPassword(u.id, u.nombre + ' ' + u.apellido)"
                   class="text-brand-600 hover:underline font-semibold">Cambiar contraseña</button>
-                @if (u.username !== myUsername()) {
-                  <button type="button" (click)="deleteUser(u.id, u.username)"
+                @if (u.id !== myId()) {
+                  <button type="button" (click)="deleteUser(u.id, u.nombre + ' ' + u.apellido)"
                     class="text-stone-400 hover:text-red-500 font-semibold">Borrar</button>
                 }
               </div>

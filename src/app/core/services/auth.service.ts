@@ -7,7 +7,11 @@ import { Permission } from '../models/permission.model';
 
 /** Quién soy y qué permisos tengo (de `/api/auth/me`). */
 export interface Me {
-  username: string;
+  id: string;
+  nombre: string;
+  apellido: string;
+  dni: string;
+  email: string;
   roleName: string | null;
   systemAdmin: boolean;
   permissions: Permission[];
@@ -103,11 +107,17 @@ export class AuthService {
     );
   }
 
-  /** Usuario del token actual (claim `sub` del JWT), o '' */
-  readonly username = computed(() => {
+  /** DNI del token actual (claim `sub` del JWT), o '' — fallback si `me` no cargó todavía. */
+  readonly dni = computed(() => {
     const t = this.tokenSignal();
     if (!t || t.expiresAt <= Date.now()) return '';
     return decodeSub(t.token);
+  });
+
+  /** "Nombre Apellido" del usuario logueado, para mostrar "quién está logueado". */
+  readonly displayName = computed(() => {
+    const m = this.meSignal();
+    return m ? `${m.nombre} ${m.apellido}`.trim() : '';
   });
 
   token(): string | null {
@@ -115,13 +125,13 @@ export class AuthService {
     return t && t.expiresAt > Date.now() ? t.token : null;
   }
 
-  login(username: string, password: string): Observable<AuthResult> {
-    return this.postToken(apiUrl('/auth/login'), { username, password });
+  login(dni: string, password: string): Observable<AuthResult> {
+    return this.postToken(apiUrl('/auth/login'), { dni, password });
   }
 
   /** Recuperar la cuenta con la frase de recuperación → setea la pass nueva y loguea. */
-  recover(username: string, recoveryPhrase: string, newPassword: string): Observable<AuthResult> {
-    return this.postToken(apiUrl('/auth/recover'), { username, recoveryPhrase, newPassword });
+  recover(dni: string, recoveryPhrase: string, newPassword: string): Observable<AuthResult> {
+    return this.postToken(apiUrl('/auth/recover'), { dni, recoveryPhrase, newPassword });
   }
 
   changePassword(currentPassword: string, newPassword: string): Observable<boolean> {

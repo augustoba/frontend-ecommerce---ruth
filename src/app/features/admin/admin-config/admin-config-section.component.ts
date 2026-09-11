@@ -137,44 +137,50 @@ export class AdminConfigSectionComponent {
     this.error.set(null);
     const d = this.draft();
 
-    if (!d.storeName.trim()) {
-      this.error.set('Poné el nombre de la tienda.');
-      return;
-    }
-    if (!/^\d{8,15}$/.test(d.whatsappNumber.trim())) {
-      this.error.set(
-        'El WhatsApp tiene que ser solo números (país + área + número, sin +, espacios ni el 15).'
-      );
-      return;
+    if (this.section !== 'pagos') {
+      if (!d.storeName.trim()) {
+        this.error.set('Poné el nombre de la tienda.');
+        return;
+      }
+      if (!/^\d{8,15}$/.test(d.whatsappNumber.trim())) {
+        this.error.set(
+          'El WhatsApp tiene que ser solo números (país + área + número, sin +, espacios ni el 15).'
+        );
+        return;
+      }
     }
 
-    this.settingsService
-      .update({
-        storeName: d.storeName.trim(),
-        whatsappNumber: d.whatsappNumber.trim(),
-        aboutText: d.aboutText?.trim() || null,
-        instagram: d.instagram?.trim().replace(/^@/, '') || null,
-        facebookUrl: d.facebookUrl?.trim() || null,
-        logoUrl: d.logoUrl || null,
-        whatsappIntro: d.whatsappIntro?.trim() || null,
-        whatsappClosing: d.whatsappClosing?.trim() || null,
-        storeAddress: d.storeAddress?.trim() || null,
-        paymentTransferEnabled: d.paymentTransferEnabled,
-        paymentTransferAlias: d.paymentTransferAlias?.trim() || null,
-        paymentQrTransferEnabled: d.paymentQrTransferEnabled,
-        paymentQrTransferImage: d.paymentQrTransferImage || null,
-        paymentQrCardEnabled: d.paymentQrCardEnabled,
-        paymentQrCardImage: d.paymentQrCardImage || null,
-        paymentCardLink: d.paymentCardLink?.trim() || null,
-        paymentCashEnabled: d.paymentCashEnabled,
-      })
-      .subscribe((ok) => {
-        if (ok) {
-          this.toast.success('Cambios guardados.');
-          this.syncFromServer();
-        } else {
-          this.error.set('No se pudo guardar. Probá de nuevo.');
-        }
-      });
+    const save$ =
+      this.section === 'pagos'
+        ? this.settingsService.updatePayments({
+            paymentTransferEnabled: d.paymentTransferEnabled,
+            paymentTransferAlias: d.paymentTransferAlias?.trim() || null,
+            paymentQrTransferEnabled: d.paymentQrTransferEnabled,
+            paymentQrTransferImage: d.paymentQrTransferImage || null,
+            paymentQrCardEnabled: d.paymentQrCardEnabled,
+            paymentQrCardImage: d.paymentQrCardImage || null,
+            paymentCardLink: d.paymentCardLink?.trim() || null,
+            paymentCashEnabled: d.paymentCashEnabled,
+          })
+        : this.settingsService.updatePlatform({
+            storeName: d.storeName.trim(),
+            whatsappNumber: d.whatsappNumber.trim(),
+            aboutText: d.aboutText?.trim() || null,
+            instagram: d.instagram?.trim().replace(/^@/, '') || null,
+            facebookUrl: d.facebookUrl?.trim() || null,
+            logoUrl: d.logoUrl || null,
+            whatsappIntro: d.whatsappIntro?.trim() || null,
+            whatsappClosing: d.whatsappClosing?.trim() || null,
+            storeAddress: d.storeAddress?.trim() || null,
+          });
+
+    save$.subscribe((ok) => {
+      if (ok) {
+        this.toast.success('Cambios guardados.');
+        this.syncFromServer();
+      } else {
+        this.error.set('No se pudo guardar. Probá de nuevo.');
+      }
+    });
   }
 }

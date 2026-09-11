@@ -12,9 +12,11 @@ export type Permission =
   | 'SUPPLIERS_MANAGE'
   | 'DISCOUNTS_MANAGE'
   | 'COUPONS_MANAGE'
+  | 'MARKETING_MANAGE'
   | 'METRICS_VIEW'
   | 'CAROUSEL_MANAGE'
-  | 'SETTINGS_MANAGE'
+  | 'PAYMENTS_MANAGE'
+  | 'PLATFORM_SETTINGS_MANAGE'
   | 'USERS_MANAGE';
 
 /** Info de un permiso para armar los checkboxes (viene de `/api/admin/permissions`). */
@@ -38,7 +40,10 @@ export interface RoleInput {
 
 export interface AdminUser {
   id: string;
-  username: string;
+  nombre: string;
+  apellido: string;
+  dni: string;
+  email: string;
   roleId: string | null;
   roleName: string | null;
   systemAdmin: boolean;
@@ -47,13 +52,20 @@ export interface AdminUser {
 }
 
 export interface CreateUserInput {
-  username: string;
+  nombre: string;
+  apellido: string;
+  dni: string;
+  email: string;
   password: string;
   roleId: string;
   enabled?: boolean;
 }
 
 export interface UpdateUserInput {
+  nombre?: string;
+  apellido?: string;
+  dni?: string;
+  email?: string;
   roleId?: string;
   enabled?: boolean;
   password?: string;

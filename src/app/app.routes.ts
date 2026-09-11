@@ -247,6 +247,16 @@ export const routes: Routes = [
         title: 'Cupones | Admin',
       },
       {
+        path: 'campanias',
+        canActivate: [permissionGuard],
+        data: { permission: 'MARKETING_MANAGE' },
+        loadComponent: () =>
+          import('./features/admin/admin-campaigns/admin-campaigns.component').then(
+            (m) => m.AdminCampaignsComponent
+          ),
+        title: 'Campañas | Admin',
+      },
+      {
         path: 'usuarios',
         canActivate: [permissionGuard],
         data: { permission: 'USERS_MANAGE' },
@@ -269,7 +279,7 @@ export const routes: Routes = [
       {
         path: 'config',
         canActivate: [permissionGuard],
-        data: { permission: 'SETTINGS_MANAGE' },
+        data: { permission: 'PLATFORM_SETTINGS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-config/admin-config-hub.component').then(
             (m) => m.AdminConfigHubComponent
@@ -279,7 +289,7 @@ export const routes: Routes = [
       {
         path: 'config/identidad',
         canActivate: [permissionGuard],
-        data: { section: 'identity', permission: 'SETTINGS_MANAGE' },
+        data: { section: 'identity', permission: 'PLATFORM_SETTINGS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-config/admin-config-section.component').then(
             (m) => m.AdminConfigSectionComponent
@@ -289,7 +299,7 @@ export const routes: Routes = [
       {
         path: 'config/redes',
         canActivate: [permissionGuard],
-        data: { section: 'social', permission: 'SETTINGS_MANAGE' },
+        data: { section: 'social', permission: 'PLATFORM_SETTINGS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-config/admin-config-section.component').then(
             (m) => m.AdminConfigSectionComponent
@@ -299,7 +309,7 @@ export const routes: Routes = [
       {
         path: 'config/nosotros',
         canActivate: [permissionGuard],
-        data: { section: 'about', permission: 'SETTINGS_MANAGE' },
+        data: { section: 'about', permission: 'PLATFORM_SETTINGS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-config/admin-config-section.component').then(
             (m) => m.AdminConfigSectionComponent
@@ -309,7 +319,7 @@ export const routes: Routes = [
       {
         path: 'config/whatsapp',
         canActivate: [permissionGuard],
-        data: { section: 'whatsapp', permission: 'SETTINGS_MANAGE' },
+        data: { section: 'whatsapp', permission: 'PLATFORM_SETTINGS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-config/admin-config-section.component').then(
             (m) => m.AdminConfigSectionComponent
@@ -319,7 +329,7 @@ export const routes: Routes = [
       {
         path: 'config/pagos',
         canActivate: [permissionGuard],
-        data: { section: 'pagos', permission: 'SETTINGS_MANAGE' },
+        data: { section: 'pagos', permission: 'PAYMENTS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-config/admin-config-section.component').then(
             (m) => m.AdminConfigSectionComponent
@@ -329,10 +339,20 @@ export const routes: Routes = [
       {
         path: 'config/ayuda',
         canActivate: [permissionGuard],
-        data: { permission: 'SETTINGS_MANAGE' },
+        data: { permission: 'PLATFORM_SETTINGS_MANAGE' },
         loadComponent: () =>
           import('./features/admin/admin-help/admin-help.component').then((m) => m.AdminHelpComponent),
         title: 'Cómo comprar + FAQ | Admin',
+      },
+      {
+        path: 'config/servicios',
+        canActivate: [permissionGuard],
+        data: { permission: 'PLATFORM_SETTINGS_MANAGE' },
+        loadComponent: () =>
+          import('./features/admin/admin-config/admin-mail-settings.component').then(
+            (m) => m.AdminMailSettingsComponent
+          ),
+        title: 'Servicio de mail | Admin',
       },
       { path: 'ajustes', redirectTo: 'config', pathMatch: 'full' },
       {

@@ -38,6 +38,7 @@ const GROUPS: NavGroup[] = [
       { path: '/admin/caja', label: 'Caja', permission: 'CASH_REGISTER_VIEW' },
       { path: '/admin/promociones', label: 'Descuentos', permission: 'DISCOUNTS_MANAGE' },
       { path: '/admin/cupones', label: 'Cupones', permission: 'COUPONS_MANAGE' },
+      { path: '/admin/campanias', label: 'Campañas', permission: 'MARKETING_MANAGE' },
       { path: '/admin/metricas', label: 'Métricas', permission: 'METRICS_VIEW' },
     ],
   },
@@ -57,13 +58,14 @@ const GROUPS: NavGroup[] = [
     label: 'Configuración del sitio',
     icon: '🎨',
     items: [
-      { path: '/admin/config', label: 'Vista general', exact: true, permission: 'SETTINGS_MANAGE' },
-      { path: '/admin/config/identidad', label: 'Identidad y contacto', permission: 'SETTINGS_MANAGE' },
-      { path: '/admin/config/whatsapp', label: 'Mensaje de WhatsApp', permission: 'SETTINGS_MANAGE' },
-      { path: '/admin/config/pagos', label: 'Medios de pago', permission: 'SETTINGS_MANAGE' },
-      { path: '/admin/config/redes', label: 'Redes sociales', permission: 'SETTINGS_MANAGE' },
-      { path: '/admin/config/nosotros', label: 'Sobre nosotros', permission: 'SETTINGS_MANAGE' },
-      { path: '/admin/config/ayuda', label: 'Cómo comprar + FAQ', permission: 'SETTINGS_MANAGE' },
+      { path: '/admin/config', label: 'Vista general', exact: true, permission: 'PLATFORM_SETTINGS_MANAGE' },
+      { path: '/admin/config/identidad', label: 'Identidad y contacto', permission: 'PLATFORM_SETTINGS_MANAGE' },
+      { path: '/admin/config/whatsapp', label: 'Mensaje de WhatsApp', permission: 'PLATFORM_SETTINGS_MANAGE' },
+      { path: '/admin/config/pagos', label: 'Medios de pago', permission: 'PAYMENTS_MANAGE' },
+      { path: '/admin/config/redes', label: 'Redes sociales', permission: 'PLATFORM_SETTINGS_MANAGE' },
+      { path: '/admin/config/nosotros', label: 'Sobre nosotros', permission: 'PLATFORM_SETTINGS_MANAGE' },
+      { path: '/admin/config/ayuda', label: 'Cómo comprar + FAQ', permission: 'PLATFORM_SETTINGS_MANAGE' },
+      { path: '/admin/config/servicios', label: 'Servicio de mail', permission: 'PLATFORM_SETTINGS_MANAGE' },
       { path: '/admin/carrusel', label: 'Carrusel', permission: 'CAROUSEL_MANAGE' },
       { path: '/admin/usuarios', label: 'Usuarios y roles', permission: 'USERS_MANAGE' },
     ],
@@ -96,6 +98,8 @@ export class AdminLayoutComponent {
     );
   });
   readonly storeName = computed(() => this.settingsService.settings().storeName);
+  readonly currentUserLabel = this.authService.displayName;
+  readonly currentUserRole = computed(() => this.authService.me()?.roleName ?? '');
   readonly logoSrc = this.settingsService.logoSrc;
   readonly pendingOrders = this.orderService.pendingCount;
   readonly lowStockCount = this.dashboardService.lowStockCount;

@@ -67,5 +67,12 @@ export class AdminConfigHubComponent {
       desc: 'Las fotos que pasan arriba de la home.',
       where: 'Arriba de todo en la página de inicio.',
     },
+    {
+      path: '/admin/config/servicios',
+      icon: '✉️',
+      title: 'Servicio de mail',
+      desc: 'Credenciales SMTP para mandar los mails de campañas.',
+      where: 'Lo usa la campaña automática de cupones (ver Campañas).',
+    },
   ];
 }

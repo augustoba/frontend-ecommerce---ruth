@@ -1,7 +1,11 @@
 <h1 class="font-display font-extrabold text-2xl text-stone-800 mb-2">Mi cuenta</h1>
-<p class="text-sm text-stone-500 mb-6">
-  Sesión iniciada como <span class="font-semibold text-stone-700">{{ username() }}</span>.
-</p>
+@if (me(); as m) {
+  <p class="text-sm text-stone-500 mb-1">
+    Sesión iniciada como <span class="font-semibold text-stone-700">{{ m.nombre }} {{ m.apellido }}</span>
+    ({{ m.roleName }}).
+  </p>
+  <p class="text-sm text-stone-500 mb-6">DNI {{ m.dni }} · {{ m.email }}</p>
+}
 
 <div class="grid md:grid-cols-2 gap-6 max-w-3xl">
   <!-- Cambiar contraseña -->

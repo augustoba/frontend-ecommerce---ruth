@@ -24,12 +24,21 @@ export class AdminUsersComponent {
   readonly saving = this.svc.saving;
   readonly error = this.svc.error;
 
-  readonly myUsername = computed(() => this.auth.me()?.username ?? '');
+  readonly myId = computed(() => this.auth.me()?.id ?? '');
+  readonly iAmSuperadmin = computed(() => this.auth.me()?.systemAdmin ?? false);
+
+  /** El rol Superadmin sólo se muestra en el combo si quien está logueado ya lo es. */
+  readonly assignableRoles = computed(() =>
+    this.roles().filter((r) => !r.system || this.iAmSuperadmin())
+  );
 
   readonly tab = signal<'usuarios' | 'roles'>('usuarios');
 
   // --- alta de usuario ---
-  readonly newUsername = signal('');
+  readonly newNombre = signal('');
+  readonly newApellido = signal('');
+  readonly newDni = signal('');
+  readonly newEmail = signal('');
   readonly newPassword = signal('');
   readonly newRoleId = signal('');
   readonly userFormOpen = signal(false);
@@ -54,16 +63,22 @@ export class AdminUsersComponent {
 
   // --- usuarios ---
   createUser(): void {
-    const username = this.newUsername().trim();
+    const nombre = this.newNombre().trim();
+    const apellido = this.newApellido().trim();
+    const dni = this.newDni().trim();
+    const email = this.newEmail().trim();
     const password = this.newPassword();
     const roleId = this.newRoleId();
-    if (username.length < 3 || password.length < 4 || !roleId) {
-      this.toast.error('Completá usuario (3+), contraseña (4+) y rol.');
+    if (!nombre || !apellido || dni.length < 6 || !email.includes('@') || password.length < 4 || !roleId) {
+      this.toast.error('Completá nombre, apellido, DNI, email, contraseña (4+) y rol.');
       return;
     }
-    this.svc.createUser({ username, password, roleId }, () => {
+    this.svc.createUser({ nombre, apellido, dni, email, password, roleId }, () => {
       this.toast.success('Usuario creado.');
-      this.newUsername.set('');
+      this.newNombre.set('');
+      this.newApellido.set('');
+      this.newDni.set('');
+      this.newEmail.set('');
       this.newPassword.set('');
       this.newRoleId.set('');
       this.userFormOpen.set(false);
@@ -78,9 +93,9 @@ export class AdminUsersComponent {
     this.svc.updateUser(id, { enabled: !enabled });
   }
 
-  async resetPassword(id: string, username: string): Promise<void> {
+  async resetPassword(id: string, label: string): Promise<void> {
     const pass = await this.confirm.prompt({
-      title: `Cambiar contraseña de ${username}`,
+      title: `Cambiar contraseña de ${label}`,
       message: 'Ingresá la contraseña nueva (mínimo 4 caracteres).',
       confirmLabel: 'Cambiar',
       input: { label: 'Contraseña nueva', type: 'password', placeholder: '••••' },
@@ -93,10 +108,10 @@ export class AdminUsersComponent {
     }
   }
 
-  async deleteUser(id: string, username: string): Promise<void> {
+  async deleteUser(id: string, label: string): Promise<void> {
     const ok = await this.confirm.confirm({
       title: 'Borrar usuario',
-      message: `¿Borrar el usuario "${username}"?`,
+      message: `¿Borrar el usuario "${label}"?`,
       confirmLabel: 'Borrar',
       danger: true,
     });

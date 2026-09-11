@@ -51,11 +51,11 @@ export class AdminHelpComponent {
   save(): void {
     if (this.saving()) return;
     this.settingsService
-      .update({
+      .updatePlatform({
         helpText: this.helpText().trim() || null,
         faqText: this.faqText().trim() || null,
       })
-      .subscribe((ok) => {
+      .subscribe((ok: boolean) => {
         if (ok) {
           this.touched = false;
           this.toast.success('Contenido de ayuda guardado.');

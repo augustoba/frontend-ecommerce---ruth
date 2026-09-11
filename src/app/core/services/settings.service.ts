@@ -133,15 +133,41 @@ export class SettingsService {
   }
 
   /**
-   * Guarda cambios de configuración. Acepta un objeto parcial: se mezcla con los
-   * settings actuales antes de mandar el objeto completo al backend (así una
-   * pantalla que sólo edita su parte no pisa el resto de los campos).
+   * Identidad, logo, WhatsApp, redes, textos. Sólo superadmin
+   * (`PLATFORM_SETTINGS_MANAGE`). Acepta un objeto parcial: se mezcla con los
+   * settings actuales antes de mandar sólo los campos de plataforma al backend.
    */
-  update(req: Partial<SiteSettings>): Observable<boolean> {
-    this.saving.set(true);
+  updatePlatform(req: Partial<SiteSettings>): Observable<boolean> {
     const full: SiteSettings = { ...this.settingsSignal(), ...req };
+    const {
+      storeName, whatsappNumber, aboutText, instagram, facebookUrl, logoUrl,
+      whatsappIntro, whatsappClosing, storeAddress, helpText, faqText,
+    } = full;
+    return this.putMerged('/admin/settings/platform', {
+      storeName, whatsappNumber, aboutText, instagram, facebookUrl, logoUrl,
+      whatsappIntro, whatsappClosing, storeAddress, helpText, faqText,
+    });
+  }
+
+  /** Medios de pago. Lo edita el admin normal (`PAYMENTS_MANAGE`). */
+  updatePayments(req: Partial<SiteSettings>): Observable<boolean> {
+    const full: SiteSettings = { ...this.settingsSignal(), ...req };
+    const {
+      paymentTransferEnabled, paymentTransferAlias, paymentQrTransferEnabled,
+      paymentQrTransferImage, paymentQrCardEnabled, paymentQrCardImage,
+      paymentCardLink, paymentCashEnabled,
+    } = full;
+    return this.putMerged('/admin/settings/payments', {
+      paymentTransferEnabled, paymentTransferAlias, paymentQrTransferEnabled,
+      paymentQrTransferImage, paymentQrCardEnabled, paymentQrCardImage,
+      paymentCardLink, paymentCashEnabled,
+    });
+  }
+
+  private putMerged(path: string, body: Record<string, unknown>): Observable<boolean> {
+    this.saving.set(true);
     return new Observable<boolean>((sub) => {
-      this.http.put<SiteSettings>(apiUrl('/admin/settings'), full).subscribe({
+      this.http.put<SiteSettings>(apiUrl(path), body).subscribe({
         next: (s) => {
           this.settingsSignal.set(s);
           this.statusSignal.set('loaded');

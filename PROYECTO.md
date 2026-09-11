@@ -763,6 +763,70 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
     - **"Lo más vendido"** en la home: `GET /api/products/best-sellers` (público,
       top por unidades de los últimos 90 días); fila horizontal arriba de la grilla.
     - **Paginación** client-side del catálogo y las grillas del POS/cambios.
+44. **Campañas de marketing por email (2026-09-11):** captura de email del
+    cliente (opcional, no bloquea la venta) en el checkout web y en el POS
+    (`Order.customerEmail`). Nueva pantalla `/admin/campanias` (permiso
+    `MARKETING_MANAGE`) para configurar y correr campañas automáticas de cupón
+    de descuento:
+    - **Segmentos:** "inactivos" (sin comprar hace más de N días, configurable)
+      y "VIP" (gasto acumulado en pedidos procesados por encima de un monto,
+      configurable) — calculados agregando `orders` por `customerEmail`
+      (`OrderRepository.findInactiveCustomers`/`findHighSpendCustomers`), sin
+      entidad `Customer` separada.
+    - **Tope diario configurable** (default 250) para no saturar el mail
+      gratuito, más un **cooldown** (default 30 días) para no repetirle
+      campaña al mismo cliente todos los días. Vista previa ("¿quién
+      calificaría hoy?") antes de mandar nada, botón "mandar ahora", e
+      historial con export CSV (`MarketingSend`, `/api/admin/export/
+      marketing.csv`).
+    - El cupón que se manda es un `Coupon` normal (de un solo uso, generado
+      por `CouponService`), nada nuevo ahí.
+    - **Mail:** `spring-boot-starter-mail` contra **Brevo** (SMTP), config en
+      `spring.mail.*` (`application.yml`) — placeholders por env var, igual
+      que el WhatsApp. Job diario (`@Scheduled`, 06:00) + botón manual, ambos
+      llaman a `MarketingCampaignService.runNow()`. `MarketingConfig.enabled`
+      arranca en `false` (no-op seguro) hasta cargar credenciales reales.
+    - **Actualizado (ver #45):** la cuenta de Brevo ya se creó y las
+      credenciales se migraron a `PlatformMailSettings` (editable desde
+      `/admin/config/servicios`, sólo superadmin). El rol "Administrador" ya
+      incluye `MARKETING_MANAGE` de fábrica. Falta activar el toggle "Campaña
+      activa" en `/admin/campanias` cuando se quiera empezar a mandar de verdad.
+45. **Rol Superadmin + login por DNI + config de plataforma separada
+    (2026-09-11):** pensado para reutilizar este código en otros ecommerce.
+    - **Usuarios:** `AdminUser` pasa de `username` a `nombre`/`apellido`/
+      `dni`/`email` — **el login ahora es por DNI**, no por username. Cuenta
+      de Ruth (admin normal): DNI `11111111` / `ruth123` (la contraseña no
+      cambió). Cuenta nueva de Augusto (superadmin): DNI `33756194` /
+      `augusto123`.
+    - **Roles:** el rol de sistema (`system=true`, todos los permisos
+      siempre) pasa a llamarse **"Superadmin"** (antes era "Administrador").
+      "Administrador" ahora es un rol normal (editable, como "Vendedor") con
+      todos los permisos **excepto** `PLATFORM_SETTINGS_MANAGE` y
+      `CAROUSEL_MANAGE`. Guardia en `AdminUserService`: sólo un superadmin
+      puede asignarle el rol Superadmin a alguien (por API directa también,
+      no sólo en el combo del frontend).
+    - **Permisos nuevos:** `PLATFORM_SETTINGS_MANAGE` (identidad+logo,
+      WhatsApp, redes, sobre nosotros, dirección, ayuda/FAQ, carrusel,
+      servicio de mail — todo sólo-superadmin) y `PAYMENTS_MANAGE` (medios de
+      pago, se lo queda el admin normal). Reemplazan a `SETTINGS_MANAGE`, que
+      se sacó.
+    - **`/api/admin/settings`** se partió en `PUT .../settings/platform` y
+      `PUT .../settings/payments` (antes un solo PUT con todos los campos).
+    - **Servicio de mail configurable:** nueva entidad `PlatformMailSettings`
+      (fila única, como `SiteSettings`), editable desde
+      `/admin/config/servicios` (sólo superadmin). `MarketingMailService` ya
+      no usa el `JavaMailSender` autoconfigurado por Spring — arma uno al
+      vuelo con lo que esté guardado en la base. Las variables de entorno
+      `BREVO_SMTP_*`/`MARKETING_FROM_EMAIL` sólo sirven como semilla inicial.
+    - **"Quién está logueado":** el layout del panel muestra nombre + rol del
+      usuario actual (`AuthService.displayName`).
+    - **Pendiente:** se necesitó resetear la base local (`admin_user` cambió
+      de forma — columna `username` fuera, `dni`/`nombre`/`apellido`/`email`
+      nuevas y NOT NULL). `database/schema.sql`/`seed.sql` actualizados;
+      `database/setup.sql` sigue con drift previo sin resolver (preexistente).
+    - **Reportado, no resuelto en esta tanda:** la dirección del local
+      (`storeAddress`) no se está viendo en el checkout aunque esté cargada
+      — revisar el signal `deliveryMethod`/timing en `cart-page.component.ts`.
 
 ## 12. Backend (`../backend/`) — resumen
 

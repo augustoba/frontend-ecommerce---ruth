@@ -15,7 +15,7 @@ export class AdminLoginComponent implements OnDestroy {
   private readonly router = inject(Router);
 
   readonly logoSrc = inject(SettingsService).logoSrc;
-  readonly username = signal('');
+  readonly dni = signal('');
   readonly password = signal('');
   readonly error = signal(false);
   readonly loading = signal(false);
@@ -43,7 +43,7 @@ export class AdminLoginComponent implements OnDestroy {
     if (this.loading() || this.blocked()) return;
     this.error.set(false);
     this.loading.set(true);
-    this.authService.login(this.username(), this.password()).subscribe((res) => {
+    this.authService.login(this.dni(), this.password()).subscribe((res) => {
       this.loading.set(false);
       if (res.ok) {
         this.router.navigate(['/admin/productos']);

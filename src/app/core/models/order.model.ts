@@ -53,6 +53,8 @@ export interface Order {
   /** Código corto para identificar el pedido por WhatsApp, ej: "PED-0007" */
   code: string;
   customerName: string;
+  /** Opcional: para la base de clientes y campañas de marketing. */
+  customerEmail?: string | null;
   /** WEB (checkout) o LOCAL (venta cargada en el panel). Pedidos viejos: WEB. */
   channel?: SaleChannel;
   lines: OrderLine[];

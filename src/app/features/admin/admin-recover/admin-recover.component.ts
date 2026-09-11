@@ -15,7 +15,7 @@ export class AdminRecoverComponent {
 
   readonly logoSrc = inject(SettingsService).logoSrc;
 
-  readonly username = signal('');
+  readonly dni = signal('');
   readonly phrase = signal('');
   readonly newPassword = signal('');
   readonly newPassword2 = signal('');
@@ -37,7 +37,7 @@ export class AdminRecoverComponent {
 
     this.loading.set(true);
     this.authService
-      .recover(this.username().trim(), this.phrase(), this.newPassword())
+      .recover(this.dni().trim(), this.phrase(), this.newPassword())
       .subscribe((res) => {
         this.loading.set(false);
         if (res.ok) {
@@ -45,7 +45,7 @@ export class AdminRecoverComponent {
         } else if (res.blocked) {
           this.error.set(res.message ?? 'Demasiados intentos. Esperá un rato antes de reintentar.');
         } else {
-          this.error.set('El usuario o la frase de recuperación no coinciden.');
+          this.error.set('El DNI o la frase de recuperación no coinciden.');
         }
       });
   }

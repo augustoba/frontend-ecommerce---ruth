@@ -186,6 +186,21 @@
           class="w-full rounded-full border border-stone-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
         />
 
+        <label class="block text-sm font-semibold text-stone-700 mt-4 mb-1.5" for="customerEmail">
+          Email (opcional) — para enterarte de descuentos exclusivos
+        </label>
+        <input
+          id="customerEmail"
+          type="email"
+          [ngModel]="customerEmail()"
+          (ngModelChange)="setCustomerEmail($event)"
+          placeholder="Ej: maria@mail.com"
+          class="w-full rounded-full border border-stone-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+        />
+        @if (emailInvalid()) {
+          <p class="mt-1 text-xs text-amber-600">Revisá el email, parece que está mal escrito.</p>
+        }
+
         <!-- Entrega -->
         <p class="block text-sm font-semibold text-stone-700 mt-5 mb-2">¿Cómo lo recibís?</p>
         <div class="grid grid-cols-2 gap-2">

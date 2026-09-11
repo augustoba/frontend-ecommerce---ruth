@@ -70,6 +70,8 @@ export class AdminPosComponent {
 
   readonly lines = signal<PosLine[]>([]);
   readonly customerName = signal('');
+  /** Opcional: si el cliente lo quiere dar, entra a la base para campañas de marketing. */
+  readonly customerEmail = signal('');
   readonly paymentMethod = signal<PaymentMethod | null>('CASH');
   readonly saving = signal(false);
 
@@ -161,6 +163,7 @@ export class AdminPosComponent {
     this.orderService
       .createPos({
         customerName: this.customerName().trim() || 'Venta en el local',
+        customerEmail: this.customerEmail().trim() || null,
         items: this.lines().map((l) => ({
           productId: l.product.id,
           size: l.size,

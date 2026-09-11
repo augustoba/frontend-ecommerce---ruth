@@ -15,6 +15,8 @@ export interface CheckoutDetails {
   paymentMethod: PaymentMethod;
   /** Código de cupón escrito en el carrito (opcional). */
   couponCode?: string | null;
+  /** Email del cliente (opcional, para la base de clientes y campañas de marketing). */
+  customerEmail?: string | null;
 }
 import { CollectionStore } from '../state/collection-store';
 import { apiUrl } from '../config/site-config';
@@ -91,6 +93,7 @@ export class OrderService {
   create(customerName: string, items: CartItem[], details: CheckoutDetails): Observable<Order> {
     return this.http.post<Order>(apiUrl('/orders'), {
       customerName: customerName.trim(),
+      customerEmail: details.customerEmail?.trim() || null,
       items: items.map((i) => ({
         productId: i.product.id,
         size: i.size,
@@ -112,6 +115,7 @@ export class OrderService {
    */
   createPos(body: {
     customerName: string;
+    customerEmail?: string | null;
     items: { productId: string; size: string; quantity: number }[];
     paymentMethod: PaymentMethod | null;
     couponCode?: string | null;
@@ -119,6 +123,7 @@ export class OrderService {
     return this.http
       .post<Order>(apiUrl('/admin/orders/pos'), {
         customerName: body.customerName.trim(),
+        customerEmail: body.customerEmail?.trim() || null,
         items: body.items,
         deliveryMethod: 'PICKUP',
         paymentMethod: body.paymentMethod,

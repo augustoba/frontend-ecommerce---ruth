@@ -12,7 +12,7 @@ export class AdminAccountComponent {
   private readonly authService = inject(AuthService);
   private readonly toast = inject(ToastService);
 
-  readonly username = this.authService.username;
+  readonly me = this.authService.me;
 
   // cambiar contraseña
   readonly curPass = signal('');
