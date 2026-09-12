@@ -32,3 +32,18 @@ export const permissionGuard: CanActivateFn = (route) => {
   if (auth.me()) return check();
   return auth.loadMe().pipe(map(check));
 };
+
+/**
+ * Protege rutas de `/admin/superadmin/**`: sólo el usuario superadmin (vos,
+ * seedeado por variables de entorno — ver `AuthService.ensureSuperAdmin` en el
+ * backend). No es un `Permission` normal: no se puede otorgar desde `/admin/usuarios`.
+ */
+export const superAdminGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+
+  const check = () => (auth.isSuperAdmin() ? true : router.createUrlTree(['/admin']));
+
+  if (auth.me()) return check();
+  return auth.loadMe().pipe(map(check));
+};

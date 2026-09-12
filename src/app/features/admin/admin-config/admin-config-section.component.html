@@ -21,13 +21,13 @@
 
         <span class="block text-sm font-semibold text-stone-700 mb-1.5">Logo del negocio</span>
         <div class="flex items-center gap-4 mb-4">
-          <img [src]="draft().logoUrl || 'logo.jpeg'" alt="logo actual"
+          <img [src]="(draft().logoUrl || 'logo.jpeg') | cldImg: 128" alt="logo actual"
             class="h-16 w-16 rounded-full object-cover ring-1 ring-stone-200 bg-white shrink-0" />
           <div class="flex flex-col gap-1.5">
             <label class="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 cursor-pointer hover:underline">
-              <input type="file" accept="image/png,image/jpeg" class="sr-only"
+              <input type="file" accept="image/jpeg,image/png,image/webp" class="sr-only"
                 (change)="onImageSelected($event, 'logoUrl', 512)" [disabled]="uploading() === 'logoUrl'" />
-              {{ uploading() === 'logoUrl' ? 'Procesando…' : draft().logoUrl ? 'Cambiar logo' : 'Subir logo' }}
+              {{ uploading() === 'logoUrl' ? 'Subiendo…' : draft().logoUrl ? 'Cambiar logo' : 'Subir logo' }}
             </label>
             @if (draft().logoUrl) {
               <button type="button" (click)="removeImage('logoUrl')"
@@ -136,15 +136,15 @@
           </label>
           <div class="flex items-center gap-4">
             @if (draft().paymentQrTransferImage) {
-              <img [src]="draft().paymentQrTransferImage" alt="QR transferencia"
+              <img [src]="draft().paymentQrTransferImage | cldImg: 300" alt="QR transferencia"
                 class="h-20 w-20 rounded-lg object-contain ring-1 ring-stone-200 bg-white shrink-0" />
             }
             <div class="flex flex-col gap-1.5">
               <label class="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 cursor-pointer hover:underline">
-                <input type="file" accept="image/png,image/jpeg" class="sr-only"
+                <input type="file" accept="image/jpeg,image/png,image/webp" class="sr-only"
                   (change)="onImageSelected($event, 'paymentQrTransferImage', 600)"
                   [disabled]="uploading() === 'paymentQrTransferImage'" />
-                {{ uploading() === 'paymentQrTransferImage' ? 'Procesando…' : draft().paymentQrTransferImage ? 'Cambiar QR' : 'Subir QR' }}
+                {{ uploading() === 'paymentQrTransferImage' ? 'Subiendo…' : draft().paymentQrTransferImage ? 'Cambiar QR' : 'Subir QR' }}
               </label>
               @if (draft().paymentQrTransferImage) {
                 <button type="button" (click)="removeImage('paymentQrTransferImage')"
@@ -168,15 +168,15 @@
           </label>
           <div class="flex items-center gap-4 mb-3">
             @if (draft().paymentQrCardImage) {
-              <img [src]="draft().paymentQrCardImage" alt="QR tarjeta"
+              <img [src]="draft().paymentQrCardImage | cldImg: 300" alt="QR tarjeta"
                 class="h-20 w-20 rounded-lg object-contain ring-1 ring-stone-200 bg-white shrink-0" />
             }
             <div class="flex flex-col gap-1.5">
               <label class="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 cursor-pointer hover:underline">
-                <input type="file" accept="image/png,image/jpeg" class="sr-only"
+                <input type="file" accept="image/jpeg,image/png,image/webp" class="sr-only"
                   (change)="onImageSelected($event, 'paymentQrCardImage', 600)"
                   [disabled]="uploading() === 'paymentQrCardImage'" />
-                {{ uploading() === 'paymentQrCardImage' ? 'Procesando…' : draft().paymentQrCardImage ? 'Cambiar QR' : 'Subir QR' }}
+                {{ uploading() === 'paymentQrCardImage' ? 'Subiendo…' : draft().paymentQrCardImage ? 'Cambiar QR' : 'Subir QR' }}
               </label>
               @if (draft().paymentQrCardImage) {
                 <button type="button" (click)="removeImage('paymentQrCardImage')"

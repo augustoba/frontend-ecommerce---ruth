@@ -1,10 +1,11 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SettingsService } from '../../../core/services/settings.service';
+import { CldImagePipe } from '../../pipes/cld-image.pipe';
 
 @Component({
   selector: 'app-footer',
-  imports: [RouterLink],
+  imports: [RouterLink, CldImagePipe],
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.css',
 })

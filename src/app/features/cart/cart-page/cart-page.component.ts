@@ -10,6 +10,7 @@ import { CouponService } from '../../../core/services/coupon.service';
 import { CouponCheck } from '../../../core/models/coupon.model';
 import { SettingsService } from '../../../core/services/settings.service';
 import { QuantityStepperComponent } from '../../../shared/components/quantity-stepper/quantity-stepper.component';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 import {
   AddressPickerComponent,
   PickedAddress,
@@ -20,7 +21,7 @@ import { rememberOrder } from '../../../core/utils/remembered-orders';
 
 @Component({
   selector: 'app-cart-page',
-  imports: [CurrencyPipe, FormsModule, RouterLink, QuantityStepperComponent, AddressPickerComponent],
+  imports: [CurrencyPipe, FormsModule, RouterLink, QuantityStepperComponent, AddressPickerComponent, CldImagePipe],
   templateUrl: './cart-page.component.html',
   styleUrl: './cart-page.component.css',
 })

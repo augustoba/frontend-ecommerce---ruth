@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ProductCardComponent } from '../../../shared/components/product-card/product-card.component';
 import { HeroCarouselComponent } from '../../../shared/components/hero-carousel/hero-carousel.component';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
 import { SizeScaleService } from '../../../core/services/size-scale.service';
@@ -12,7 +13,7 @@ import { productHasParam } from '../../../core/models/product.model';
 
 @Component({
   selector: 'app-catalog-page',
-  imports: [FormsModule, ProductCardComponent, HeroCarouselComponent, SkeletonComponent],
+  imports: [FormsModule, ProductCardComponent, HeroCarouselComponent, SkeletonComponent, CldImagePipe],
   templateUrl: './catalog-page.component.html',
   styleUrl: './catalog-page.component.css',
 })

@@ -5,11 +5,12 @@ import { SettingsService } from '../../../core/services/settings.service';
 import { ExchangeService } from '../../../core/services/exchange.service';
 import { Exchange } from '../../../core/models/exchange.model';
 import { PAYMENT_LABELS } from '../../../core/models/order.model';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 
 /** Recibo imprimible de un cambio de prenda. */
 @Component({
   selector: 'app-admin-exchange-receipt',
-  imports: [CurrencyPipe, DatePipe, RouterLink],
+  imports: [CurrencyPipe, DatePipe, RouterLink, CldImagePipe],
   templateUrl: './admin-exchange-receipt.component.html',
   styleUrl: './admin-receipt.component.css',
 })

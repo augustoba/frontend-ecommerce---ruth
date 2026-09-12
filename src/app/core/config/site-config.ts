@@ -1,8 +1,8 @@
 /**
  * Configuración del frontend que NO puede venir del backend (chicken/egg:
  * hace falta para saber a dónde llamar). El resto de los "datos del local"
- * (nombre, WhatsApp, redes, "sobre nosotros") se editan desde
- * `/admin/config` y viven en el backend — ver `SettingsService`.
+ * (nombre, WhatsApp, redes, "sobre nosotros", Cloudinary) se editan desde
+ * el panel y viven en el backend — ver `SettingsService`.
  */
 export const SITE_CONFIG = {
   /**

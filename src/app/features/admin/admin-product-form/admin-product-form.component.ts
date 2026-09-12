@@ -8,7 +8,11 @@ import { SupplierService } from '../../../core/services/supplier.service';
 import { SizeScaleService } from '../../../core/services/size-scale.service';
 import { Product, ProductSize, margin } from '../../../core/models/product.model';
 import { ProductParams } from '../../../core/models/param.model';
-import { resizeImageFile } from '../../../core/utils/image-resize';
+import { resizeImageFile, validateImageFile } from '../../../core/utils/image-resize';
+import { CloudinaryService } from '../../../core/services/cloudinary.service';
+import { slugify } from '../../../core/utils/slugify';
+import { youtubeId } from '../../../core/utils/youtube';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 
 /** Precio de venta = costo + markup%. null si falta el costo o el %. */
 function priceFromMarkup(cost: number, markupPercent: number): number | null {
@@ -19,7 +23,7 @@ function priceFromMarkup(cost: number, markupPercent: number): number | null {
 
 @Component({
   selector: 'app-admin-product-form',
-  imports: [ReactiveFormsModule, FormsModule, RouterLink],
+  imports: [ReactiveFormsModule, FormsModule, RouterLink, CldImagePipe],
   templateUrl: './admin-product-form.component.html',
   styleUrl: './admin-product-form.component.css',
 })
@@ -31,6 +35,10 @@ export class AdminProductFormComponent {
   private readonly paramService = inject(ParamService);
   private readonly supplierService = inject(SupplierService);
   private readonly sizeScaleService = inject(SizeScaleService);
+  private readonly cloudinary = inject(CloudinaryService);
+
+  /** true si se puede subir fotos del disco (Cloudinary configurado en site-config.ts). */
+  readonly canUploadFiles = this.cloudinary.configured;
 
   readonly paramGroups = this.paramService.groups;
   readonly suppliers = this.supplierService.suppliers;
@@ -78,6 +86,7 @@ export class AdminProductFormComponent {
     description: [this.editingProduct?.description ?? '', [Validators.required, Validators.minLength(5)]],
     price: [this.editingProduct?.price ?? 0, [Validators.required, Validators.min(1)]],
     ageRange: [this.editingProduct?.ageRange ?? '', Validators.required],
+    videoUrl: [this.editingProduct?.videoUrl ?? ''],
     active: [this.editingProduct?.active ?? true],
     discontinued: [this.editingProduct?.discontinued ?? false],
     sizeScaleId: [this.editingProduct?.sizeScaleId ?? ''],
@@ -157,6 +166,12 @@ export class AdminProductFormComponent {
   readonly sizesInvalid = computed(() => this.submitted() && this.sizeStocks().size === 0);
   readonly imagesInvalid = computed(() => this.submitted() && this.images().length === 0);
 
+  /** Se cargó un link de video pero no lo reconocemos como YouTube. */
+  readonly videoInvalid = computed(() => {
+    const raw = (this.formValue().videoUrl ?? '').trim();
+    return raw.length > 0 && !youtubeId(raw);
+  });
+
   // --- Fotos ---
 
   /** Agrega la URL escrita a mano al final de la lista. */
@@ -168,21 +183,48 @@ export class AdminProductFormComponent {
     this.imageError.set(null);
   }
 
-  /** Sube archivos del disco: se redimensionan y se guardan como data URI. */
+  /**
+   * Sube archivos del disco a Cloudinary: se redimensionan en el navegador y se
+   * suben con el nombre `<slug-del-producto>-<n>` (n = posición en la galería).
+   * Se guarda la URL del CDN en `images[]`.
+   */
   async onImageFilesSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files ?? []);
     if (!files.length) return;
 
+    if (!this.cloudinary.configured) {
+      this.imageError.set(
+        'La subida de fotos todavía no está configurada. Por ahora agregá la foto pegando su URL.'
+      );
+      input.value = '';
+      return;
+    }
+
+    const invalid = files.map(validateImageFile).find((m) => m !== null);
+    if (invalid) {
+      this.imageError.set(invalid);
+      input.value = '';
+      return;
+    }
+
     this.imageError.set(null);
     this.uploadingImage.set(true);
+    const slug = slugify(this.form.controls.name.value);
     try {
       for (const file of files) {
-        const dataUrl = await resizeImageFile(file);
-        this.images.update((list) => [...list, dataUrl]);
+        const resized = await resizeImageFile(file);
+        const position = this.images().length + 1;
+        const { secureUrl } = await this.cloudinary.upload(resized, {
+          folder: 'estilos-pequenos/productos',
+          publicId: `${slug}-${position}`,
+        });
+        this.images.update((list) => [...list, secureUrl]);
       }
-    } catch {
-      this.imageError.set('No se pudo procesar alguna imagen. Probá con otro archivo (JPG o PNG).');
+    } catch (e) {
+      this.imageError.set(
+        e instanceof Error ? `No se pudo subir la foto: ${e.message}` : 'No se pudo subir la foto.'
+      );
     } finally {
       this.uploadingImage.set(false);
       input.value = '';
@@ -305,7 +347,8 @@ export class AdminProductFormComponent {
       !this.form.controls.sizeScaleId.value ||
       this.sizeStocks().size === 0 ||
       this.images().length === 0 ||
-      this.missingRequiredParams().length > 0
+      this.missingRequiredParams().length > 0 ||
+      this.videoInvalid()
     ) {
       this.form.markAllAsTouched();
       return;
@@ -314,6 +357,7 @@ export class AdminProductFormComponent {
     const value = this.form.getRawValue();
     const input = {
       ...value,
+      videoUrl: value.videoUrl.trim() || undefined,
       sizeScaleId: value.sizeScaleId || undefined,
       supplierId: value.supplierId || undefined,
       costPrice: value.costPrice > 0 ? value.costPrice : undefined,

@@ -1,9 +1,22 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, catchError, map, of } from 'rxjs';
 import { apiUrl } from '../config/site-config';
 import { LoadStatus } from '../state/collection-store';
 import { PaymentMethod } from '../models/order.model';
+
+/**
+ * Config de SMTP (recuperación de cuenta por mail). `password` nunca viaja del
+ * backend hacia acá — sólo `passwordSet` dice si hay una guardada.
+ */
+export interface MailConfig {
+  host: string | null;
+  port: number | null;
+  username: string | null;
+  passwordSet: boolean;
+  fromEmail: string | null;
+  fromName: string | null;
+}
 
 export interface SiteSettings {
   storeName: string;
@@ -33,6 +46,13 @@ export interface SiteSettings {
   paymentCardLink: string | null;
   /** Habilita "efectivo al recibir/retirar". */
   paymentCashEnabled: boolean;
+  /**
+   * Cuenta de Cloudinary usada para subir fotos desde el panel. Sólo lectura acá
+   * (se editan desde `/admin/superadmin/cloudinary`, solo superadmin — ver
+   * `updateCloudinaryConfig`). null = la subida de imágenes queda deshabilitada.
+   */
+  cloudinaryCloudName: string | null;
+  cloudinaryUploadPreset: string | null;
 }
 
 /** Logo por defecto (archivo estático en `public/`) si el negocio no subió uno. */
@@ -67,6 +87,10 @@ const DEFAULTS: SiteSettings = {
   paymentQrCardImage: null,
   paymentCardLink: null,
   paymentCashEnabled: false,
+  // Cuenta actual (fallback si el backend todavía no tiene la fila con estos
+  // campos, ej. justo después de deployar esta migración).
+  cloudinaryCloudName: 'jitutkbc',
+  cloudinaryUploadPreset: 'estilospequenos',
 };
 
 /**
@@ -97,6 +121,12 @@ export class SettingsService {
     if (s.paymentQrCardEnabled && (s.paymentQrCardImage || s.paymentCardLink?.trim())) out.push('QR_CARD');
     if (s.paymentCashEnabled) out.push('CASH');
     return out;
+  });
+
+  /** true si hay cuenta de Cloudinary cargada (subida de imágenes habilitada). */
+  readonly cloudinaryConfigured = computed(() => {
+    const s = this.settingsSignal();
+    return !!(s.cloudinaryCloudName && s.cloudinaryUploadPreset);
   });
 
   /** Link a wa.me con el número actual (sin mensaje). */
@@ -183,5 +213,70 @@ export class SettingsService {
         },
       });
     });
+  }
+
+  /**
+   * Guarda la cuenta de Cloudinary. Sólo la puede llamar un superadmin — el
+   * backend devuelve 403 si no (`/admin/superadmin/cloudinary` ya valida antes
+   * de mostrar el form, pero el guard de la ruta es la primera barrera).
+   */
+  updateCloudinaryConfig(cloudName: string | null, uploadPreset: string | null): Observable<boolean> {
+    this.saving.set(true);
+    return new Observable<boolean>((sub) => {
+      this.http
+        .put<{ cloudName: string | null; uploadPreset: string | null }>(apiUrl('/admin/settings/cloudinary'), {
+          cloudName,
+          uploadPreset,
+        })
+        .subscribe({
+          next: (res) => {
+            this.settingsSignal.update((s) => ({
+              ...s,
+              cloudinaryCloudName: res.cloudName,
+              cloudinaryUploadPreset: res.uploadPreset,
+            }));
+            this.saving.set(false);
+            sub.next(true);
+            sub.complete();
+          },
+          error: () => {
+            this.saving.set(false);
+            sub.next(false);
+            sub.complete();
+          },
+        });
+    });
+  }
+
+  /** Config de SMTP. Sólo la puede leer/editar un superadmin (ver backend). */
+  getMailConfig(): Observable<MailConfig | null> {
+    return this.http
+      .get<MailConfig>(apiUrl('/admin/settings/mail'))
+      .pipe(catchError(() => of(null)));
+  }
+
+  /**
+   * Guarda la config de SMTP. `password` vacío/null = no tocar la que ya está
+   * guardada (mismo patrón que cambiar la contraseña de un usuario).
+   */
+  updateMailConfig(req: {
+    host: string | null;
+    port: number | null;
+    username: string | null;
+    password: string | null;
+    fromEmail: string | null;
+    fromName: string | null;
+  }): Observable<MailConfig | null> {
+    this.saving.set(true);
+    return this.http.put<MailConfig>(apiUrl('/admin/settings/mail'), req).pipe(
+      map((res) => {
+        this.saving.set(false);
+        return res;
+      }),
+      catchError(() => {
+        this.saving.set(false);
+        return of(null);
+      })
+    );
   }
 }

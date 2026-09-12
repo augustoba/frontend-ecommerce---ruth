@@ -3,6 +3,7 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SettingsService } from '../../../core/services/settings.service';
 import { Order, PAYMENT_LABELS } from '../../../core/models/order.model';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 
 /**
  * Recibo imprimible de un pedido (sirve para ventas online y del local). El
@@ -11,7 +12,7 @@ import { Order, PAYMENT_LABELS } from '../../../core/models/order.model';
  */
 @Component({
   selector: 'app-admin-receipt',
-  imports: [CurrencyPipe, DatePipe, RouterLink],
+  imports: [CurrencyPipe, DatePipe, RouterLink, CldImagePipe],
   templateUrl: './admin-receipt.component.html',
   styleUrl: './admin-receipt.component.css',
 })

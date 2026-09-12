@@ -1,16 +1,19 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 import { ParamService } from '../../../core/services/param.service';
 import { ProductSize, stockForSize, totalStock } from '../../../core/models/product.model';
+import { youtubeEmbedUrl } from '../../../core/utils/youtube';
 import { QuantityStepperComponent } from '../../../shared/components/quantity-stepper/quantity-stepper.component';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 
 @Component({
   selector: 'app-product-detail-page',
-  imports: [CurrencyPipe, RouterLink, QuantityStepperComponent],
+  imports: [CurrencyPipe, RouterLink, QuantityStepperComponent, CldImagePipe],
   templateUrl: './product-detail-page.component.html',
   styleUrl: './product-detail-page.component.css',
 })
@@ -20,6 +23,7 @@ export class ProductDetailPageComponent {
   private readonly productService = inject(ProductService);
   private readonly cartService = inject(CartService);
   private readonly paramService = inject(ParamService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   /** Se actualiza cada vez que cambia el :id de la ruta (navegación entre fichas) */
   private readonly routeParamMap = toSignal(this.route.paramMap, {
@@ -48,6 +52,12 @@ export class ProductDetailPageComponent {
   selectImage(index: number): void {
     this.selectedImageIndex.set(index);
   }
+
+  /** URL de embed del video de YouTube de la prenda (null si no hay o no es válida). */
+  readonly videoEmbedUrl = computed<SafeResourceUrl | null>(() => {
+    const embed = youtubeEmbedUrl(this.product()?.videoUrl);
+    return embed ? this.sanitizer.bypassSecurityTrustResourceUrl(embed) : null;
+  });
 
   /** Lightbox de la foto ampliada. */
   readonly zoomOpen = signal(false);

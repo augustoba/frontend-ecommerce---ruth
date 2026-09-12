@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { adminGuard, permissionGuard } from './core/guards/admin.guard';
+import { adminGuard, permissionGuard, superAdminGuard } from './core/guards/admin.guard';
 import { productResolver } from './features/admin/admin-product-form/product.resolver';
 import { orderResolver } from './features/admin/admin-order-detail/order.resolver';
 
@@ -376,6 +376,24 @@ export const routes: Routes = [
         title: 'Servicio de mail | Admin',
       },
       { path: 'ajustes', redirectTo: 'config', pathMatch: 'full' },
+      {
+        path: 'superadmin/cloudinary',
+        canActivate: [superAdminGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-superadmin/admin-superadmin-cloudinary.component').then(
+            (m) => m.AdminSuperadminCloudinaryComponent
+          ),
+        title: 'Cloudinary | Admin',
+      },
+      {
+        path: 'superadmin/mail',
+        canActivate: [superAdminGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-superadmin/admin-superadmin-mail.component').then(
+            (m) => m.AdminSuperadminMailComponent
+          ),
+        title: 'Mail (SMTP) | Admin',
+      },
       {
         path: 'cuenta',
         loadComponent: () =>

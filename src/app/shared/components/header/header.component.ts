@@ -3,11 +3,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 import { CartService } from '../../../core/services/cart.service';
+import { CldImagePipe } from '../../pipes/cld-image.pipe';
 import { SettingsService } from '../../../core/services/settings.service';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink],
+  imports: [RouterLink, CldImagePipe],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
 })

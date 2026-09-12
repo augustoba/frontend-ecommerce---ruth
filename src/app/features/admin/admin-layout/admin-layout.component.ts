@@ -5,6 +5,7 @@ import { filter, map, startWith } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { OrderService } from '../../../core/services/order.service';
 import { SettingsService } from '../../../core/services/settings.service';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 import { DashboardService } from '../../../core/services/dashboard.service';
 import { Permission } from '../../../core/models/permission.model';
 
@@ -17,6 +18,8 @@ interface NavItem {
   exact?: boolean;
   /** Permiso necesario para ver el item (sin permiso = siempre visible). */
   permission?: Permission;
+  /** true = sólo lo ve el superadmin, sin importar sus permisos normales. */
+  superAdminOnly?: boolean;
 }
 
 interface NavGroup {
@@ -71,13 +74,22 @@ const GROUPS: NavGroup[] = [
       { path: '/admin/usuarios', label: 'Usuarios y roles', permission: 'USERS_MANAGE' },
     ],
   },
+  {
+    id: 'superadmin',
+    label: 'Superadmin',
+    icon: '🔒',
+    items: [
+      { path: '/admin/superadmin/cloudinary', label: 'Cloudinary', superAdminOnly: true },
+      { path: '/admin/superadmin/mail', label: 'Mail (SMTP)', superAdminOnly: true },
+    ],
+  },
 ];
 
 const STORAGE_KEY = 'ep_admin_menu_open';
 
 @Component({
   selector: 'app-admin-layout',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, CldImagePipe],
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.css',
 })
@@ -94,11 +106,15 @@ export class AdminLayoutComponent {
     this.authService.me();
     this.authService.permissionsUnavailable();
     const has = (p?: Permission) => !p || this.authService.has(p);
-    return GROUPS.map((g) => ({ ...g, items: g.items.filter((it) => has(it.permission)) })).filter(
-      (g) => g.items.length > 0
-    );
+    const visible = (it: NavItem) => has(it.permission) && (!it.superAdminOnly || this.authService.isSuperAdmin());
+    return GROUPS.map((g) => ({ ...g, items: g.items.filter(visible) })).filter((g) => g.items.length > 0);
   });
   readonly storeName = computed(() => this.settingsService.settings().storeName);
+
+  /** Nombre a mostrar arriba de todo el panel. */
+  readonly displayName = this.authService.displayName;
+  readonly roleLabel = computed(() => this.authService.me()?.roleName ?? '');
+  readonly userInitial = computed(() => (this.displayName()[0] ?? '?').toUpperCase());
   readonly logoSrc = this.settingsService.logoSrc;
   readonly pendingOrders = this.orderService.pendingCount;
   readonly lowStockCount = this.dashboardService.lowStockCount;

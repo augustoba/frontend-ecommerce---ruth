@@ -3,10 +3,11 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { SettingsService } from '../../../core/services/settings.service';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 
 @Component({
   selector: 'app-admin-login',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, CldImagePipe],
   templateUrl: './admin-login.component.html',
   styleUrl: './admin-login.component.css',
 })

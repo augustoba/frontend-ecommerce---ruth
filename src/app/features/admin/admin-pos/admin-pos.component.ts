@@ -11,6 +11,7 @@ import { Product, stockForSize } from '../../../core/models/product.model';
 import { PaymentMethod, PAYMENT_LABELS } from '../../../core/models/order.model';
 import { CouponCheck } from '../../../core/models/coupon.model';
 import { AdminPosScannerComponent } from '../admin-pos-scanner/admin-pos-scanner.component';
+import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
 
 interface PosLine {
   product: Product;
@@ -24,7 +25,7 @@ interface PosLine {
  */
 @Component({
   selector: 'app-admin-pos',
-  imports: [CurrencyPipe, FormsModule, AdminPosScannerComponent],
+  imports: [CurrencyPipe, FormsModule, AdminPosScannerComponent, CldImagePipe],
   templateUrl: './admin-pos.component.html',
 })
 export class AdminPosComponent {

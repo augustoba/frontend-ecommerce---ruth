@@ -4,7 +4,7 @@
 >
   <div class="relative aspect-[4/5] overflow-hidden bg-brand-100">
     <img
-      [src]="product().imageUrl"
+      [src]="product().imageUrl | cldImg: 400"
       [alt]="product().name"
       loading="lazy"
       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

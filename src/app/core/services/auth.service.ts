@@ -14,6 +14,8 @@ export interface Me {
   email: string;
   roleName: string | null;
   systemAdmin: boolean;
+  /** Superadmin: acceso a config de infraestructura del sitio (ver `/admin/superadmin`). */
+  superAdmin: boolean;
   permissions: Permission[];
 }
 
@@ -88,6 +90,9 @@ export class AuthService {
 
   /** true si no pudimos determinar los permisos (backend viejo o caído). */
   readonly permissionsUnavailable = computed(() => this.meStatus() === 'unavailable');
+
+  /** true si el usuario logueado es superadmin (config de infraestructura del sitio). */
+  readonly isSuperAdmin = computed(() => this.meSignal()?.superAdmin === true);
 
   /** Carga (o recarga) `/api/auth/me`. Devuelve el Me o null si falla. */
   loadMe(): Observable<Me | null> {

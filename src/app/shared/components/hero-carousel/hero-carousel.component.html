@@ -7,7 +7,7 @@
   >
     @for (slide of slides(); track $index) {
       <img
-        [src]="slide.imageUrl"
+        [src]="slide.imageUrl | cldImg: 1920"
         [alt]="slide.alt"
         class="h-full object-cover shrink-0"
         [style.width.%]="100 / slides().length"

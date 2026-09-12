@@ -3,10 +3,11 @@ import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Product, totalStock } from '../../../core/models/product.model';
 import { ParamService } from '../../../core/services/param.service';
+import { CldImagePipe } from '../../pipes/cld-image.pipe';
 
 @Component({
   selector: 'app-product-card',
-  imports: [CurrencyPipe, RouterLink],
+  imports: [CurrencyPipe, RouterLink, CldImagePipe],
   templateUrl: './product-card.component.html',
   styleUrl: './product-card.component.css',
 })
