@@ -3,6 +3,16 @@
    que el dev-server lo tome sin reiniciar. */
 @import "leaflet/dist/leaflet.css";
 
+/*
+ * Modo oscuro manual (no sigue el SO): `dark:` se activa con el atributo
+ * `data-mode="dark"` en <html>, que setea ThemeModeService (por visitante,
+ * en localStorage — no es el `theme` de marca del tenant, ver §Themes de
+ * PLAN_SAAS.md Fase 6). Alcance de esta primera etapa: sólo el header y la
+ * home (ver catalog-page.component.html) — el resto del sitio todavía no
+ * tiene clases dark: y se ve igual en los dos modos.
+ */
+@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
+
 @theme {
   /* Paleta pensada para un ecommerce de ropa infantil: cálida, alegre, no corporativa */
   --color-brand-50: #fff7ed;
@@ -41,6 +51,11 @@ body {
   font-family: var(--font-sans);
   background-color: var(--color-brand-50);
   color: #292524;
+}
+
+[data-mode="dark"] body {
+  background-color: #1c1917;
+  color: #e7e5e4;
 }
 
 /* Utilidad para truncar títulos/descripciones a N líneas en las cards */

@@ -208,6 +208,21 @@ el backend no responde: `src/app/core/services/settings.service.ts` →
   `styles.css`, sin tocar ningún componente. **Todavía no existe ningún
   theme más que el actual** — esto es sólo el mecanismo probado, ver
   `../backend/PLAN_SAAS.md` Fase 6.
+- **Modo oscuro (2026-09-15), eje aparte del theme de marca de arriba:**
+  `ThemeModeService` (`core/services/theme-mode.service.ts`) guarda la
+  preferencia de quien visita en `localStorage` (no en el backend — a
+  diferencia del `theme` de marca, esto es del navegador de la persona, no
+  del tenant) y setea `data-mode="dark"|"light"` en `<html>`. Estado
+  inicial: `localStorage` si ya eligió antes, si no
+  `prefers-color-scheme` del sistema. `styles.css` define
+  `@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *))`
+  para que Tailwind v4 use ese atributo en vez de sólo seguir el SO.
+  Botón toggle (☀️/🌙) en `HeaderComponent`. **Alcance acotado a
+  propósito:** sólo el header y la sección de logo/intro + heading de "Lo
+  más vendido" de la home tienen clases `dark:` — el resto del sitio
+  (grilla de productos, ficha, checkout, todo el panel admin) no
+  reacciona todavía al modo oscuro. Probado en el navegador en los dos
+  sentidos del toggle, con persistencia confirmada en `localStorage`.
 
 ## 7. Página de inicio (`/`, `CatalogPageComponent`)
 
@@ -1222,6 +1237,13 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
     el navegador contra el backend real: ocultar/mostrar desde el panel y
     confirmar que la home pública reacciona. Sin reordenamiento en la UI
     todavía, sin más tipos de bloque.
+55. **Modo oscuro (2026-09-15), a pedido del usuario:** ver sección 6 de
+    este documento y backend `PLAN_SAAS.md` Fase 6. `ThemeModeService`
+    nuevo + `@custom-variant dark` en `styles.css` + toggle en
+    `HeaderComponent`. Eje aparte del `theme` de marca (por visitante, en
+    `localStorage`). Alcance acotado a header + home (logo/intro + heading
+    "Lo más vendido") — el resto del sitio no reacciona todavía. Probado
+    en el navegador en los dos sentidos, persistencia confirmada.
 
 ## 12. Backend (`../backend/`) — resumen
 

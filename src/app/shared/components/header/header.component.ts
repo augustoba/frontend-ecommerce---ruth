@@ -5,6 +5,7 @@ import { filter, map, startWith } from 'rxjs';
 import { CartService } from '../../../core/services/cart.service';
 import { CldImagePipe } from '../../pipes/cld-image.pipe';
 import { SettingsService } from '../../../core/services/settings.service';
+import { ThemeModeService } from '../../../core/services/theme-mode.service';
 
 @Component({
   selector: 'app-header',
@@ -16,6 +17,7 @@ export class HeaderComponent {
   private readonly cartService = inject(CartService);
   private readonly settingsService = inject(SettingsService);
   private readonly router = inject(Router);
+  readonly themeMode = inject(ThemeModeService);
 
   readonly totalItems = this.cartService.totalItems;
   readonly storeName = computed(() => this.settingsService.settings().storeName);
