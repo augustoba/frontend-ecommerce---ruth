@@ -2,7 +2,7 @@
 
 > Documento vivo del proyecto (overview general + detalle del frontend).
 > El detalle del backend (entidades, endpoints, auth) está en
-> `../backend/PROYECTO.md`. Última actualización: 2026-09-08.
+> `../backend/PROYECTO.md`. Última actualización: 2026-09-15.
 
 ## 1. Qué es esto
 
@@ -214,6 +214,15 @@ el backend no responde: `src/app/core/services/settings.service.ts` →
     y, si el producto tiene `videoUrl` (link de YouTube, opcional), el video
     embebido debajo de las fotos.
   - El carrusel de la home se administra desde `/admin/carrusel`.
+  - **El bloque hero se puede ocultar** (2026-09-15): `PageBlocksService`
+    (`core/services/page-blocks.service.ts`) lee `GET /api/page-blocks`
+    (público, backend) — si el bloque `"HERO"` no viene en la respuesta (lo
+    ocultó el superadmin desde `PUT /api/admin/page-blocks/{id}/visible`,
+    gateado por `CAROUSEL_MANAGE` igual que el resto del carrusel — no hay
+    pantalla de admin todavía, se hace por API), la sección entera del
+    carrusel no se renderiza. Primer paso del personalizador visual — ver
+    `../backend/PLAN_SAAS.md` Fase 7. Todavía no hay más bloques ni
+    reordenamiento, sólo mostrar/ocultar el hero.
 - Debajo: buscador + filtros dinámicos generados desde las parametrías
   marcadas como "filtro en la tienda" (Público como botones, el resto como
   selectores) + filtro por talle + **orden** (novedades / precio ascendente /
@@ -1169,6 +1178,20 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       (faltaba). Los campos `cloudinary*`/`smtp*` de `site_settings` siguen sin
       reflejarse en `schema.sql` (existían así desde antes del merge, ver nota
       de `ddl-auto=update`).
+52. **Primer bloque del personalizador visual: ocultar el hero (2026-09-15):**
+    ver backend `PLAN_SAAS.md` Fase 7. Se sumó `PageBlocksService`
+    (`core/services/page-blocks.service.ts`), que lee `GET /api/page-blocks`
+    (público) y expone `isVisible(blockType)`. `CatalogPageComponent` envuelve
+    la sección del carrusel en `@if (heroBlockVisible())` — si el backend no
+    devuelve el bloque `"HERO"` (lo ocultó el superadmin vía
+    `PUT /api/admin/page-blocks/{id}/visible`, gateado por `CAROUSEL_MANAGE`),
+    la sección ni se renderiza. Probado de punta a punta en el navegador
+    (mostrar/ocultar/mostrar) contra el backend real.
+    - **A propósito, no se hizo todavía:** pantalla de admin para
+      togglear/reordenar bloques (se hace por API por ahora), más tipos de
+      bloque, `configuration` por bloque, y reordenamiento — esto era
+      deliberadamente "un bloque a la vez" (ver `CLAUDE.md`: cambios chicos e
+      iterativos), no el personalizador completo de la propuesta original.
 
 ## 12. Backend (`../backend/`) — resumen
 

@@ -20,11 +20,13 @@
   </div>
 </section>
 
-<!-- Carrusel de fotos, bien visible debajo. Proporción apaisada fija (las fotos
-     se suben ya recortadas a 21:9 desde /admin/carrusel). -->
-<section class="relative w-full aspect-[16/10] sm:aspect-[21/9] max-h-[440px] overflow-hidden bg-brand-100">
-  <app-hero-carousel [slides]="heroSlides()" class="absolute inset-0" />
-</section>
+@if (heroBlockVisible()) {
+  <!-- Carrusel de fotos, bien visible debajo. Proporción apaisada fija (las fotos
+       se suben ya recortadas a 21:9 desde /admin/carrusel). -->
+  <section class="relative w-full aspect-[16/10] sm:aspect-[21/9] max-h-[440px] overflow-hidden bg-brand-100">
+    <app-hero-carousel [slides]="heroSlides()" class="absolute inset-0" />
+  </section>
+}
 
 @if (bestSellers().length && !hasActiveFilters()) {
   <section class="max-w-6xl mx-auto px-4 sm:px-6 pt-8">

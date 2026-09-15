@@ -9,6 +9,7 @@ import { ParamService } from '../../../core/services/param.service';
 import { SizeScaleService } from '../../../core/services/size-scale.service';
 import { SettingsService } from '../../../core/services/settings.service';
 import { HeroSlidesService } from '../../../core/services/hero-slides.service';
+import { PageBlocksService } from '../../../core/services/page-blocks.service';
 import { productHasParam } from '../../../core/models/product.model';
 
 @Component({
@@ -23,12 +24,15 @@ export class CatalogPageComponent {
   private readonly sizeScaleService = inject(SizeScaleService);
   private readonly settingsService = inject(SettingsService);
   private readonly heroSlidesService = inject(HeroSlidesService);
+  private readonly pageBlocksService = inject(PageBlocksService);
 
   readonly storeName = computed(() => this.settingsService.settings().storeName);
   readonly logoSrc = this.settingsService.logoSrc;
 
   /** Fotos del carrusel de bienvenida — administrables desde /admin/carrusel */
   readonly heroSlides = this.heroSlidesService.slides;
+  /** Bloque HERO habilitado (ver PLAN_SAAS.md Fase 7) — primer paso del personalizador visual. */
+  readonly heroBlockVisible = this.pageBlocksService.isVisible('HERO');
 
   readonly catalogStatus = this.productService.catalogStatus;
   readonly reloadCatalog = () => this.productService.reloadCatalog();
