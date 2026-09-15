@@ -218,6 +218,16 @@ export const routes: Routes = [
         title: 'Carrusel | Admin',
       },
       {
+        path: 'inicio',
+        canActivate: [permissionGuard],
+        data: { permission: 'CAROUSEL_MANAGE' },
+        loadComponent: () =>
+          import('./features/admin/admin-page-blocks/admin-page-blocks.component').then(
+            (m) => m.AdminPageBlocksComponent
+          ),
+        title: 'Página de inicio | Admin',
+      },
+      {
         path: 'parametrias',
         canActivate: [permissionGuard],
         data: { permission: 'PARAMS_MANAGE' },

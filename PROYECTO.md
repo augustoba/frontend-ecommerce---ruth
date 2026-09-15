@@ -1210,6 +1210,18 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
     de Tailwind v4 en runtime recolorea la UI al instante — confirma que el
     mecanismo funciona. No se creó ningún theme nuevo todavía, sólo la
     base.
+54. **Segundo bloque de la home + pantalla de admin (2026-09-15):** ver
+    backend `PLAN_SAAS.md` Fase 7. `featuredBlockVisible` (nuevo, mismo
+    patrón que `heroBlockVisible`) envuelve la sección "Lo más vendido" en
+    `CatalogPageComponent`. Nueva pantalla `AdminPageBlocksComponent`
+    (`/admin/inicio`, menú "Configuración del sitio" → "Página de inicio",
+    gateada por `CAROUSEL_MANAGE` igual que `/admin/carrusel`): lista los
+    bloques de la home (hoy: hero + destacados) con un botón
+    Mostrar/Ocultar por bloque, usando el `PageBlocksService` extendido
+    (`adminBlocks`/`setVisible`, vía `/api/admin/page-blocks`). Probado en
+    el navegador contra el backend real: ocultar/mostrar desde el panel y
+    confirmar que la home pública reacciona. Sin reordenamiento en la UI
+    todavía, sin más tipos de bloque.
 
 ## 12. Backend (`../backend/`) — resumen
 

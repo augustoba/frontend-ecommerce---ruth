@@ -31,8 +31,9 @@ export class CatalogPageComponent {
 
   /** Fotos del carrusel de bienvenida — administrables desde /admin/carrusel */
   readonly heroSlides = this.heroSlidesService.slides;
-  /** Bloque HERO habilitado (ver PLAN_SAAS.md Fase 7) — primer paso del personalizador visual. */
+  /** Bloques habilitados (ver PLAN_SAAS.md Fase 7) — personalizador visual. */
   readonly heroBlockVisible = this.pageBlocksService.isVisible('HERO');
+  readonly featuredBlockVisible = this.pageBlocksService.isVisible('FEATURED_PRODUCTS');
 
   readonly catalogStatus = this.productService.catalogStatus;
   readonly reloadCatalog = () => this.productService.reloadCatalog();
