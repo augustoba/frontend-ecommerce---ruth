@@ -197,6 +197,17 @@ el backend no responde: `src/app/core/services/settings.service.ts` →
   se ajusta** a los tonos pastel reales del logo (rosa/celeste/durazno),
   quedó abierto como posible ajuste futuro.
 - Fuentes: Baloo 2 (títulos) + Nunito (texto), vía Google Fonts.
+- **Base de sistema de themes (2026-09-15):** `SettingsService` aplica
+  `document.documentElement.setAttribute('data-theme', settings().theme)`
+  al cargar la config (backend `SiteSettings.theme`, hoy siempre
+  `"default"`). Verificado en el navegador que Tailwind v4 genera sus
+  utilities (`bg-brand-500`, etc.) referenciando la variable CSS, no un
+  valor fijo — sobreescribirla en runtime cambia el color al instante. Eso
+  significa que ofrecer un segundo theme el día de mañana es agregar una
+  regla `[data-theme="x"] { --color-brand-500: ...; ... }` en
+  `styles.css`, sin tocar ningún componente. **Todavía no existe ningún
+  theme más que el actual** — esto es sólo el mecanismo probado, ver
+  `../backend/PLAN_SAAS.md` Fase 6.
 
 ## 7. Página de inicio (`/`, `CatalogPageComponent`)
 
@@ -1192,6 +1203,13 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       bloque, `configuration` por bloque, y reordenamiento — esto era
       deliberadamente "un bloque a la vez" (ver `CLAUDE.md`: cambios chicos e
       iterativos), no el personalizador completo de la propuesta original.
+53. **Base del sistema de themes (2026-09-15):** ver backend
+    `PLAN_SAAS.md` Fase 6 y sección 6 de este documento. `SettingsService`
+    ahora aplica `data-theme` en `<html>` desde `SiteSettings.theme`
+    (backend). Probado en el navegador que sobreescribir una variable CSS
+    de Tailwind v4 en runtime recolorea la UI al instante — confirma que el
+    mecanismo funciona. No se creó ningún theme nuevo todavía, sólo la
+    base.
 
 ## 12. Backend (`../backend/`) — resumen
 

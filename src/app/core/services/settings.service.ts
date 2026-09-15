@@ -26,6 +26,13 @@ export interface SiteSettings {
   facebookUrl: string | null;
   /** Logo del negocio (URL o data URI). null = usar `LOGO_FALLBACK`. */
   logoUrl: string | null;
+  /**
+   * Theme visual del sitio (ver backend PLAN_SAAS.md Fase 6). Hoy sólo
+   * existe `"default"` — se aplica como atributo `data-theme` en `<html>`,
+   * es la base para poder ofrecer más de una apariencia sin redeploy el
+   * día que haya una segunda.
+   */
+  theme: string;
   /** Saludo del mensaje de pedido de WhatsApp. null = `WHATSAPP_INTRO_DEFAULT`. */
   whatsappIntro: string | null;
   /** Cierre del mensaje de pedido de WhatsApp. null = `WHATSAPP_CLOSING_DEFAULT`. */
@@ -74,6 +81,7 @@ const DEFAULTS: SiteSettings = {
   instagram: 'estilospequenos_',
   facebookUrl: 'https://www.facebook.com/share/1NZXdYgick/',
   logoUrl: null,
+  theme: 'default',
   whatsappIntro: WHATSAPP_INTRO_DEFAULT,
   whatsappClosing: WHATSAPP_CLOSING_DEFAULT,
   storeAddress: null,
@@ -137,6 +145,7 @@ export class SettingsService {
   });
 
   constructor() {
+    this.applyTheme(DEFAULTS.theme);
     this.load();
   }
 
@@ -152,6 +161,7 @@ export class SettingsService {
         this.settingsSignal.set(s);
         this.statusSignal.set('loaded');
         this.applyFavicon(s.logoUrl || LOGO_FALLBACK);
+        this.applyTheme(s.theme);
       },
       error: () => this.statusSignal.set('error'),
     });
@@ -160,6 +170,15 @@ export class SettingsService {
   private applyFavicon(href: string): void {
     const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
     if (link && link.getAttribute('href') !== href) link.setAttribute('href', href);
+  }
+
+  /**
+   * Setea `data-theme` en `<html>` para que las hojas de estilo puedan
+   * reaccionar (ver `styles.css`). Hoy no hay ninguna regla que dependa de
+   * este atributo todavía — es la base para cuando exista un segundo theme.
+   */
+  private applyTheme(theme: string): void {
+    document.documentElement.setAttribute('data-theme', theme || 'default');
   }
 
   /**
@@ -202,6 +221,7 @@ export class SettingsService {
           this.settingsSignal.set(s);
           this.statusSignal.set('loaded');
           this.applyFavicon(s.logoUrl || LOGO_FALLBACK);
+          this.applyTheme(s.theme);
           this.saving.set(false);
           sub.next(true);
           sub.complete();
