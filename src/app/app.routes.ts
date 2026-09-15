@@ -405,6 +405,15 @@ export const routes: Routes = [
         title: 'Mail (SMTP) | Admin',
       },
       {
+        path: 'superadmin/tiendas',
+        canActivate: [superAdminGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-superadmin/admin-superadmin-tiendas.component').then(
+            (m) => m.AdminSuperadminTiendasComponent
+          ),
+        title: 'Tiendas | Admin',
+      },
+      {
         path: 'cuenta',
         loadComponent: () =>
           import('./features/admin/admin-account/admin-account.component').then(

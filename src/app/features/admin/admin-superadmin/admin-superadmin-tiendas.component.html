@@ -1,0 +1,81 @@
+<h1 class="font-display font-extrabold text-2xl text-stone-800 mb-2">Tiendas</h1>
+<p class="text-sm text-stone-500 mb-6 max-w-2xl">
+  Creá una tienda nueva eligiendo un rubro y mirala funcionando en local al instante — sin
+  subdominios ni deploy. Es el "selector de tienda modo demo": mientras esté activo, ves esa tienda
+  en el sitio público (no afecta a nadie más).
+</p>
+
+@if (currentDemoSlug()) {
+  <div class="bg-amber-50 ring-1 ring-amber-200 rounded-2xl p-4 mb-6 flex items-center justify-between gap-4 flex-wrap">
+    <p class="text-sm text-amber-800">
+      Estás viendo la tienda demo <strong>{{ currentDemoSlug() }}</strong> en el sitio público.
+    </p>
+    <button
+      type="button"
+      (click)="volverADefault()"
+      class="text-sm font-semibold rounded-full px-4 py-1.5 bg-white text-amber-700 ring-1 ring-amber-300 hover:bg-amber-100 transition-colors"
+    >
+      Volver a la tienda por defecto
+    </button>
+  </div>
+}
+
+<form (ngSubmit)="submit()" class="bg-white rounded-2xl ring-1 ring-black/5 p-6 max-w-lg mb-8">
+  <h2 class="font-bold text-stone-800 mb-4">Crear tienda</h2>
+
+  <label class="block text-sm font-semibold text-stone-700 mb-1.5" for="ts-name">Nombre</label>
+  <input id="ts-name" type="text" name="ts-name"
+    [ngModel]="name()" (ngModelChange)="patchName($event)"
+    placeholder="ej: El Yunque"
+    class="w-full rounded-lg border border-stone-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 mb-4" />
+
+  <label class="block text-sm font-semibold text-stone-700 mb-1.5" for="ts-slug">Identificador (slug)</label>
+  <input id="ts-slug" type="text" name="ts-slug"
+    [ngModel]="slug()" (ngModelChange)="patchSlug($event)"
+    placeholder="ej: el-yunque"
+    class="w-full rounded-lg border border-stone-200 px-3.5 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-400 mb-4" />
+  <p class="text-xs text-stone-400 -mt-3 mb-4">Sólo minúsculas, números y guiones. Se completa solo a partir del nombre.</p>
+
+  <label class="block text-sm font-semibold text-stone-700 mb-1.5" for="ts-rubro">Rubro</label>
+  <select id="ts-rubro" name="ts-rubro"
+    [ngModel]="rubro()" (ngModelChange)="rubro.set($event)"
+    class="w-full rounded-lg border border-stone-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 mb-1 bg-white">
+    @for (opt of rubros(); track opt.value) {
+      <option [value]="opt.value">{{ opt.label }}</option>
+    }
+  </select>
+  <p class="text-xs text-stone-400 mb-4">Define el catálogo de ejemplo y el theme con el que arranca la tienda.</p>
+
+  @if (error()) {
+    <p class="text-sm text-red-500 font-semibold mb-4">{{ error() }}</p>
+  }
+
+  <button type="submit" [disabled]="!canSubmit()"
+    class="bg-brand-500 hover:bg-brand-600 disabled:bg-stone-300 disabled:cursor-not-allowed text-white font-bold py-2.5 px-6 rounded-full transition-colors">
+    {{ saving() ? 'Creando…' : 'Crear y ver' }}
+  </button>
+</form>
+
+<h2 class="font-bold text-stone-800 mb-3">Tiendas existentes</h2>
+@if (status() === 'error') {
+  <p class="text-sm text-stone-500">No se pudo cargar el listado.</p>
+}
+@if (tenants().length) {
+  <div class="flex flex-col gap-3">
+    @for (t of tenants(); track t.id) {
+      <div class="bg-white rounded-2xl ring-1 ring-black/5 p-4 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <p class="font-semibold text-stone-800">{{ t.name }}</p>
+          <p class="text-xs text-stone-400 mt-0.5">{{ t.slug }} · {{ t.rubroLabel }}</p>
+        </div>
+        <button
+          type="button"
+          (click)="ver(t)"
+          class="text-sm font-semibold rounded-full px-4 py-1.5 bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors"
+        >
+          Ver esta tienda
+        </button>
+      </div>
+    }
+  </div>
+}

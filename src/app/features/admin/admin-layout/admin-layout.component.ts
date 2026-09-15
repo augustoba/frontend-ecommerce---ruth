@@ -80,6 +80,7 @@ const GROUPS: NavGroup[] = [
     label: 'Superadmin',
     icon: '🔒',
     items: [
+      { path: '/admin/superadmin/tiendas', label: 'Tiendas', superAdminOnly: true },
       { path: '/admin/superadmin/cloudinary', label: 'Cloudinary', superAdminOnly: true },
       { path: '/admin/superadmin/mail', label: 'Mail (SMTP)', superAdminOnly: true },
     ],

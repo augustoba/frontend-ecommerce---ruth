@@ -7,6 +7,7 @@ import localeEsAr from '@angular/common/locales/es-AR';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/http/auth.interceptor';
 import { errorInterceptor } from './core/http/error.interceptor';
+import { demoTenantInterceptor } from './core/http/demo-tenant.interceptor';
 
 registerLocaleData(localeEsAr, 'es-AR');
 
@@ -14,7 +15,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withInMemoryScrolling({ scrollPositionRestoration: 'top' })),
-    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, demoTenantInterceptor, errorInterceptor])),
     { provide: LOCALE_ID, useValue: 'es-AR' },
     CurrencyPipe,
   ],

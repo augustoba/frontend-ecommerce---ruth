@@ -85,7 +85,8 @@ export class AdminProductFormComponent {
     name: [this.editingProduct?.name ?? '', [Validators.required, Validators.minLength(2)]],
     description: [this.editingProduct?.description ?? '', [Validators.required, Validators.minLength(5)]],
     price: [this.editingProduct?.price ?? 0, [Validators.required, Validators.min(1)]],
-    ageRange: [this.editingProduct?.ageRange ?? '', Validators.required],
+    // Opcional: específico de indumentaria, otros rubros no lo usan.
+    ageRange: [this.editingProduct?.ageRange ?? ''],
     videoUrl: [this.editingProduct?.videoUrl ?? ''],
     active: [this.editingProduct?.active ?? true],
     discontinued: [this.editingProduct?.discontinued ?? false],

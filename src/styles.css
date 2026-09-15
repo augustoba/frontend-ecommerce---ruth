@@ -58,6 +58,54 @@ body {
   color: #e7e5e4;
 }
 
+/*
+ * Themes de marca por tenant (ver PLAN_SAAS.md Fase 9): `SettingsService`
+ * setea `data-theme="<theme>"` en <html> según `SiteSettings.theme` (lo
+ * elige `TenantProvisioningService` al crear la tienda, según el rubro).
+ * Reasignar acá los tokens de `@theme` de arriba retemea todo el sitio sin
+ * tocar ningún componente (mismo mecanismo verificado en Fase 6 con el modo
+ * oscuro). `--color-mint-*` se mantiene siempre verde: es el color de
+ * "ahorro/confirmar" (envío gratis, botón de enviar pedido) en todo el
+ * sitio, no es parte de la identidad de marca.
+ */
+[data-theme="ferreteria"] {
+  --color-brand-50: #fbf1e4;
+  --color-brand-100: #f4dfc0;
+  --color-brand-200: #e8bd85;
+  --color-brand-300: #d99a52;
+  --color-brand-400: #c27a34;
+  --color-brand-500: #a85f27;
+  --color-brand-600: #8a4a1e;
+  --color-brand-700: #6b3818;
+
+  --color-mint-100: #e7efdf;
+  --color-mint-300: #b3cf9a;
+  --color-mint-500: #6f9c4c;
+  --color-mint-600: #557b39;
+
+  --font-display: "Oswald", "Trebuchet MS", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+}
+
+[data-theme="repuestos"] {
+  --color-brand-50: #eef2f5;
+  --color-brand-100: #d7e0e6;
+  --color-brand-200: #adc0cc;
+  --color-brand-300: #7f9baa;
+  --color-brand-400: #55788b;
+  --color-brand-500: #35586b;
+  --color-brand-600: #26414f;
+  --color-brand-700: #1a2e38;
+
+  --color-mint-100: #e2f0ea;
+  --color-mint-300: #a9d7bf;
+  --color-mint-500: #4fa878;
+  --color-mint-600: #3c8560;
+
+  --font-display: "Teko", "Trebuchet MS", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+}
+
 /* Utilidad para truncar títulos/descripciones a N líneas en las cards */
 .line-clamp-2 {
   display: -webkit-box;

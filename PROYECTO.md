@@ -1244,6 +1244,62 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
     `localStorage`). Alcance acotado a header + home (logo/intro + heading
     "Lo más vendido") — el resto del sitio no reacciona todavía. Probado
     en el navegador en los dos sentidos, persistencia confirmada.
+56. **Asistente "Crear tienda" + selector de tienda modo demo (2026-09-15):**
+    ver backend `PLAN_SAAS.md` Fase 9 — motivado por el pedido real del
+    usuario de tener una forma de crear tiendas nuevas desde el panel y
+    mostrarlas funcionando en local (para su clase), sin subdominios
+    reales.
+    - `TenantAdminService` (`core/services/`): listado/alta de tiendas +
+      `GET /admin/tenants/rubros`.
+    - `DemoTenantService`: guarda el slug de la tienda elegida en
+      `sessionStorage` (por pestaña, no pisa otras sesiones).
+    - `demoTenantInterceptor` (nuevo, sumado en `app.config.ts`): agrega
+      `X-Demo-Tenant` a toda request `/api/*` mientras haya una tienda
+      demo elegida — **incluye el panel admin**, no sólo el sitio
+      público: mientras se está "viendo" una tienda demo, todo
+      `/admin/**` (productos, parametrías, etc.) opera sobre esa tienda,
+      no sobre la propia. Es el comportamiento esperado del mecanismo, no
+      un caso aparte a cubrir.
+    - `AdminSuperadminTiendasComponent` (`/admin/superadmin/tiendas`,
+      sólo superadmin): formulario nombre + slug (autogenerado, editable)
+      + rubro, listado de tiendas existentes con botón "Ver esta tienda",
+      y banner "Estás viendo la tienda demo `<slug>`" con botón para
+      volver a la tienda por defecto.
+    - Probado de punta a punta en el navegador (`ng serve` + backend
+      real): creada una tienda de ferretería desde el asistente, redirige
+      sola al sitio público; filtros del catálogo ya muestran los grupos
+      de parametría propios del rubro; filtrar por una opción devuelve
+      exactamente el producto correcto (confirma que el backend enlazó
+      bien `ProductParam.optionId` al id real de cada opción). Botón
+      "Volver a la tienda por defecto" limpia el `sessionStorage` sin
+      dejar rastro.
+    - Pendiente en ese momento (resuelto después, ver #58): el theme CSS
+      real por rubro — toda tienda nueva se veía con la paleta de Estilos
+      Pequeños.
+57. **Themes reales de ferretería/repuestos + logo/tagline/carrusel por
+    tenant (2026-09-15):** cierra la Fase 9 (ver backend `PLAN_SAAS.md`),
+    a pedido del usuario tras notar que "El Yunque" se veía igual que
+    Estilos Pequeños (mismo theme, mismo logo, misma tagline, carrusel
+    vacío).
+    - `[data-theme="ferreteria"]`/`"repuestos"` en `styles.css`:
+      reasignan `--color-brand-*`/`--color-mint-*`/`--font-display`/
+      `--font-sans` — mismo mecanismo verificado en el #53 (base de
+      themes), sin tocar ningún componente. Ferretería en rust/ochre +
+      Oswald; repuestos en steel-blue/graphite + Teko; `--color-mint-*`
+      se mantiene siempre verde (es el color semántico de "ahorro/
+      confirmar", no de marca). Fuentes Oswald/Teko/Archivo sumadas en
+      `index.html`.
+    - La tagline hardcodeada de la home ("Indumentaria infantil con onda
+      🌈 Elegí...") se acotó a la parte genérica ("Elegí, agregá al
+      carrito y coordinamos la compra por WhatsApp.") — deja de asumir
+      ropa infantil para cualquier tenant.
+    - El logo y el carrusel vacíos los completa el backend (ver
+      `RubroImages` en `../backend/PROYECTO.md` #35) — sin cambios acá
+      más que la tagline.
+    - Probado en el navegador: "El Yunque"/"El Cigüeñal" ya se ven
+      claramente distintos entre sí y de la tienda piloto (paleta,
+      tipografía, logo, tagline y carrusel), y la piloto no tuvo ningún
+      cambio visual (sigue con Baloo 2 + paleta naranja + su logo real).
 
 ## 12. Backend (`../backend/`) — resumen
 
