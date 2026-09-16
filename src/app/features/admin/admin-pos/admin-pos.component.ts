@@ -37,7 +37,13 @@ export class AdminPosComponent {
   private readonly router = inject(Router);
 
   readonly paymentLabels = PAYMENT_LABELS;
-  readonly paymentMethods: PaymentMethod[] = ['CASH', 'TRANSFER', 'QR_TRANSFER', 'QR_CARD'];
+  /**
+   * A diferencia del carrito online (`SettingsService.availablePaymentMethods`,
+   * que oculta todo salvo Mercado Pago cuando está activo), acá conviven
+   * todos siempre — venta en el local, el vendedor ve con sus propios ojos
+   * cómo le pagó el cliente (pedido explícito del usuario).
+   */
+  readonly paymentMethods: PaymentMethod[] = ['CASH', 'TRANSFER', 'QR_TRANSFER', 'QR_CARD', 'MERCADOPAGO'];
 
   readonly catalogStatus = this.productService.catalogStatus;
   readonly reloadCatalog = () => this.productService.reloadCatalog();

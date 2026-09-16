@@ -1,9 +1,10 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 import { CartService } from '../../../core/services/cart.service';
 import { SettingsService } from '../../../core/services/settings.service';
+import { GENERIC_LOGO_PLACEHOLDER } from '../../../core/utils/generic-logo';
 import { ThemeModeService } from '../../../core/services/theme-mode.service';
 import { LogoComponent } from '../logo/logo.component';
 
@@ -20,11 +21,33 @@ export class HeaderComponent {
   readonly themeMode = inject(ThemeModeService);
 
   readonly totalItems = this.cartService.totalItems;
-  readonly storeName = computed(() => this.settingsService.settings().storeName);
-  readonly logoSrc = this.settingsService.logoSrc;
+  /**
+   * Overrides para previsualización (Apariencia, asistente "Crear tienda") —
+   * mismo patrón que `textColorOverride`/`pageBgOverride` en
+   * `CatalogPageComponent`: `undefined` = sin tocar, usa el valor real
+   * guardado; cualquier otro valor (incluido `null`) pisa ese valor.
+   */
+  readonly headerColorOverride = input<string | null | undefined>(undefined);
+  readonly textColorOverride = input<string | null | undefined>(undefined);
+  readonly storeNameOverride = input<string | undefined>(undefined);
+  readonly logoOverride = input<string | null | undefined>(undefined);
+
+  readonly storeName = computed(
+    () => this.storeNameOverride() ?? this.settingsService.settings().storeName
+  );
+  readonly logoSrc = computed(() =>
+    this.logoOverride() !== undefined
+      ? this.logoOverride() || GENERIC_LOGO_PLACEHOLDER
+      : this.settingsService.logoSrc()
+  );
+
   /** null = queda el fondo/texto por defecto (clases de siempre, con su variante oscura). */
-  readonly headerBg = computed(() => this.settingsService.settings().headerColor || null);
-  readonly titleColor = computed(() => this.settingsService.settings().textColor || null);
+  readonly headerBg = computed(() =>
+    this.headerColorOverride() !== undefined ? this.headerColorOverride() : this.settingsService.settings().headerColor || null
+  );
+  readonly titleColor = computed(() =>
+    this.textColorOverride() !== undefined ? this.textColorOverride() : this.settingsService.settings().textColor || null
+  );
 
   private readonly currentPath = toSignal(
     this.router.events.pipe(

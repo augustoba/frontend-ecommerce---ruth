@@ -66,6 +66,7 @@ const GROUPS: NavGroup[] = [
       { path: '/admin/config/identidad', label: 'Identidad y contacto', permission: 'PLATFORM_SETTINGS_MANAGE' },
       { path: '/admin/config/whatsapp', label: 'Mensaje de WhatsApp', permission: 'PLATFORM_SETTINGS_MANAGE' },
       { path: '/admin/config/pagos', label: 'Medios de pago', permission: 'PAYMENTS_MANAGE' },
+      { path: '/admin/config/mercadopago', label: 'Mercado Pago', permission: 'PAYMENTS_MANAGE' },
       { path: '/admin/config/redes', label: 'Redes sociales', permission: 'PLATFORM_SETTINGS_MANAGE' },
       { path: '/admin/config/nosotros', label: 'Sobre nosotros', permission: 'PLATFORM_SETTINGS_MANAGE' },
       { path: '/admin/config/ayuda', label: 'Cómo comprar + FAQ', permission: 'PLATFORM_SETTINGS_MANAGE' },

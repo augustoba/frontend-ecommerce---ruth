@@ -19,6 +19,17 @@ export interface MailConfig {
   fromName: string | null;
 }
 
+/**
+ * Credenciales de Mercado Pago DE LA TIENDA (Fase 13). `accessToken` nunca
+ * viaja del backend hacia acá — sólo `accessTokenSet` dice si hay uno
+ * guardado (mismo criterio que `MailConfig.passwordSet`).
+ */
+export interface MercadoPagoConfig {
+  mpEnabled: boolean;
+  accessTokenSet: boolean;
+  publicKey: string | null;
+}
+
 export interface SiteSettings {
   storeName: string;
   whatsappNumber: string;
@@ -90,6 +101,23 @@ export interface SiteSettings {
    */
   cloudinaryCloudName: string | null;
   cloudinaryUploadPreset: string | null;
+  /**
+   * Módulos habilitados por el plan del tenant (ver backend
+   * `com.saasweb.core.plan.Modules`) — hoy sólo el botón "Publicar en
+   * redes" del panel de productos. `false` = no mostrarlo.
+   */
+  socialShareEnabled: boolean;
+  /**
+   * true sólo si el módulo Mercado Pago está habilitado en el plan Y la
+   * tienda activó el checkout Y ya cargó su Access Token — recién ahí el
+   * carrito online puede ofrecer "Pagar con Mercado Pago" (ver
+   * `availablePaymentMethods` más abajo: cuando esto es true, es el ÚNICO
+   * medio de pago que se ofrece en el carrito — pedido explícito del
+   * usuario, para no mezclar pago validado automáticamente con medios que
+   * requieren coordinar a mano por WhatsApp). No afecta "Venta en el
+   * local" (`admin-pos`), que sigue ofreciendo todos los medios.
+   */
+  mercadoPagoAvailable: boolean;
 }
 
 /** Logo por defecto (archivo estático en `public/`) si el negocio no subió uno. */
@@ -136,6 +164,8 @@ const DEFAULTS: SiteSettings = {
   // campos, ej. justo después de deployar esta migración).
   cloudinaryCloudName: 'jitutkbc',
   cloudinaryUploadPreset: 'estilospequenos',
+  socialShareEnabled: true,
+  mercadoPagoAvailable: false,
 };
 
 /**
@@ -157,9 +187,18 @@ export class SettingsService {
   /** Src del logo a usar: el que subió el negocio o el archivo por defecto. */
   readonly logoSrc = computed(() => this.settingsSignal().logoUrl || LOGO_FALLBACK);
 
-  /** Medios de pago que se ofrecen en el checkout: habilitados Y con su dato cargado. */
+  /**
+   * Medios de pago que se ofrecen en el checkout ONLINE (carrito público):
+   * habilitados Y con su dato cargado. Si Mercado Pago está disponible,
+   * es el ÚNICO que se ofrece acá — pedido explícito del usuario, para no
+   * mezclar en el mismo carrito un pago validado automáticamente con
+   * medios que dependen de coordinar a mano por WhatsApp. No aplica a
+   * "Venta en el local" (`admin-pos` tiene su propia lista fija, con
+   * todos los medios siempre disponibles).
+   */
   readonly availablePaymentMethods = computed<PaymentMethod[]>(() => {
     const s = this.settingsSignal();
+    if (s.mercadoPagoAvailable) return ['MERCADOPAGO'];
     const out: PaymentMethod[] = [];
     if (s.paymentTransferEnabled && s.paymentTransferAlias?.trim()) out.push('TRANSFER');
     if (s.paymentQrTransferEnabled && s.paymentQrTransferImage) out.push('QR_TRANSFER');
@@ -383,6 +422,33 @@ export class SettingsService {
     return this.http.put<MailConfig>(apiUrl('/admin/settings/mail'), req).pipe(
       map((res) => {
         this.saving.set(false);
+        return res;
+      }),
+      catchError(() => {
+        this.saving.set(false);
+        return of(null);
+      })
+    );
+  }
+
+  /** Credenciales de Mercado Pago de la tienda. Lo edita el admin normal (`PAYMENTS_MANAGE`). */
+  getMercadoPagoConfig(): Observable<MercadoPagoConfig | null> {
+    return this.http
+      .get<MercadoPagoConfig>(apiUrl('/admin/settings/mercadopago'))
+      .pipe(catchError(() => of(null)));
+  }
+
+  /** `accessToken` vacío/null = no tocar el que ya está guardado. */
+  updateMercadoPagoConfig(req: {
+    mpEnabled: boolean;
+    accessToken: string | null;
+    publicKey: string | null;
+  }): Observable<MercadoPagoConfig | null> {
+    this.saving.set(true);
+    return this.http.put<MercadoPagoConfig>(apiUrl('/admin/settings/mercadopago'), req).pipe(
+      map((res) => {
+        this.saving.set(false);
+        this.reload(); // refresca `mercadoPagoAvailable` en el settings público
         return res;
       }),
       catchError(() => {

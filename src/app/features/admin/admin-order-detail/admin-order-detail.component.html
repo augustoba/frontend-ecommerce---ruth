@@ -100,6 +100,15 @@
       } @else {
         <p class="text-stone-500">A coordinar por WhatsApp</p>
       }
+      @if (order.paymentMethod === 'MERCADOPAGO') {
+        @if (order.paymentStatus === 'PENDING') {
+          <p class="text-xs font-semibold text-amber-700 mt-1.5">⏳ Todavía no se acreditó el pago.</p>
+        } @else if (order.paymentStatus === 'APPROVED') {
+          <p class="text-xs font-semibold text-mint-600 mt-1.5">✓ Pago acreditado por Mercado Pago.</p>
+        } @else if (order.paymentStatus === 'REJECTED') {
+          <p class="text-xs font-semibold text-red-500 mt-1.5">✕ El pago no se acreditó.</p>
+        }
+      }
     </div>
   </div>
 

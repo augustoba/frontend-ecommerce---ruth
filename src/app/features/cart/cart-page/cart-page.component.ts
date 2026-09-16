@@ -41,6 +41,8 @@ export class CartPageComponent {
   readonly paymentLabels = PAYMENT_LABELS;
   readonly storeAddress = computed(() => this.settingsService.settings().storeAddress?.trim() || null);
   readonly paymentOptions = this.settingsService.availablePaymentMethods;
+  /** Mercado Pago activo = único medio ofrecido (ver `SettingsService.availablePaymentMethods`) — el botón final cambia. */
+  readonly isMercadoPagoOnly = computed(() => this.settingsService.settings().mercadoPagoAvailable);
 
   /** Descuento total del carrito (monto / parametría / medio de pago) con su detalle */
   readonly discount = computed(() =>
@@ -131,13 +133,16 @@ export class CartPageComponent {
       });
     }
 
-    // descuentos por medio de pago que todavía no elegiste
-    const chosen = this.paymentMethod();
-    for (const d of this.discountService.activePaymentDiscounts()) {
-      const methods = d.paymentMethods ?? [];
-      if (chosen && methods.includes(chosen)) continue; // ese descuento ya lo estás usando
-      const names = methods.map((m) => this.paymentLabels[m]).join(' o ');
-      hints.push({ icon: '💳', text: `Pagando con ${names}: ${d.discountPercent}% off`, detail: d.detail });
+    // descuentos por medio de pago que todavía no elegiste (no aplica si Mercado
+    // Pago es el único medio disponible — ningún otro medio se puede elegir)
+    if (!this.isMercadoPagoOnly()) {
+      const chosen = this.paymentMethod();
+      for (const d of this.discountService.activePaymentDiscounts()) {
+        const methods = d.paymentMethods ?? [];
+        if (chosen && methods.includes(chosen)) continue; // ese descuento ya lo estás usando
+        const names = methods.map((m) => this.paymentLabels[m]).join(' o ');
+        hints.push({ icon: '💳', text: `Pagando con ${names}: ${d.discountPercent}% off`, detail: d.detail });
+      }
     }
 
     // envío gratis (cuando todavía no elegiste envío)
@@ -206,11 +211,20 @@ export class CartPageComponent {
     }
   }
 
-  /** Sólo avisa si está mal escrito; nunca bloquea el envío (el campo es opcional). */
+  /** Sólo avisa si está mal escrito; nunca bloquea el envío (el campo es opcional salvo con Mercado Pago). */
   readonly emailInvalid = computed(() => {
     const v = this.customerEmail().trim();
     return v.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
   });
+
+  /**
+   * Con Mercado Pago el mail deja de ser opcional: es el único comprobante
+   * que le queda al cliente fuera del sitio (a diferencia de WhatsApp, que
+   * le queda como chat) — para poder mandarle la confirmación y que tenga
+   * con qué reclamar si hace falta.
+   */
+  readonly emailRequired = computed(() => this.paymentMethod() === 'MERCADOPAGO');
+  readonly emailMissing = computed(() => this.emailRequired() && !this.customerEmail().trim());
 
   readonly deliveryMethod = signal<DeliveryMethod | null>(null);
   readonly shippingAddr = signal<PickedAddress | null>(null);
@@ -237,6 +251,7 @@ export class CartPageComponent {
   readonly canSend = computed(() => {
     if (this.hasStockProblems()) return false;
     if (!this.deliveryMethod() || this.shippingAddressMissing() || this.referenceMissing()) return false;
+    if (this.emailInvalid() || this.emailMissing()) return false;
     // si el negocio todavía no cargó medios de pago, se coordina por WhatsApp
     if (this.paymentOptions().length === 0) return true;
     return !!this.paymentMethod() && this.paymentOptions().includes(this.paymentMethod()!);
@@ -297,8 +312,16 @@ export class CartPageComponent {
         next: (order) => {
           this.sending.set(false);
           this.currentOrder.set(order);
-          this.orderSent.set(true);
           rememberOrder(order.code, this.customerName());
+          if (order.paymentMethod === 'MERCADOPAGO' && order.mpCheckoutUrl) {
+            // El pedido queda PENDIENTE con `paymentStatus: PENDING` — no hay
+            // nada que coordinar por WhatsApp, el pago se valida solo cuando
+            // Mercado Pago confirme (ver backend OrderService.confirmFromPayment).
+            this.cartService.clear();
+            window.location.href = order.mpCheckoutUrl;
+            return;
+          }
+          this.orderSent.set(true);
           this.whatsappService.openOrderChat(order);
         },
         error: () => this.sending.set(false),

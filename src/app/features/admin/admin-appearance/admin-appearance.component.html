@@ -5,7 +5,7 @@
 </p>
 
 <h2 class="font-bold text-stone-800 mb-3">Diseño</h2>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10 max-w-6xl">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10 max-w-6xl max-h-[700px] overflow-y-auto pr-2">
   @for (layout of layouts; track layout.id) {
     <button
       type="button"
@@ -15,14 +15,11 @@
       [class.ring-black]="draftLayout() !== layout.id"
       [class.ring-opacity-5]="draftLayout() !== layout.id"
     >
-      <div class="h-72 overflow-hidden relative bg-stone-100" [ngStyle]="previewVars()">
+      <div class="h-72 overflow-hidden relative bg-stone-100" [ngStyle]="layoutSwatchVars(layout.previewColor)">
         <div class="absolute inset-0 pointer-events-none">
           <div class="absolute top-0 left-0 w-[1280px] origin-top-left" style="transform: scale(0.28)">
-            <app-catalog-page
-              [layoutOverride]="layout.id"
-              [textColorOverride]="draftTextColor()"
-              [pageBgOverride]="draftPageBgColor()"
-            />
+            <app-catalog-page [layoutOverride]="layout.id" [footerColorOverride]="layout.previewColor" />
+            <app-footer [footerColorOverride]="layout.previewColor" />
           </div>
         </div>
         <button
@@ -167,11 +164,13 @@
       </div>
       <div class="overflow-y-auto overflow-x-hidden flex-1 bg-stone-100" [ngStyle]="previewVars()">
         <div class="w-[1280px] origin-top-left" style="transform: scale(0.62)">
+          <app-header [headerColorOverride]="draftHeaderColor()" [textColorOverride]="draftTextColor()" />
           <app-catalog-page
             [layoutOverride]="id"
             [textColorOverride]="draftTextColor()"
             [pageBgOverride]="draftPageBgColor()"
           />
+          <app-footer [footerColorOverride]="draftFooterColor()" [textColorOverride]="draftTextColor()" />
         </div>
       </div>
     </div>

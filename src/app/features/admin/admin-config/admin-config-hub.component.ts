@@ -47,6 +47,13 @@ export class AdminConfigHubComponent {
       where: 'El cliente elige uno al comprar; queda en el pedido.',
     },
     {
+      path: '/admin/config/mercadopago',
+      icon: '🅿️',
+      title: 'Mercado Pago',
+      desc: 'Cobrá online: el pedido se confirma solo cuando el pago está aprobado.',
+      where: 'Reemplaza al resto de los medios en el carrito online mientras esté activo.',
+    },
+    {
       path: '/admin/config/redes',
       icon: '📱',
       title: 'Redes sociales',

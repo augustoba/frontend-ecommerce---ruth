@@ -378,6 +378,16 @@ export const routes: Routes = [
         title: 'Medios de pago | Admin',
       },
       {
+        path: 'config/mercadopago',
+        canActivate: [permissionGuard],
+        data: { permission: 'PAYMENTS_MANAGE' },
+        loadComponent: () =>
+          import('./features/admin/admin-config/admin-mercadopago.component').then(
+            (m) => m.AdminMercadoPagoComponent
+          ),
+        title: 'Mercado Pago | Admin',
+      },
+      {
         path: 'config/ayuda',
         canActivate: [permissionGuard],
         data: { permission: 'PLATFORM_SETTINGS_MANAGE' },

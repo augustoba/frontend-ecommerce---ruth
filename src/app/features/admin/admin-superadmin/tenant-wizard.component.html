@@ -48,9 +48,9 @@
                 [class.ring-black]="draftLayout() !== layout.id"
                 [class.ring-opacity-5]="draftLayout() !== layout.id"
               >
-                <div class="h-16 overflow-hidden relative bg-stone-100 pointer-events-none">
+                <div class="h-16 overflow-hidden relative bg-stone-100 pointer-events-none" [ngStyle]="layoutSwatchVars(layout.previewColor)">
                   <div class="absolute top-0 left-0 w-[1280px] origin-top-left" style="transform: scale(0.09)">
-                    <app-catalog-page [layoutOverride]="layout.id" />
+                    <app-catalog-page [layoutOverride]="layout.id" [storeNameOverride]="draft().name" [logoOverride]="logoDataUrl()" />
                   </div>
                 </div>
                 <div class="px-2 py-1.5 flex items-center justify-between">
@@ -231,7 +231,9 @@
       <div class="flex-1 overflow-y-auto bg-stone-100 hidden sm:block">
         <div class="min-h-full" [ngStyle]="previewVars()">
           <div class="w-[1280px] origin-top-left" style="transform: scale(0.42)">
-            <app-catalog-page [layoutOverride]="draftLayout()" [logoOverride]="logoDataUrl()" [textColorOverride]="draftTextColor()" [pageBgOverride]="draftPageBgColor()" />
+            <app-header [headerColorOverride]="draftHeaderColor()" [textColorOverride]="draftTextColor()" [storeNameOverride]="draft().name" [logoOverride]="logoDataUrl()" />
+            <app-catalog-page [layoutOverride]="draftLayout()" [logoOverride]="logoDataUrl()" [storeNameOverride]="draft().name" [textColorOverride]="draftTextColor()" [pageBgOverride]="draftPageBgColor()" />
+            <app-footer [footerColorOverride]="draftFooterColor()" [textColorOverride]="draftTextColor()" [storeNameOverride]="draft().name" [logoOverride]="logoDataUrl()" />
           </div>
         </div>
       </div>
@@ -259,7 +261,9 @@
       </div>
     </div>
     <div #fullscreenHost class="bg-white overflow-y-auto" [class.hidden]="!fullscreenActive()" [ngStyle]="previewVars()">
-      <app-catalog-page [layoutOverride]="draftLayout()" [logoOverride]="logoDataUrl()" [textColorOverride]="draftTextColor()" [pageBgOverride]="draftPageBgColor()" />
+      <app-header [headerColorOverride]="draftHeaderColor()" [textColorOverride]="draftTextColor()" [storeNameOverride]="draft().name" [logoOverride]="logoDataUrl()" />
+      <app-catalog-page [layoutOverride]="draftLayout()" [logoOverride]="logoDataUrl()" [storeNameOverride]="draft().name" [textColorOverride]="draftTextColor()" [pageBgOverride]="draftPageBgColor()" />
+      <app-footer [footerColorOverride]="draftFooterColor()" [textColorOverride]="draftTextColor()" [storeNameOverride]="draft().name" [logoOverride]="logoDataUrl()" />
     </div>
   }
 

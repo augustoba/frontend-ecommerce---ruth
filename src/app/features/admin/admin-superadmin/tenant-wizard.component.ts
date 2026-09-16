@@ -19,7 +19,9 @@ import { resizeImageFile, validateImageFile } from '../../../core/utils/image-re
 import { generateBrandRamp } from '../../../core/utils/color-ramp';
 import { extractLogoColor } from '../../../core/utils/logo-color';
 import { CatalogPageComponent } from '../../catalog/catalog-page/catalog-page.component';
-import { LAYOUTS } from '../admin-appearance/admin-appearance.component';
+import { HeaderComponent } from '../../../shared/components/header/header.component';
+import { FooterComponent } from '../../../shared/components/footer/footer.component';
+import { LAYOUTS, layoutSwatchVars } from '../admin-appearance/admin-appearance.component';
 
 type WizardStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 const DEFAULT_PREVIEW_COLOR = '#f97316';
@@ -42,7 +44,7 @@ export interface TenantDraft {
 @Component({
   selector: 'app-tenant-wizard',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, NgStyle, CatalogPageComponent],
+  imports: [FormsModule, NgStyle, CatalogPageComponent, HeaderComponent, FooterComponent],
   templateUrl: './tenant-wizard.component.html',
 })
 export class TenantWizardComponent {
@@ -57,6 +59,8 @@ export class TenantWizardComponent {
   readonly fullscreenHost = viewChild<ElementRef<HTMLDivElement>>('fullscreenHost');
 
   readonly layouts = LAYOUTS;
+  /** Color original fijo de cada miniatura de diseño (Paso 1) — no depende del color en edición. */
+  readonly layoutSwatchVars = layoutSwatchVars;
   readonly step = signal<WizardStep>(1);
   readonly creating = signal(false);
   readonly error = signal<string | null>(null);

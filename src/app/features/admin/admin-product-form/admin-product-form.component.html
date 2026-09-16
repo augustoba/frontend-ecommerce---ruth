@@ -131,6 +131,14 @@
         @if (imagesInvalid()) {
           <p class="text-sm text-red-500 mt-1.5">Agregá al menos una foto.</p>
         }
+
+        <div class="mt-4">
+          <app-social-share-button
+            [images]="images()"
+            [productName]="formValue().name ?? ''"
+            [productDescription]="formValue().description ?? ''"
+          />
+        </div>
       </div>
 
       <div class="sm:col-span-2">

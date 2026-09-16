@@ -322,10 +322,18 @@
           [disabled]="sending() || hasStockProblems() || (submitted() && !canSend())"
           class="mt-5 w-full flex items-center justify-center gap-2 bg-mint-500 hover:bg-mint-600 disabled:bg-stone-300 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-full transition-colors text-lg"
         >
-          <span aria-hidden="true">💬</span> {{ sending() ? 'Creando el pedido…' : 'Comprar por WhatsApp' }}
+          @if (isMercadoPagoOnly()) {
+            <span aria-hidden="true">🅿️</span> {{ sending() ? 'Creando el pedido…' : 'Pagar con Mercado Pago' }}
+          } @else {
+            <span aria-hidden="true">💬</span> {{ sending() ? 'Creando el pedido…' : 'Comprar por WhatsApp' }}
+          }
         </button>
         <p class="text-xs text-stone-400 text-center mt-2">
-          Se abre WhatsApp con tu pedido armado (entrega y forma de pago incluidas). Enviás el mensaje y coordinamos el resto.
+          @if (isMercadoPagoOnly()) {
+            Te llevamos a la página de Mercado Pago para pagar. El pedido se confirma solo apenas se acredite el pago.
+          } @else {
+            Se abre WhatsApp con tu pedido armado (entrega y forma de pago incluidas). Enviás el mensaje y coordinamos el resto.
+          }
         </p>
       } @else {
         <div class="text-center py-4">

@@ -13,6 +13,7 @@ import { CloudinaryService } from '../../../core/services/cloudinary.service';
 import { slugify } from '../../../core/utils/slugify';
 import { youtubeId } from '../../../core/utils/youtube';
 import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
+import { SocialShareButtonComponent } from '../../../shared/components/social-share-button/social-share-button.component';
 
 /** Precio de venta = costo + markup%. null si falta el costo o el %. */
 function priceFromMarkup(cost: number, markupPercent: number): number | null {
@@ -23,7 +24,7 @@ function priceFromMarkup(cost: number, markupPercent: number): number | null {
 
 @Component({
   selector: 'app-admin-product-form',
-  imports: [ReactiveFormsModule, FormsModule, RouterLink, CldImagePipe],
+  imports: [ReactiveFormsModule, FormsModule, RouterLink, CldImagePipe, SocialShareButtonComponent],
   templateUrl: './admin-product-form.component.html',
   styleUrl: './admin-product-form.component.css',
 })
@@ -98,7 +99,7 @@ export class AdminProductFormComponent {
   /** Umbral de stock bajo propio del producto (vacío = usar el default global). */
   readonly lowStockThreshold = signal<number | null>(this.editingProduct?.lowStockThreshold ?? null);
 
-  private readonly formValue = toSignal(this.form.valueChanges, {
+  readonly formValue = toSignal(this.form.valueChanges, {
     initialValue: this.form.getRawValue(),
   });
 

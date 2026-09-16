@@ -131,6 +131,8 @@ export class WhatsappService {
       }
       case 'CASH':
         return ['💳 Pago: Efectivo al recibir/retirar'];
+      case 'MERCADOPAGO':
+        return ['💳 Pago: Mercado Pago (ya pagado online)'];
       default:
         return [];
     }

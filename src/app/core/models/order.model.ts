@@ -7,13 +7,14 @@ export type OrderStatus = 'PENDIENTE' | 'PROCESADO' | 'CANCELADO';
 export type DeliveryMethod = 'PICKUP' | 'SHIPPING';
 
 /** Medio de pago que elige el cliente (para que el dueño sepa qué mandar). */
-export type PaymentMethod = 'TRANSFER' | 'QR_TRANSFER' | 'QR_CARD' | 'CASH';
+export type PaymentMethod = 'TRANSFER' | 'QR_TRANSFER' | 'QR_CARD' | 'CASH' | 'MERCADOPAGO';
 
 export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   TRANSFER: 'Transferencia (alias/CBU)',
   QR_TRANSFER: 'QR de transferencia',
   QR_CARD: 'Tarjeta (QR o link)',
   CASH: 'Efectivo al recibir/retirar',
+  MERCADOPAGO: 'Mercado Pago',
 };
 
 export interface OrderLine {
@@ -42,6 +43,11 @@ export interface PublicOrder {
   discountPercent: number;
   discountAmount: number;
   total: number;
+  paymentMethod?: PaymentMethod | null;
+  /** Sólo `paymentMethod === 'MERCADOPAGO'`. */
+  paymentStatus?: PaymentStatus | null;
+  /** Sólo si `paymentStatus === 'PENDING'` — para poder terminar de pagar. */
+  mpCheckoutUrl?: string | null;
   items: { productName: string; size: string; quantity: number; unitPrice: number }[];
 }
 
@@ -89,4 +95,11 @@ export interface Order {
   createdByName?: string | null;
   /** Quién lo confirmó/cobró (null hasta que se confirma). */
   confirmedByName?: string | null;
+  /** Sólo `paymentMethod === 'MERCADOPAGO'`. */
+  paymentStatus?: PaymentStatus | null;
+  /** Link al checkout de Mercado Pago — redirigir acá apenas se crea el pedido. */
+  mpCheckoutUrl?: string | null;
 }
+
+/** Sólo aplica a pedidos con `paymentMethod === 'MERCADOPAGO'`. */
+export type PaymentStatus = 'PENDING' | 'APPROVED' | 'REJECTED';

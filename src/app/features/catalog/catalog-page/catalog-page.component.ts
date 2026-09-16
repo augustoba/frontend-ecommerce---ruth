@@ -8,7 +8,8 @@ import { LogoComponent } from '../../../shared/components/logo/logo.component';
 import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
 import { SizeScaleService } from '../../../core/services/size-scale.service';
-import { LOGO_FALLBACK, SettingsService } from '../../../core/services/settings.service';
+import { SettingsService } from '../../../core/services/settings.service';
+import { GENERIC_LOGO_PLACEHOLDER } from '../../../core/utils/generic-logo';
 import { HeroSlidesService } from '../../../core/services/hero-slides.service';
 import { PageBlocksService } from '../../../core/services/page-blocks.service';
 import { productHasParam } from '../../../core/models/product.model';
@@ -28,7 +29,15 @@ export class CatalogPageComponent {
   private readonly heroSlidesService = inject(HeroSlidesService);
   private readonly pageBlocksService = inject(PageBlocksService);
 
-  readonly storeName = computed(() => this.settingsService.settings().storeName);
+  /**
+   * `undefined` = usar el nombre de `SiteSettings` de siempre; string = el
+   * que se está escribiendo en el asistente "Crear tienda" (tienda que
+   * todavía no existe, no tiene fila en `SiteSettings`).
+   */
+  readonly storeNameOverride = input<string | undefined>(undefined);
+  readonly storeName = computed(
+    () => this.storeNameOverride() ?? this.settingsService.settings().storeName
+  );
   /**
    * `undefined` = usar el logo de `SiteSettings` de siempre; string (incluida
    * una data URL) u null = el que mande el asistente "Crear tienda", que
@@ -36,7 +45,9 @@ export class CatalogPageComponent {
    */
   readonly logoOverride = input<string | null | undefined>(undefined);
   readonly logoSrc = computed(() =>
-    this.logoOverride() !== undefined ? this.logoOverride() || LOGO_FALLBACK : this.settingsService.logoSrc()
+    this.logoOverride() !== undefined
+      ? this.logoOverride() || GENERIC_LOGO_PLACEHOLDER
+      : this.settingsService.logoSrc()
   );
   /**
    * Fuerza un layout puntual sin importar el de `SiteSettings` — sólo lo usa
@@ -52,6 +63,7 @@ export class CatalogPageComponent {
    */
   readonly textColorOverride = input<string | null | undefined>(undefined);
   readonly pageBgOverride = input<string | null | undefined>(undefined);
+  readonly footerColorOverride = input<string | null | undefined>(undefined);
   readonly headingColor = computed(() =>
     this.textColorOverride() !== undefined ? this.textColorOverride() : this.settingsService.settings().textColor
   );

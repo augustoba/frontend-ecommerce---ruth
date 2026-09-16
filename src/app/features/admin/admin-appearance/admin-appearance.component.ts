@@ -4,20 +4,72 @@ import { FormsModule } from '@angular/forms';
 import { SettingsService } from '../../../core/services/settings.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { CatalogPageComponent } from '../../catalog/catalog-page/catalog-page.component';
+import { HeaderComponent } from '../../../shared/components/header/header.component';
+import { FooterComponent } from '../../../shared/components/footer/footer.component';
 import { generateBrandRamp } from '../../../core/utils/color-ramp';
 import { extractLogoColor } from '../../../core/utils/logo-color';
 
-/** Diseños realmente construidos (ver PLAN_SAAS.md Fase 10). Agregar uno acá cuando exista. */
-export const LAYOUTS: { id: string; label: string }[] = [
-  { id: 'classic', label: 'Clásico' },
-  { id: 'minimal', label: 'Minimal' },
-  { id: 'boutique', label: 'Boutique' },
-  { id: 'curva', label: 'Curva' },
-  { id: 'grid', label: 'Grid' },
-  { id: 'mercado', label: 'Mercado' },
+/**
+ * Diseños realmente construidos (ver PLAN_SAAS.md Fase 10). Agregar uno acá
+ * cuando exista. `previewColor` es el color de acento ORIGINAL de cada
+ * diseño (sacado del theme de WordPress real que lo inspiró — carpeta
+ * `templates/` del Escritorio, no inventado) — se usa fijo en las
+ * miniaturas de selección para que las 6 se vean distintas entre sí en vez
+ * de compartir el color de marca que se esté editando en ese momento (pedido
+ * explícito del usuario, ver PLAN_SAAS.md).
+ */
+export const LAYOUTS: { id: string; label: string; previewColor: string }[] = [
+  // Diseño propio de la tienda piloto (no viene de ningún template
+  // descargado) — coincide con el color por defecto del rubro Ropa.
+  { id: 'classic', label: 'Clásico', previewColor: '#f97316' },
+  // Botiga, paleta "palette1" (la que trae por defecto).
+  { id: 'minimal', label: 'Minimal', previewColor: '#212121' },
+  // Minna (Framer) — nunca se descargó un archivo del que sacar el color
+  // real, aproximado a su estética editorial (negro/grafito sobre foto).
+  { id: 'boutique', label: 'Boutique', previewColor: '#1c1917' },
+  // Rife Free, color de acento por defecto (`default-settings/*.json`).
+  { id: 'curva', label: 'Curva', previewColor: '#3957ff' },
+  // Shopper, `--secondary-color` (único acento que define el theme).
+  { id: 'grid', label: 'Grid', previewColor: '#734f96' },
+  // Consolida Shopping Cart + Big Store + Online Shop — se usa el de
+  // Shopping Cart (el que más aportó a la estructura final).
+  { id: 'mercado', label: 'Mercado', previewColor: '#f77426' },
+  // Astra - Theme minimalista y rápido, color de acento azul característico
+  { id: 'astra', label: 'Astra', previewColor: '#3b82f6' },
+  // Big Store - Theme para e-commerce con grid prominente, color naranja
+  { id: 'big-store', label: 'Big Store', previewColor: '#ff6b35' },
+  // Neve - Theme moderno móvil-first, color verde menta
+  { id: 'neve', label: 'Neve', previewColor: '#10b981' },
+  // OceanWP - Theme versátil, color azul océano
+  { id: 'oceanwp', label: 'OceanWP', previewColor: '#0ea5e9' },
+  // Orchid Store - Theme para tiendas online, color púrpura
+  { id: 'orchid-store', label: 'Orchid Store', previewColor: '#8b5cf6' },
+  // Shopper Store - Theme minimalista e-commerce, color rosa
+  { id: 'shopper-store', label: 'Shopper Store', previewColor: '#ec4899' },
+  // Sydney - Theme corporativo/profesional, color rojo coral
+  { id: 'sydney', label: 'Sydney', previewColor: '#f43f5e' },
+  // Woostify - Theme optimizado para WooCommerce, color índigo
+  { id: 'woostify', label: 'Woostify', previewColor: '#6366f1' },
+  // Studio - Layout único asimétrico con imagen diagonal y miniaturas de productos
+  { id: 'studio', label: 'Studio', previewColor: '#0d9488' },
 ];
 
 const DEFAULT_PREVIEW_COLOR = '#f97316';
+
+/**
+ * Variables CSS `--color-brand-*` fijas para el color original de un
+ * layout — independiente de cualquier color en edición, para que las
+ * miniaturas de comparación no cambien según qué tienda se vio último.
+ */
+export function layoutSwatchVars(colorHex: string): Record<string, string> {
+  const ramp = generateBrandRamp(colorHex);
+  if (!ramp) return {};
+  const vars: Record<string, string> = {};
+  for (const stop of ['50', '100', '200', '300', '400', '500', '600', '700'] as const) {
+    vars[`--color-brand-${stop}`] = ramp[stop];
+  }
+  return vars;
+}
 
 /**
  * "Apariencia": elegir diseño (layout) y color de marca — dos ejes
@@ -28,7 +80,7 @@ const DEFAULT_PREVIEW_COLOR = '#f97316';
 @Component({
   selector: 'app-admin-appearance',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, NgStyle, CatalogPageComponent],
+  imports: [FormsModule, NgStyle, CatalogPageComponent, HeaderComponent, FooterComponent],
   templateUrl: './admin-appearance.component.html',
 })
 export class AdminAppearanceComponent {
@@ -95,6 +147,9 @@ export class AdminAppearanceComponent {
       }
     });
   }
+
+  /** Color original fijo de cada miniatura de diseño (ver `LAYOUTS`) — no depende del color en edición. */
+  readonly layoutSwatchVars = layoutSwatchVars;
 
   chooseLayout(id: string): void {
     this.touched = true;

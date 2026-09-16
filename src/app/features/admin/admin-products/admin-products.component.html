@@ -166,6 +166,12 @@
                   >
                     {{ duplicatingId() === product.id ? 'Duplicando…' : 'Duplicar' }}
                   </button>
+                  <app-social-share-button
+                    [compact]="true"
+                    [images]="product.images"
+                    [productName]="product.name"
+                    [productDescription]="product.description"
+                  />
                   <button
                     type="button"
                     (click)="remove(product.id, product.name)"
