@@ -1,9 +1,9 @@
-<footer class="bg-brand-700 text-brand-50 mt-12">
+<footer [style.background-color]="footerBg()" class="bg-brand-700 text-brand-50 mt-12">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid sm:grid-cols-3 gap-8">
     <div>
       <div class="flex items-center gap-2 font-display font-bold text-lg">
-        <img [src]="logoSrc() | cldImg: 80" [alt]="settings().storeName" class="h-9 w-9 rounded-full object-cover" />
-        <span>{{ settings().storeName }}</span>
+        <app-logo [src]="logoSrc()" [alt]="settings().storeName" [size]="36" />
+        <span [style.color]="titleColor()">{{ settings().storeName }}</span>
       </div>
       <p class="text-sm text-brand-100 mt-3 leading-relaxed">
         {{ settings().aboutText }}

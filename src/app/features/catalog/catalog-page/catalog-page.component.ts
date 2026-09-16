@@ -1,22 +1,24 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ProductCardComponent } from '../../../shared/components/product-card/product-card.component';
 import { HeroCarouselComponent } from '../../../shared/components/hero-carousel/hero-carousel.component';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
-import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
+import { LogoComponent } from '../../../shared/components/logo/logo.component';
 import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
 import { SizeScaleService } from '../../../core/services/size-scale.service';
-import { SettingsService } from '../../../core/services/settings.service';
+import { LOGO_FALLBACK, SettingsService } from '../../../core/services/settings.service';
 import { HeroSlidesService } from '../../../core/services/hero-slides.service';
 import { PageBlocksService } from '../../../core/services/page-blocks.service';
 import { productHasParam } from '../../../core/models/product.model';
 
 @Component({
   selector: 'app-catalog-page',
-  imports: [FormsModule, ProductCardComponent, HeroCarouselComponent, SkeletonComponent, CldImagePipe],
+  imports: [FormsModule, RouterLink, ProductCardComponent, HeroCarouselComponent, SkeletonComponent, LogoComponent],
   templateUrl: './catalog-page.component.html',
   styleUrl: './catalog-page.component.css',
+  host: { '[style.background-color]': 'pageBg()' },
 })
 export class CatalogPageComponent {
   private readonly productService = inject(ProductService);
@@ -27,7 +29,68 @@ export class CatalogPageComponent {
   private readonly pageBlocksService = inject(PageBlocksService);
 
   readonly storeName = computed(() => this.settingsService.settings().storeName);
-  readonly logoSrc = this.settingsService.logoSrc;
+  /**
+   * `undefined` = usar el logo de `SiteSettings` de siempre; string (incluida
+   * una data URL) u null = el que mande el asistente "Crear tienda", que
+   * todavía no subió nada a Cloudinary (ver `TenantWizardComponent.logoDataUrl`).
+   */
+  readonly logoOverride = input<string | null | undefined>(undefined);
+  readonly logoSrc = computed(() =>
+    this.logoOverride() !== undefined ? this.logoOverride() || LOGO_FALLBACK : this.settingsService.logoSrc()
+  );
+  /**
+   * Fuerza un layout puntual sin importar el de `SiteSettings` — sólo lo usa
+   * la miniatura de "Apariencia" (`admin-appearance`) para mostrar cada
+   * opción con el componente real. Ver PLAN_SAAS.md Fase 10.
+   */
+  readonly layoutOverride = input<string | undefined>(undefined);
+  /**
+   * Igual que `layoutOverride` pero para los 2 colores granulares que se
+   * pintan dentro de esta misma página (texto de títulos y fondo general —
+   * ver PLAN_SAAS.md Fase 10 ampliada): `undefined` = usar `SiteSettings`
+   * de siempre; string u null = lo que mande el borrador de "Apariencia".
+   */
+  readonly textColorOverride = input<string | null | undefined>(undefined);
+  readonly pageBgOverride = input<string | null | undefined>(undefined);
+  readonly headingColor = computed(() =>
+    this.textColorOverride() !== undefined ? this.textColorOverride() : this.settingsService.settings().textColor
+  );
+  readonly pageBg = computed(() =>
+    this.pageBgOverride() !== undefined ? this.pageBgOverride() : this.settingsService.settings().pageBackgroundColor
+  );
+  /**
+   * Layout de página elegido (ver PLAN_SAAS.md Fase 10) — eje independiente
+   * de la paleta/theme. Hoy sólo cambia la sección de portada y la grilla
+   * (ver el template): el resto de la lógica de catálogo es la misma para
+   * cualquier layout.
+   */
+  readonly layout = computed(() => this.layoutOverride() ?? this.settingsService.settings().layout);
+  /**
+   * `layout()` acotado a las variantes que conoce `ProductCardComponent`
+   * (fallback: `'classic'`) — `"boutique"` (Minna) usa la tarjeta `"editorial"`
+   * (foto lisa, sin marco); el resto de los layouts usan la tarjeta clásica.
+   */
+  readonly cardVariant = computed<'classic' | 'editorial' | 'marketplace'>(() =>
+    this.layout() === 'boutique' ? 'editorial' : 'classic'
+  );
+  /** Columnas de la grilla de producto — igual para todos los layouts hoy. */
+  readonly gridColsClass = 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6';
+
+  /**
+   * Primeras 3 opciones de parametría (cualquier grupo), para las tarjetas
+   * de promo del layout `"mercado"` (Shopping Cart / Big Store / Online
+   * Shop) — datos reales del catálogo, no inventados.
+   */
+  readonly topOptions = computed(() => {
+    const out: { groupId: string; id: string; label: string }[] = [];
+    for (const g of this.filterGroups()) {
+      for (const o of g.options) {
+        out.push({ groupId: g.id, id: o.id, label: o.label });
+        if (out.length >= 3) return out;
+      }
+    }
+    return out;
+  });
 
   /** Fotos del carrusel de bienvenida — administrables desde /admin/carrusel */
   readonly heroSlides = this.heroSlidesService.slides;

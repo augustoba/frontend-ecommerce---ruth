@@ -1,31 +1,204 @@
-<!-- Logo + presentación, arriba del todo -->
-<section class="bg-gradient-to-b from-brand-100 to-brand-50 dark:from-stone-900 dark:to-stone-950 border-b border-brand-100 dark:border-stone-700">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 flex flex-col items-center text-center">
-    <img
-      [src]="logoSrc() | cldImg: 300"
-      [alt]="storeName()"
-      class="h-28 w-28 sm:h-36 sm:w-36 rounded-full object-cover bg-white ring-4 ring-white dark:ring-stone-800 shadow-xl"
-    />
-    <h1 class="font-display font-extrabold text-3xl sm:text-5xl text-brand-700 dark:text-brand-400 mt-4">{{ storeName() }}</h1>
-    <p class="text-stone-600 dark:text-stone-300 max-w-md mt-2 sm:text-lg">
-      Elegí, agregá al carrito y coordinamos la compra por WhatsApp.
-    </p>
-    <button
-      type="button"
-      (click)="scrollToCatalog()"
-      class="mt-5 bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 px-7 rounded-full transition-colors shadow-lg"
-    >
-      Ver catálogo 👇
-    </button>
-  </div>
-</section>
-
-@if (heroBlockVisible()) {
-  <!-- Carrusel de fotos, bien visible debajo. Proporción apaisada fija (las fotos
-       se suben ya recortadas a 21:9 desde /admin/carrusel). -->
-  <section class="relative w-full aspect-[16/10] sm:aspect-[21/9] max-h-[440px] overflow-hidden bg-brand-100">
-    <app-hero-carousel [slides]="heroSlides()" class="absolute inset-0" />
+@if (layout() === 'minimal') {
+  <!-- Botiga (WordPress, GPL): hero partido texto/foto sobre gris suave -->
+  <section class="bg-stone-100">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20 grid sm:grid-cols-2 gap-8 sm:gap-12 items-center">
+      <div>
+        <app-logo [src]="logoSrc()" [alt]="storeName()" [size]="56" extraClass="ring-1 ring-stone-200 mb-5" />
+        <h1 [style.color]="headingColor()" class="font-display font-bold text-3xl sm:text-5xl text-stone-900 leading-tight mb-5">{{ storeName() }}</h1>
+        <p class="text-stone-600 mb-6 max-w-sm">
+          Elegí, agregá al carrito y coordinamos la compra por WhatsApp.
+        </p>
+        <button
+          type="button"
+          (click)="scrollToCatalog()"
+          class="bg-stone-900 hover:bg-stone-800 text-white font-bold text-sm uppercase tracking-wide py-3 px-7 transition-colors"
+        >
+          Ver catálogo
+        </button>
+      </div>
+      <img
+        src="https://images.unsplash.com/photo-1553859943-a02c5418b798?w=800&q=80&auto=format&fit=crop"
+        alt="Producto destacado"
+        class="w-full h-[280px] sm:h-[380px] object-cover"
+      />
+    </div>
   </section>
+
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 pt-14 sm:pt-16 text-center">
+    <h2 class="font-display font-bold text-2xl sm:text-3xl text-stone-900 mb-2">Colección destacada</h2>
+    <p class="text-stone-500 max-w-md mx-auto">Lo que más se está llevando esta temporada.</p>
+  </section>
+} @else if (layout() === 'boutique') {
+  <!-- Minna (Framer): fondo blanco, foto grande a sangre, etiqueta de promo superpuesta -->
+  <section class="bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-8">
+      <div class="relative">
+        <img
+          src="https://images.unsplash.com/photo-1758520387687-38a92a7ee42f?w=1400&q=80&auto=format&fit=crop"
+          alt="Nueva colección"
+          class="w-full h-[320px] sm:h-[440px] object-cover"
+        />
+        <div class="absolute left-4 sm:left-8 bottom-0 translate-y-1/2 bg-brand-400 px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-bold uppercase tracking-wide text-stone-900 shadow-sm">
+          Nueva colección · Envío gratis
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 pt-14 sm:pt-16 pb-2">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <app-logo [src]="logoSrc()" [alt]="storeName()" [size]="48" />
+        <h1 [style.color]="headingColor()" class="font-display font-bold text-2xl sm:text-3xl text-stone-900">{{ storeName() }}</h1>
+      </div>
+      <button type="button" (click)="scrollToCatalog()" class="text-sm font-semibold text-stone-500 hover:text-stone-900">
+        Ver catálogo →
+      </button>
+    </div>
+  </section>
+} @else if (layout() === 'curva') {
+  <!-- Rife Free (WordPress, GPL): foto oscurecida con el borde inferior curvo, texto + 2 botones encima -->
+  <section class="relative overflow-hidden">
+    <img
+      src="https://images.unsplash.com/photo-1629426958003-35a5583b2977?w=1400&q=80&auto=format&fit=crop"
+      alt="Nueva colección"
+      class="w-full h-[420px] sm:h-[520px] object-cover"
+      style="border-radius: 0 0 50% 50% / 0 0 70px 70px"
+    />
+    <div class="absolute inset-0 bg-black/40" style="border-radius: 0 0 50% 50% / 0 0 70px 70px"></div>
+    <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+      <app-logo [src]="logoSrc()" [alt]="storeName()" [size]="64" extraClass="ring-4 ring-white/80 shadow-lg mb-4" />
+      <h1 [style.color]="headingColor()" class="font-display font-extrabold text-3xl sm:text-5xl text-white max-w-2xl leading-tight">{{ storeName() }}</h1>
+      <p class="text-white/85 mt-4 max-w-md sm:text-lg">
+        Elegí, agregá al carrito y coordinamos la compra por WhatsApp.
+      </p>
+      <div class="flex flex-wrap justify-center gap-3 mt-6">
+        <button
+          type="button"
+          (click)="scrollToCatalog()"
+          class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 px-6 rounded-full transition-colors"
+        >
+          Ver catálogo
+        </button>
+        <a
+          routerLink="/como-comprar"
+          class="border-2 border-white text-white font-bold py-2 px-6 rounded-full hover:bg-white hover:text-stone-900 transition-colors"
+        >
+          Cómo comprar
+        </a>
+      </div>
+    </div>
+  </section>
+} @else if (layout() === 'grid') {
+  <!-- Shopper (WordPress, GPL): franja de foto chica + título, directo a la grilla, sin ceremonia -->
+  <section class="relative w-full h-56 sm:h-72 overflow-hidden bg-stone-200">
+    <img
+      src="https://images.unsplash.com/photo-1584865288642-42078afe6942?w=1400&q=80&auto=format&fit=crop"
+      alt="Catálogo"
+      class="w-full h-full object-cover"
+    />
+  </section>
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between border-b border-stone-100">
+    <div class="flex items-center gap-3">
+      <app-logo [src]="logoSrc()" [alt]="storeName()" [size]="40" />
+      <h1 [style.color]="headingColor()" class="font-display font-bold text-xl sm:text-2xl text-stone-900">{{ storeName() }}</h1>
+    </div>
+    <button type="button" (click)="scrollToCatalog()" class="text-sm font-semibold text-brand-600 hover:text-brand-700">
+      Ver catálogo ↓
+    </button>
+  </section>
+} @else if (layout() === 'mercado') {
+  <!-- Shopping Cart / Big Store / Online Shop (WordPress, GPL): sidebar de categorías + banner + tarjetas de promo -->
+  <section class="bg-white border-b border-stone-100">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+      <div class="lg:flex lg:gap-5 lg:items-stretch">
+        <aside class="hidden lg:flex lg:w-52 lg:shrink-0 flex-col gap-3 pr-2">
+          <h2 class="font-bold text-stone-800 text-sm uppercase tracking-wide mb-1">Categorías</h2>
+          @for (group of filterGroups(); track group.id) {
+            <div>
+              <p class="text-xs font-bold text-stone-700 mb-1">{{ group.name }}</p>
+              <div class="flex flex-col gap-0.5 mb-2">
+                @for (opt of group.options; track opt.id) {
+                  <button
+                    type="button"
+                    (click)="setParam(group.id, opt.id)"
+                    class="text-left text-xs py-0.5"
+                    [class.text-brand-600]="paramValue(group.id) === opt.id"
+                    [class.font-semibold]="paramValue(group.id) === opt.id"
+                    [class.text-stone-500]="paramValue(group.id) !== opt.id"
+                  >
+                    {{ opt.label }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </aside>
+
+        <div class="flex-1 relative rounded-lg overflow-hidden min-h-[220px]">
+          <img
+            src="https://images.unsplash.com/photo-1520026582657-4daf5bb60adb?w=1000&q=80&auto=format&fit=crop"
+            alt="Ofertas"
+            class="absolute inset-0 w-full h-full object-cover"
+          />
+          <div class="absolute inset-0 bg-black/30 flex flex-col justify-center px-6 sm:px-10">
+            <p class="text-white/80 text-xs uppercase tracking-widest font-bold mb-1">Envío gratis</p>
+            <div class="flex items-center gap-3">
+              <app-logo [src]="logoSrc()" [alt]="storeName()" [size]="48" extraClass="ring-2 ring-white/70" />
+              <h1 [style.color]="headingColor()" class="font-display font-extrabold text-2xl sm:text-4xl text-white">{{ storeName() }}</h1>
+            </div>
+          </div>
+        </div>
+
+        <div class="hidden lg:flex lg:w-48 lg:shrink-0 flex-col gap-3">
+          @for (opt of topOptions(); track opt.id; let i = $index) {
+            <button
+              type="button"
+              (click)="setParam(opt.groupId, opt.id)"
+              class="flex-1 rounded-lg px-4 py-3 text-left text-white text-sm font-bold transition-opacity hover:opacity-90"
+              [class.bg-brand-700]="i === 0"
+              [class.bg-brand-600]="i === 1"
+              [class.bg-brand-500]="i === 2"
+            >
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  @if (heroBlockVisible()) {
+    <section class="relative w-full aspect-[16/10] sm:aspect-[21/9] max-h-[320px] overflow-hidden">
+      <app-hero-carousel [slides]="heroSlides()" class="absolute inset-0" />
+    </section>
+  }
+} @else {
+  <!-- Logo + presentación, arriba del todo -->
+  <section class="bg-gradient-to-b from-brand-100 to-brand-50 dark:from-stone-900 dark:to-stone-950 border-b border-brand-100 dark:border-stone-700">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 flex flex-col items-center text-center">
+      <app-logo [src]="logoSrc()" [alt]="storeName()" [size]="140" extraClass="ring-4 ring-white dark:ring-stone-800 shadow-xl" />
+      <h1 [style.color]="headingColor()" class="font-display font-extrabold text-3xl sm:text-5xl text-brand-700 dark:text-brand-400 mt-4">{{ storeName() }}</h1>
+      <p class="text-stone-600 dark:text-stone-300 max-w-md mt-2 sm:text-lg">
+        Elegí, agregá al carrito y coordinamos la compra por WhatsApp.
+      </p>
+      <button
+        type="button"
+        (click)="scrollToCatalog()"
+        class="mt-5 bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 px-7 rounded-full transition-colors shadow-lg"
+      >
+        Ver catálogo 👇
+      </button>
+    </div>
+  </section>
+
+  @if (heroBlockVisible()) {
+    <!-- Carrusel de fotos, bien visible debajo. Proporción apaisada fija (las fotos
+         se suben ya recortadas a 21:9 desde /admin/carrusel). -->
+    <section class="relative w-full aspect-[16/10] sm:aspect-[21/9] max-h-[440px] overflow-hidden bg-brand-100">
+      <app-hero-carousel [slides]="heroSlides()" class="absolute inset-0" />
+    </section>
+  }
 }
 
 @if (featuredBlockVisible() && bestSellers().length && !hasActiveFilters()) {
@@ -34,7 +207,7 @@
     <div class="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
       @for (product of bestSellers(); track product.id) {
         <div class="w-40 sm:w-48 shrink-0">
-          <app-product-card [product]="product" />
+          <app-product-card [product]="product" [variant]="cardVariant()" />
         </div>
       }
     </div>
@@ -157,9 +330,9 @@
       </button>
     </div>
   } @else if (filteredProducts().length) {
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+    <div [class]="gridColsClass">
       @for (product of visibleProducts(); track product.id) {
-        <app-product-card [product]="product" />
+        <app-product-card [product]="product" [variant]="cardVariant()" />
       }
     </div>
     @if (hasMore()) {

@@ -4,6 +4,7 @@ import { Observable, catchError, map, of } from 'rxjs';
 import { apiUrl } from '../config/site-config';
 import { LoadStatus } from '../state/collection-store';
 import { PaymentMethod } from '../models/order.model';
+import { generateBrandRamp } from '../utils/color-ramp';
 
 /**
  * Config de SMTP (recuperación de cuenta por mail). `password` nunca viaja del
@@ -27,12 +28,41 @@ export interface SiteSettings {
   /** Logo del negocio (URL o data URI). null = usar `LOGO_FALLBACK`. */
   logoUrl: string | null;
   /**
+   * Forma en la que se recorta el logo dondequiera que se muestre (header,
+   * pie de página, portada de Clásico) — `'circle'` | `'square'` | `'rectangle'`.
+   */
+  logoShape: string;
+  /**
    * Theme visual del sitio (ver backend PLAN_SAAS.md Fase 6). Hoy sólo
    * existe `"default"` — se aplica como atributo `data-theme` en `<html>`,
    * es la base para poder ofrecer más de una apariencia sin redeploy el
    * día que haya una segunda.
    */
   theme: string;
+  /**
+   * Diseño de página elegido (ver backend PLAN_SAAS.md Fase 10) — eje
+   * independiente de `theme`: mientras `theme` sólo cambia colores/tipografía,
+   * este campo elige entre layouts realmente distintos (estructura de
+   * home/catálogo). Se aplica como atributo `data-layout` en `<html>`. Hoy
+   * sólo existe `"classic"`.
+   */
+  layout: string;
+  /**
+   * Color de marca elegido libremente (hex). Cuando no es null, se deriva la
+   * rampa `--color-brand-50..700` (`generateBrandRamp`) y se aplica inline
+   * sobre `<html>`, por encima del `[data-theme]` con nombre de `theme`. null
+   * = seguir usando la paleta con nombre de siempre.
+   */
+  brandColor: string | null;
+  /**
+   * Colores independientes de `brandColor` (ver PLAN_SAAS.md Fase 10
+   * ampliada) — cada uno pisa sólo su propia zona; null = seguir derivando
+   * ese color de la rampa de `brandColor`/del layout, como siempre.
+   */
+  headerColor: string | null;
+  footerColor: string | null;
+  textColor: string | null;
+  pageBackgroundColor: string | null;
   /** Saludo del mensaje de pedido de WhatsApp. null = `WHATSAPP_INTRO_DEFAULT`. */
   whatsappIntro: string | null;
   /** Cierre del mensaje de pedido de WhatsApp. null = `WHATSAPP_CLOSING_DEFAULT`. */
@@ -81,7 +111,14 @@ const DEFAULTS: SiteSettings = {
   instagram: 'estilospequenos_',
   facebookUrl: 'https://www.facebook.com/share/1NZXdYgick/',
   logoUrl: null,
+  logoShape: 'circle',
   theme: 'default',
+  layout: 'classic',
+  brandColor: null,
+  headerColor: null,
+  footerColor: null,
+  textColor: null,
+  pageBackgroundColor: null,
   whatsappIntro: WHATSAPP_INTRO_DEFAULT,
   whatsappClosing: WHATSAPP_CLOSING_DEFAULT,
   storeAddress: null,
@@ -146,6 +183,8 @@ export class SettingsService {
 
   constructor() {
     this.applyTheme(DEFAULTS.theme);
+    this.applyLayout(DEFAULTS.layout);
+    this.applyBrandColor(DEFAULTS.brandColor);
     this.load();
   }
 
@@ -162,6 +201,8 @@ export class SettingsService {
         this.statusSignal.set('loaded');
         this.applyFavicon(s.logoUrl || LOGO_FALLBACK);
         this.applyTheme(s.theme);
+        this.applyLayout(s.layout);
+        this.applyBrandColor(s.brandColor);
       },
       error: () => this.statusSignal.set('error'),
     });
@@ -182,6 +223,32 @@ export class SettingsService {
   }
 
   /**
+   * Setea `data-layout` en `<html>` — eje independiente de `data-theme` (ver
+   * PLAN_SAAS.md Fase 10). Hoy sólo existe el layout `"classic"`, que es el
+   * único que renderiza la app; es la base para cuando exista un segundo.
+   */
+  private applyLayout(layout: string): void {
+    document.documentElement.setAttribute('data-layout', layout || 'classic');
+  }
+
+  /**
+   * Deriva la rampa `--color-brand-*` del color elegido y la aplica inline
+   * sobre `<html>`, por encima de lo que haya puesto `[data-theme="x"]` en
+   * `styles.css` (mismo mecanismo de override en runtime verificado en Fase
+   * 6). Sin `brandColor`, saca cualquier override previo para volver a la
+   * paleta con nombre de siempre.
+   */
+  private applyBrandColor(brandColor: string | null): void {
+    const root = document.documentElement;
+    const ramp = brandColor ? generateBrandRamp(brandColor) : null;
+    for (const stop of ['50', '100', '200', '300', '400', '500', '600', '700'] as const) {
+      const prop = `--color-brand-${stop}`;
+      if (ramp) root.style.setProperty(prop, ramp[stop]);
+      else root.style.removeProperty(prop);
+    }
+  }
+
+  /**
    * Identidad, logo, WhatsApp, redes, textos. Sólo superadmin
    * (`PLATFORM_SETTINGS_MANAGE`). Acepta un objeto parcial: se mezcla con los
    * settings actuales antes de mandar sólo los campos de plataforma al backend.
@@ -189,12 +256,35 @@ export class SettingsService {
   updatePlatform(req: Partial<SiteSettings>): Observable<boolean> {
     const full: SiteSettings = { ...this.settingsSignal(), ...req };
     const {
-      storeName, whatsappNumber, aboutText, instagram, facebookUrl, logoUrl,
+      storeName, whatsappNumber, aboutText, instagram, facebookUrl, logoUrl, logoShape,
       whatsappIntro, whatsappClosing, storeAddress, helpText, faqText,
     } = full;
     return this.putMerged('/admin/settings/platform', {
-      storeName, whatsappNumber, aboutText, instagram, facebookUrl, logoUrl,
+      storeName, whatsappNumber, aboutText, instagram, facebookUrl, logoUrl, logoShape,
       whatsappIntro, whatsappClosing, storeAddress, helpText, faqText,
+    });
+  }
+
+  /**
+   * Diseño de página + colores (ver backend PLAN_SAAS.md Fase 10 ampliada).
+   * `null` en cualquiera = volver al valor por defecto (los 4 colores
+   * granulares, cuando son null, se derivan de `brandColor`/del layout).
+   */
+  updateAppearance(
+    layout: string | null,
+    brandColor: string | null,
+    headerColor: string | null = null,
+    footerColor: string | null = null,
+    textColor: string | null = null,
+    pageBackgroundColor: string | null = null
+  ): Observable<boolean> {
+    return this.putMerged('/admin/settings/appearance', {
+      layout: layout ?? '',
+      brandColor: brandColor ?? '',
+      headerColor: headerColor ?? '',
+      footerColor: footerColor ?? '',
+      textColor: textColor ?? '',
+      pageBackgroundColor: pageBackgroundColor ?? '',
     });
   }
 
@@ -222,6 +312,8 @@ export class SettingsService {
           this.statusSignal.set('loaded');
           this.applyFavicon(s.logoUrl || LOGO_FALLBACK);
           this.applyTheme(s.theme);
+          this.applyLayout(s.layout);
+          this.applyBrandColor(s.brandColor);
           this.saving.set(false);
           sub.next(true);
           sub.complete();

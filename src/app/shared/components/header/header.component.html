@@ -1,8 +1,14 @@
-<header class="sticky top-0 z-30 bg-white/90 dark:bg-stone-900/90 backdrop-blur border-b border-brand-100 dark:border-stone-700 shadow-sm">
+<header
+  [style.background-color]="headerBg()"
+  class="sticky top-0 z-30 bg-white/90 dark:bg-stone-900/90 backdrop-blur border-b border-brand-100 dark:border-stone-700 shadow-sm"
+>
   <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
     <a routerLink="/" class="flex items-center gap-2 shrink-0">
-      <img [src]="logoSrc() | cldImg: 96" [alt]="storeName()" class="h-11 w-11 rounded-full object-cover ring-1 ring-brand-100" />
-      <span class="font-display font-extrabold text-xl sm:text-2xl text-brand-600 dark:text-brand-400 tracking-tight">
+      <app-logo [src]="logoSrc()" [alt]="storeName()" [size]="44" />
+      <span
+        [style.color]="titleColor()"
+        class="font-display font-extrabold text-xl sm:text-2xl text-brand-600 dark:text-brand-400 tracking-tight"
+      >
         {{ storeName() }}
       </span>
     </a>

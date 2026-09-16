@@ -15,6 +15,38 @@ export class ProductCardComponent {
   private readonly paramService = inject(ParamService);
 
   readonly product = input.required<Product>();
+  /**
+   * Variante visual según el layout de la página (ver PLAN_SAAS.md Fase
+   * 10) — la tarjeta es el elemento que más se repite en la grilla, así
+   * que es donde más se nota la diferencia entre diseños.
+   */
+  readonly variant = input<'classic' | 'editorial' | 'marketplace'>('classic');
+
+  get cardClasses(): string {
+    switch (this.variant()) {
+      case 'editorial':
+        return 'ring-1 ring-stone-200 hover:ring-stone-400 transition-colors';
+      case 'marketplace':
+        return 'rounded-lg shadow-sm hover:shadow-md ring-1 ring-black/5 bg-brand-50 transition-shadow';
+      default:
+        return 'rounded-2xl shadow-sm hover:shadow-lg ring-1 ring-black/5 transition-shadow';
+    }
+  }
+
+  get imageAspectClass(): string {
+    return this.variant() === 'editorial' ? 'aspect-[3/4]' : this.variant() === 'marketplace' ? 'aspect-square' : 'aspect-[4/5]';
+  }
+
+  get nameClasses(): string {
+    switch (this.variant()) {
+      case 'editorial':
+        return 'font-display font-medium text-stone-900 tracking-wide line-clamp-1';
+      case 'marketplace':
+        return 'font-bold text-stone-800 uppercase text-sm tracking-tight line-clamp-1';
+      default:
+        return 'font-semibold text-stone-800 line-clamp-2';
+    }
+  }
 
   /** Etiqueta del "Público" del producto (Bebé / Nena / ...) para el badge */
   get categoryLabel(): string {

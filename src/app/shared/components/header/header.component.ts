@@ -3,13 +3,13 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 import { CartService } from '../../../core/services/cart.service';
-import { CldImagePipe } from '../../pipes/cld-image.pipe';
 import { SettingsService } from '../../../core/services/settings.service';
 import { ThemeModeService } from '../../../core/services/theme-mode.service';
+import { LogoComponent } from '../logo/logo.component';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, CldImagePipe],
+  imports: [RouterLink, LogoComponent],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
 })
@@ -22,6 +22,9 @@ export class HeaderComponent {
   readonly totalItems = this.cartService.totalItems;
   readonly storeName = computed(() => this.settingsService.settings().storeName);
   readonly logoSrc = this.settingsService.logoSrc;
+  /** null = queda el fondo/texto por defecto (clases de siempre, con su variante oscura). */
+  readonly headerBg = computed(() => this.settingsService.settings().headerColor || null);
+  readonly titleColor = computed(() => this.settingsService.settings().textColor || null);
 
   private readonly currentPath = toSignal(
     this.router.events.pipe(

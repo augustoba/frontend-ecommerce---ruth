@@ -31,6 +31,14 @@ export class SitePreviewComponent {
 
   readonly storeName = computed(() => this.settings().storeName?.trim() || 'Nombre de la tienda');
   readonly logoSrc = computed(() => this.settings().logoUrl || LOGO_FALLBACK);
+  readonly logoShapeClass = computed(() => {
+    const shape = this.settings().logoShape;
+    return shape === 'square'
+      ? 'rounded-lg object-cover'
+      : shape === 'rectangle'
+        ? 'rounded-md object-contain'
+        : 'rounded-full object-cover';
+  });
   readonly aboutText = computed(
     () => this.settings().aboutText?.trim() || 'Todavía no cargaste el texto de "sobre nosotros".'
   );

@@ -1,11 +1,11 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SettingsService } from '../../../core/services/settings.service';
-import { CldImagePipe } from '../../pipes/cld-image.pipe';
+import { LogoComponent } from '../logo/logo.component';
 
 @Component({
   selector: 'app-footer',
-  imports: [RouterLink, CldImagePipe],
+  imports: [RouterLink, LogoComponent],
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.css',
 })
@@ -14,6 +14,8 @@ export class FooterComponent {
 
   readonly settings = this.settingsService.settings;
   readonly logoSrc = this.settingsService.logoSrc;
+  readonly footerBg = computed(() => this.settingsService.settings().footerColor || null);
+  readonly titleColor = computed(() => this.settingsService.settings().textColor || null);
   readonly currentYear = new Date().getFullYear();
   readonly whatsappContactUrl = this.settingsService.whatsappUrl;
   readonly instagramUrl = this.settingsService.instagramUrl;

@@ -76,6 +76,12 @@ export class AdminConfigSectionComponent {
 
   readonly canUpload = this.cloudinary.configured;
 
+  readonly logoShapeOptions: { value: string; label: string }[] = [
+    { value: 'circle', label: 'Redondo' },
+    { value: 'square', label: 'Cuadrado' },
+    { value: 'rectangle', label: 'Rectangular' },
+  ];
+
   readonly section = (this.route.snapshot.data['section'] as Section) ?? 'identity';
   readonly meta = META[this.section];
   readonly previewFocus = this.meta.focus;
@@ -94,6 +100,16 @@ export class AdminConfigSectionComponent {
   readonly dirty = computed(
     () => JSON.stringify(this.draft()) !== JSON.stringify(this.settingsService.settings())
   );
+
+  /** Clases del preview del logo en este formulario, según la forma elegida en el borrador. */
+  readonly logoPreviewClass = computed(() => {
+    const shape = this.draft().logoShape;
+    return shape === 'square'
+      ? 'rounded-lg object-cover'
+      : shape === 'rectangle'
+        ? 'rounded-md object-contain'
+        : 'rounded-full object-cover';
+  });
 
   constructor() {
     this.settingsService.ensureLoaded();
@@ -190,6 +206,7 @@ export class AdminConfigSectionComponent {
             instagram: d.instagram?.trim().replace(/^@/, '') || null,
             facebookUrl: d.facebookUrl?.trim() || null,
             logoUrl: d.logoUrl || null,
+            logoShape: d.logoShape || 'circle',
             whatsappIntro: d.whatsappIntro?.trim() || null,
             whatsappClosing: d.whatsappClosing?.trim() || null,
             storeAddress: d.storeAddress?.trim() || null,
