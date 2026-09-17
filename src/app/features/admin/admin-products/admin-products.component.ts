@@ -49,6 +49,10 @@ export class AdminProductsComponent {
   /** id del producto que se está duplicando (para deshabilitar el botón). */
   readonly duplicatingId = signal<string | null>(null);
 
+  /** Código escaneado en "Cargar por código de barras" — ver `scanBarcode()`. */
+  readonly scanCode = signal('');
+  readonly scanning = signal(false);
+
   readonly products = this.productService.products;
   readonly status = this.productService.adminStatus;
   readonly saving = this.productService.saving;
@@ -173,6 +177,31 @@ export class AdminProductsComponent {
       error: () => {
         this.duplicatingId.set(null);
         this.toast.error('No se pudo duplicar el producto.');
+      },
+    });
+  }
+
+  /**
+   * "Cargar por código de barras": el admin escanea un producto con la
+   * pistola (mismo hardware que ya usa el kiosco para vender — emula
+   * teclado + Enter). Si ya existe un producto con ese código, lo manda
+   * a editar; si no, abre "Nuevo producto" con el código pre-cargado
+   * para que sólo falte nombre/precio/stock.
+   */
+  scanBarcode(): void {
+    const code = this.scanCode().trim();
+    if (!code || this.scanning()) return;
+    this.scanning.set(true);
+    this.productService.fetchByBarcode(code).subscribe({
+      next: (product) => {
+        this.scanning.set(false);
+        this.scanCode.set('');
+        this.router.navigate(['/admin/productos', product.id, 'editar']);
+      },
+      error: () => {
+        this.scanning.set(false);
+        this.scanCode.set('');
+        this.router.navigate(['/admin/productos/nuevo'], { queryParams: { barcode: code } });
       },
     });
   }

@@ -6,6 +6,14 @@
       ⬇️ CSV
     </button>
     @if (canManage()) {
+      <input
+        type="text"
+        [ngModel]="scanCode()" (ngModelChange)="scanCode.set($event)"
+        (keydown.enter)="scanBarcode()"
+        [disabled]="scanning()"
+        placeholder="📷 Escanear código de barras…"
+        title="Escaneá un producto: si ya existe se abre para editar, si no se abre 'Nuevo producto' con el código cargado"
+        class="w-56 rounded-full border border-stone-200 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 disabled:opacity-50" />
       <a
         routerLink="/admin/productos/nuevo"
         class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-2 px-5 rounded-full transition-colors text-sm"

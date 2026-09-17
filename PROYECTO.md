@@ -1361,6 +1361,27 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       backend (dos planes reales, "Ecommerce" y "Punto de venta", cada
       uno mostrando sólo sus módulos compatibles). **No se pudo
       verificar en el navegador** (mismo motivo que el ítem anterior).
+60. **Cargar producto por código de barras desde el panel (2026-09-17,
+    backend Fase 18):** el usuario aclaró que lo que pedía no era el
+    escaneo de venta (ya existía) sino que el ADMIN de la tienda pueda
+    escanear un producto para darlo de alta: si el código ya existe, va
+    directo a editarlo; si no existe, abre "Nuevo producto" con el
+    código precargado.
+    - `admin-products.component.ts/html`: input "📷 Escanear código de
+      barras…" junto a "Nuevo producto" — `scanBarcode()` llama a
+      `ProductService.fetchByBarcode()` (nuevo, `GET
+      /admin/products/by-barcode?code=`) y navega a editar (200) o a
+      `/admin/productos/nuevo?barcode=XXX` (404).
+    - `admin-product-form.component.ts`: lee el query param `barcode`
+      sólo en modo creación (nunca en edición) y precarga el control del
+      form.
+    - Verificado contra la API real (backend reiniciado): un código
+      generado para un producto de prueba resolvió al producto correcto,
+      un código inexistente dio 404 con mensaje legible; datos de prueba
+      revertidos. `ng build` sin errores (HMR recompiló ambos
+      componentes en caliente). **No se pudo verificar en el navegador**
+      (extensión de Claude in Chrome desconectada, mismo motivo que los
+      ítems anteriores).
 
 ## 12. Backend (`../backend/`) — resumen
 

@@ -55,6 +55,15 @@ export class AdminProductFormComponent {
 
   readonly notFound = this.isEditMode && !this.editingProduct;
 
+  /**
+   * Código de barras escaneado desde "Productos" al no encontrar coincidencia
+   * (`admin-products.scanBarcode()`) — sólo aplica al crear, nunca pisa el
+   * de un producto existente.
+   */
+  private readonly scannedBarcode = this.isEditMode
+    ? null
+    : this.route.snapshot.queryParamMap.get('barcode');
+
   /** Talles habilitados para este producto, cada uno con su stock (0 = sin stock por ahora) */
   readonly sizeStocks = signal<Map<ProductSize, number>>(
     new Map((this.editingProduct?.sizeStocks ?? []).map((s) => [s.size, s.stock]))
@@ -94,7 +103,7 @@ export class AdminProductFormComponent {
     sizeScaleId: [this.editingProduct?.sizeScaleId ?? ''],
     supplierId: [this.editingProduct?.supplierId ?? ''],
     costPrice: [this.editingProduct?.costPrice ?? 0, [Validators.min(0)]],
-    barcode: [this.editingProduct?.barcode ?? ''],
+    barcode: [this.editingProduct?.barcode ?? this.scannedBarcode ?? ''],
     ivaRate: [this.editingProduct?.ivaRate ?? 21, [Validators.min(0)]],
   });
 

@@ -122,6 +122,15 @@ export class ProductService {
     return this.http.get<Product[]>(apiUrl('/admin/products/archived'));
   }
 
+  /**
+   * Busca un producto por código de barras exacto (para "cargar por código
+   * de barras" desde el listado). 404 si no existe ninguno — el caller lo
+   * maneja con el `error` del subscribe.
+   */
+  fetchByBarcode(code: string): Observable<Product> {
+    return this.http.get<Product>(apiUrl('/admin/products/by-barcode'), { params: { code } });
+  }
+
   /** Restaura un producto archivado (queda oculto: hay que republicarlo a mano). */
   restore(id: string, onSuccess?: () => void): void {
     this.mutate(this.http.post(apiUrl(`/admin/products/${id}/restore`), {}), onSuccess);
