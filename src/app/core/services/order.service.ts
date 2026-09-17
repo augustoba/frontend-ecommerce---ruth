@@ -119,6 +119,12 @@ export class OrderService {
     items: { productId: string; size: string; quantity: number }[];
     paymentMethod: PaymentMethod | null;
     couponCode?: string | null;
+    /** Sólo con `paymentMethod === 'CASH'` — con cuánto pagó el cliente, para el vuelto. */
+    amountTendered?: number | null;
+    /** Nombre de quien transfirió, o número de ticket del posnet, según el medio. */
+    paymentReference?: string | null;
+    /** CUIT del comprador (opcional) — sólo tiene efecto en tiendas Responsable Inscripto: habilita Factura A en vez de B. */
+    buyerCuit?: string | null;
   }): Observable<Order> {
     return this.http
       .post<Order>(apiUrl('/admin/orders/pos'), {
@@ -128,7 +134,17 @@ export class OrderService {
         deliveryMethod: 'PICKUP',
         paymentMethod: body.paymentMethod,
         couponCode: body.couponCode ?? null,
+        amountTendered: body.amountTendered ?? null,
+        paymentReference: body.paymentReference?.trim() || null,
+        buyerCuit: body.buyerCuit?.trim() || null,
       })
+      .pipe(tap(() => this.afterMutation()));
+  }
+
+  /** Reintenta emitir la Factura de ARCA de una venta presencial que quedó como ticket interno. */
+  retryInvoice(orderId: string): Observable<Order> {
+    return this.http
+      .post<Order>(apiUrl(`/admin/orders/${orderId}/retry-invoice`), {})
       .pipe(tap(() => this.afterMutation()));
   }
 

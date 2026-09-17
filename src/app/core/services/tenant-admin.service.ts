@@ -41,6 +41,12 @@ export interface TenantCreateRequest {
   logoUrl?: string;
   /** Forma del logo (`circle` | `square` | `rectangle`, ver PLAN_SAAS.md Fase 10). */
   logoShape?: string;
+  /**
+   * Plan comercial a asignar (Fase 14) — define qué módulos tiene la tienda
+   * (sitio web, punto de venta, o ambos). Vacío/omitido = el plan por
+   * defecto.
+   */
+  planId?: string;
 }
 
 /**

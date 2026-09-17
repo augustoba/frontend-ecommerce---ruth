@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SettingsService } from '../../../core/services/settings.service';
 import { Order, PAYMENT_LABELS } from '../../../core/models/order.model';
@@ -12,7 +12,7 @@ import { CldImagePipe } from '../../../shared/pipes/cld-image.pipe';
  */
 @Component({
   selector: 'app-admin-receipt',
-  imports: [CurrencyPipe, DatePipe, RouterLink, CldImagePipe],
+  imports: [CurrencyPipe, DatePipe, DecimalPipe, RouterLink, CldImagePipe],
   templateUrl: './admin-receipt.component.html',
   styleUrl: './admin-receipt.component.css',
 })
@@ -28,6 +28,12 @@ export class AdminReceiptComponent {
 
   lineTotal(unitPrice: number, quantity: number): number {
     return unitPrice * quantity;
+  }
+
+  /** "20250916" (tal cual lo manda ARCA) → "16/09/2025". */
+  formatCaeDate(yyyymmdd: string | null | undefined): string {
+    if (!yyyymmdd || yyyymmdd.length !== 8) return yyyymmdd ?? '';
+    return `${yyyymmdd.slice(6, 8)}/${yyyymmdd.slice(4, 6)}/${yyyymmdd.slice(0, 4)}`;
   }
 
   print(): void {

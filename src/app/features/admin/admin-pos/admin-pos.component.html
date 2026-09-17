@@ -8,7 +8,8 @@
   <div>
     <div class="flex gap-2">
       <input type="search" [ngModel]="search()" (ngModelChange)="search.set($event)"
-        placeholder="Buscar producto por nombre…"
+        (keydown.enter)="onSearchEnter()"
+        placeholder="Buscar por nombre, o escanear código de barras…"
         class="flex-1 rounded-full border border-stone-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400" />
       <button type="button" (click)="scannerOpen.set(true)"
         class="shrink-0 bg-stone-800 hover:bg-stone-900 text-white font-semibold px-4 rounded-full text-sm">
@@ -104,6 +105,14 @@
       placeholder="Para avisarle de descuentos"
       class="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm mb-4" />
 
+    @if (showBuyerCuitField()) {
+      <label class="block text-xs font-semibold text-stone-500 mb-1" for="pos-buyer-cuit">CUIT del cliente (opcional, para Factura A)</label>
+      <input id="pos-buyer-cuit" type="text" inputmode="numeric"
+        [ngModel]="buyerCuit()" (ngModelChange)="buyerCuit.set($event)"
+        placeholder="Sin CUIT sale Factura B a consumidor final"
+        class="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm mb-4 font-mono" />
+    }
+
     <label class="block text-xs font-semibold text-stone-500 mb-1">Forma de pago</label>
     <div class="grid grid-cols-2 gap-2 mb-4">
       @for (m of paymentMethods; track m) {
@@ -116,6 +125,45 @@
         </button>
       }
     </div>
+
+    @if (paymentMethod() === 'CASH') {
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-stone-500 mb-1" for="tendered">
+          Con cuánto paga (opcional)
+        </label>
+        <input id="tendered" type="number" min="0" inputmode="decimal"
+          [ngModel]="amountTendered()" (ngModelChange)="amountTendered.set($event)"
+          placeholder="Dejalo vacío si paga justo"
+          class="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm" />
+        @if (change(); as c) {
+          @if (c >= 0) {
+            <p class="text-sm font-bold text-mint-600 mt-1.5">Vuelto: {{ c | currency: 'ARS' : 'symbol' : '1.0-0' }}</p>
+          } @else {
+            <p class="text-sm font-bold text-red-500 mt-1.5">Falta {{ -c | currency: 'ARS' : 'symbol' : '1.0-0' }}</p>
+          }
+        }
+      </div>
+    } @else if (paymentMethod() === 'TRANSFER') {
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-stone-500 mb-1" for="sender">
+          Nombre y apellido de quien transfirió
+        </label>
+        <input id="sender" type="text"
+          [ngModel]="transferSenderName()" (ngModelChange)="transferSenderName.set($event)"
+          placeholder="Para cruzarlo con el resumen bancario"
+          class="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm" />
+      </div>
+    } @else if (paymentMethod() === 'POSNET') {
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-stone-500 mb-1" for="ticket">
+          Número de ticket del posnet
+        </label>
+        <input id="ticket" type="text"
+          [ngModel]="posnetTicketNumber()" (ngModelChange)="posnetTicketNumber.set($event)"
+          placeholder="El que imprime al aprobar"
+          class="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm" />
+      </div>
+    }
 
     @if (coupon(); as c) {
       <div class="flex items-center justify-between text-sm mb-3">

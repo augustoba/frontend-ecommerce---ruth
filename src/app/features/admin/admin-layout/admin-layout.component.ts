@@ -20,6 +20,13 @@ interface NavItem {
   permission?: Permission;
   /** true = sólo lo ve el superadmin, sin importar sus permisos normales. */
   superAdminOnly?: boolean;
+  /**
+   * Módulo del plan que tiene que estar habilitado para ver el item (Fase
+   * 14) — `'pos'` = sólo si el tenant tiene el punto de venta, `'ecommerce'`
+   * = sólo si tiene sitio público (todo lo que configura o depende de la
+   * vidriera online: carrito, checkout, footer, páginas públicas...).
+   */
+  moduleFlag?: 'pos' | 'ecommerce';
 }
 
 interface NavGroup {
@@ -36,13 +43,14 @@ const GROUPS: NavGroup[] = [
     icon: '🧾',
     items: [
       { path: '/admin/pedidos', label: 'Pedidos', badge: 'pending', permission: 'ORDERS_VIEW' },
-      { path: '/admin/ventas/nueva', label: 'Venta en el local', permission: 'POS_USE' },
+      { path: '/admin/ventas/nueva', label: 'Venta en el local', permission: 'POS_USE', moduleFlag: 'ecommerce' },
+      { path: '/admin/kiosco', label: 'Punto de venta (kiosco)', permission: 'POS_USE', moduleFlag: 'pos' },
       { path: '/admin/cambios', label: 'Cambios', permission: 'EXCHANGES_USE' },
       { path: '/admin/caja', label: 'Caja', permission: 'CASH_REGISTER_VIEW' },
       { path: '/admin/turnos', label: 'Turnos', permission: 'SHIFTS_MANAGE' },
       { path: '/admin/promociones', label: 'Descuentos', permission: 'DISCOUNTS_MANAGE' },
-      { path: '/admin/cupones', label: 'Cupones', permission: 'COUPONS_MANAGE' },
-      { path: '/admin/campanias', label: 'Campañas', permission: 'MARKETING_MANAGE' },
+      { path: '/admin/cupones', label: 'Cupones', permission: 'COUPONS_MANAGE', moduleFlag: 'ecommerce' },
+      { path: '/admin/campanias', label: 'Campañas', permission: 'MARKETING_MANAGE', moduleFlag: 'ecommerce' },
       { path: '/admin/metricas', label: 'Métricas', permission: 'METRICS_VIEW' },
     ],
   },
@@ -62,17 +70,18 @@ const GROUPS: NavGroup[] = [
     label: 'Configuración del sitio',
     icon: '🎨',
     items: [
-      { path: '/admin/config', label: 'Vista general', exact: true, permission: 'PLATFORM_SETTINGS_MANAGE' },
+      { path: '/admin/config', label: 'Vista general', exact: true, permission: 'PLATFORM_SETTINGS_MANAGE', moduleFlag: 'ecommerce' },
       { path: '/admin/config/identidad', label: 'Identidad y contacto', permission: 'PLATFORM_SETTINGS_MANAGE' },
-      { path: '/admin/config/whatsapp', label: 'Mensaje de WhatsApp', permission: 'PLATFORM_SETTINGS_MANAGE' },
-      { path: '/admin/config/pagos', label: 'Medios de pago', permission: 'PAYMENTS_MANAGE' },
-      { path: '/admin/config/mercadopago', label: 'Mercado Pago', permission: 'PAYMENTS_MANAGE' },
-      { path: '/admin/config/redes', label: 'Redes sociales', permission: 'PLATFORM_SETTINGS_MANAGE' },
-      { path: '/admin/config/nosotros', label: 'Sobre nosotros', permission: 'PLATFORM_SETTINGS_MANAGE' },
-      { path: '/admin/config/ayuda', label: 'Cómo comprar + FAQ', permission: 'PLATFORM_SETTINGS_MANAGE' },
+      { path: '/admin/config/whatsapp', label: 'Mensaje de WhatsApp', permission: 'PLATFORM_SETTINGS_MANAGE', moduleFlag: 'ecommerce' },
+      { path: '/admin/config/pagos', label: 'Medios de pago', permission: 'PAYMENTS_MANAGE', moduleFlag: 'ecommerce' },
+      { path: '/admin/config/mercadopago', label: 'Mercado Pago', permission: 'PAYMENTS_MANAGE', moduleFlag: 'ecommerce' },
+      { path: '/admin/config/arca', label: 'Facturación (ARCA)', permission: 'PAYMENTS_MANAGE', moduleFlag: 'pos' },
+      { path: '/admin/config/redes', label: 'Redes sociales', permission: 'PLATFORM_SETTINGS_MANAGE', moduleFlag: 'ecommerce' },
+      { path: '/admin/config/nosotros', label: 'Sobre nosotros', permission: 'PLATFORM_SETTINGS_MANAGE', moduleFlag: 'ecommerce' },
+      { path: '/admin/config/ayuda', label: 'Cómo comprar + FAQ', permission: 'PLATFORM_SETTINGS_MANAGE', moduleFlag: 'ecommerce' },
       { path: '/admin/config/servicios', label: 'Servicio de mail', permission: 'PLATFORM_SETTINGS_MANAGE' },
-      { path: '/admin/carrusel', label: 'Carrusel', permission: 'CAROUSEL_MANAGE' },
-      { path: '/admin/inicio', label: 'Página de inicio', permission: 'CAROUSEL_MANAGE' },
+      { path: '/admin/carrusel', label: 'Carrusel', permission: 'CAROUSEL_MANAGE', moduleFlag: 'ecommerce' },
+      { path: '/admin/inicio', label: 'Página de inicio', permission: 'CAROUSEL_MANAGE', moduleFlag: 'ecommerce' },
       { path: '/admin/usuarios', label: 'Usuarios y roles', permission: 'USERS_MANAGE' },
     ],
   },
@@ -82,6 +91,7 @@ const GROUPS: NavGroup[] = [
     icon: '🔒',
     items: [
       { path: '/admin/superadmin/tiendas', label: 'Tiendas', superAdminOnly: true },
+      { path: '/admin/superadmin/planes', label: 'Planes', superAdminOnly: true },
       { path: '/admin/superadmin/cloudinary', label: 'Cloudinary', superAdminOnly: true },
       { path: '/admin/superadmin/mail', label: 'Mail (SMTP)', superAdminOnly: true },
     ],
@@ -109,7 +119,11 @@ export class AdminLayoutComponent {
     this.authService.me();
     this.authService.permissionsUnavailable();
     const has = (p?: Permission) => !p || this.authService.has(p);
-    const visible = (it: NavItem) => has(it.permission) && (!it.superAdminOnly || this.authService.isSuperAdmin());
+    const settings = this.settingsService.settings();
+    const hasModule = (m?: NavItem['moduleFlag']) =>
+      !m || (m === 'pos' ? settings.posEnabled : settings.ecommerceSiteEnabled);
+    const visible = (it: NavItem) =>
+      has(it.permission) && (!it.superAdminOnly || this.authService.isSuperAdmin()) && hasModule(it.moduleFlag);
     return GROUPS.map((g) => ({ ...g, items: g.items.filter(visible) })).filter((g) => g.items.length > 0);
   });
   readonly storeName = computed(() => this.settingsService.settings().storeName);

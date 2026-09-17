@@ -7,6 +7,7 @@ import { OrderService } from '../../../core/services/order.service';
 import { DiscountService } from '../../../core/services/discount.service';
 import { CouponService } from '../../../core/services/coupon.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { SettingsService } from '../../../core/services/settings.service';
 import { Product, stockForSize } from '../../../core/models/product.model';
 import { PaymentMethod, PAYMENT_LABELS } from '../../../core/models/order.model';
 import { CouponCheck } from '../../../core/models/coupon.model';
@@ -35,6 +36,16 @@ export class AdminPosComponent {
   private readonly couponService = inject(CouponService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly settingsService = inject(SettingsService);
+
+  /** Sólo un tenant Responsable Inscripto ante ARCA puede emitir Factura A (con CUIT) — el resto siempre Factura C, sin CUIT. */
+  readonly showBuyerCuitField = computed(
+    () =>
+      this.settingsService.settings().arcaAvailable &&
+      this.settingsService.settings().invoiceMode === 'FACTURA_ARCA' &&
+      this.settingsService.settings().arcaCondicionIva === 'RESPONSABLE_INSCRIPTO'
+  );
+  readonly buyerCuit = signal('');
 
   readonly paymentLabels = PAYMENT_LABELS;
   /**
@@ -43,7 +54,14 @@ export class AdminPosComponent {
    * todos siempre — venta en el local, el vendedor ve con sus propios ojos
    * cómo le pagó el cliente (pedido explícito del usuario).
    */
-  readonly paymentMethods: PaymentMethod[] = ['CASH', 'TRANSFER', 'QR_TRANSFER', 'QR_CARD', 'MERCADOPAGO'];
+  readonly paymentMethods: PaymentMethod[] = [
+    'CASH',
+    'TRANSFER',
+    'POSNET',
+    'QR_TRANSFER',
+    'QR_CARD',
+    'MERCADOPAGO',
+  ];
 
   readonly catalogStatus = this.productService.catalogStatus;
   readonly reloadCatalog = () => this.productService.reloadCatalog();
@@ -58,14 +76,32 @@ export class AdminPosComponent {
     this.search.set(product.name);
   }
 
-  /** Productos que matchean el buscador (ordenados por nombre). */
+  /** Productos que matchean el buscador, por nombre o código de barras (ordenados por nombre). */
   readonly matchingProducts = computed(() => {
     const term = this.search().trim().toLowerCase();
     const list = term
-      ? this.products().filter((p) => p.name.toLowerCase().includes(term))
+      ? this.products().filter(
+          (p) => p.name.toLowerCase().includes(term) || p.barcode?.toLowerCase().includes(term)
+        )
       : this.products();
     return [...list].sort((a, b) => a.name.localeCompare(b.name));
   });
+
+  /**
+   * Un lector de código de barras USB escribe rápido y termina con Enter —
+   * si lo que se tipeó matchea EXACTO el barcode de un producto con un solo
+   * talle, lo suma directo al carrito (flujo "beep, beep, beep" sin clickear
+   * nada). Si el producto tiene varios talles, no hay forma de adivinar cuál
+   * — queda filtrado en la grilla para elegirlo a mano, como con el buscador
+   * por nombre.
+   */
+  onSearchEnter(): void {
+    const term = this.search().trim();
+    if (!term) return;
+    const match = this.products().find((p) => p.barcode && p.barcode === term);
+    if (!match || match.sizeStocks.length !== 1) return;
+    this.addProduct(match, match.sizeStocks[0].size);
+  }
 
   /** Paginación client-side de la grilla. */
   private readonly PAGE_SIZE = 12;
@@ -90,6 +126,13 @@ export class AdminPosComponent {
   readonly customerEmail = signal('');
   readonly paymentMethod = signal<PaymentMethod | null>('CASH');
   readonly saving = signal(false);
+
+  /** Sólo con CASH: con cuánto paga el cliente, para calcular el vuelto en el momento. Opcional. */
+  readonly amountTendered = signal<number | null>(null);
+  /** Sólo con TRANSFER: nombre y apellido de quien transfirió (para cruzarlo con el resumen bancario después). */
+  readonly transferSenderName = signal('');
+  /** Sólo con POSNET: número de ticket que imprime la máquina al aprobar. */
+  readonly posnetTicketNumber = signal('');
   /** Si lo va a cobrar otra persona después (cajero distinto del vendedor). */
   readonly leavePending = signal(false);
 
@@ -116,6 +159,17 @@ export class AdminPosComponent {
     return Math.min(raw, this.subtotal());
   });
   readonly total = computed(() => this.subtotal() - this.discountAmount() - this.couponAmount());
+
+  /** null = no cargó cuánto puso el cliente todavía (es opcional). */
+  readonly change = computed(() => {
+    const tendered = this.amountTendered();
+    return tendered != null ? tendered - this.total() : null;
+  });
+  /** true = cargó un monto pero no alcanza — no se puede registrar así. */
+  readonly cashInsufficient = computed(() => {
+    const c = this.change();
+    return c != null && c < 0;
+  });
 
   stockOf(product: Product, size: string): number {
     return stockForSize(product, size);
@@ -172,7 +226,19 @@ export class AdminPosComponent {
   }
 
   get canSave(): boolean {
-    return this.lines().length > 0 && !!this.paymentMethod() && !this.saving();
+    return this.lines().length > 0 && !!this.paymentMethod() && !this.saving() && !this.cashInsufficient();
+  }
+
+  /** Referencia a mandar según el medio de pago elegido — cada uno guarda algo distinto en el mismo campo. */
+  private get paymentReferenceToSend(): string | null {
+    switch (this.paymentMethod()) {
+      case 'TRANSFER':
+        return this.transferSenderName().trim() || null;
+      case 'POSNET':
+        return this.posnetTicketNumber().trim() || null;
+      default:
+        return null;
+    }
   }
 
   /** Arma el pedido. Si `leavePending` no está tildado, lo cobra en el mismo paso (comportamiento de siempre). */
@@ -190,6 +256,9 @@ export class AdminPosComponent {
         })),
         paymentMethod: this.paymentMethod(),
         couponCode: this.coupon()?.code ?? null,
+        amountTendered: this.paymentMethod() === 'CASH' ? this.amountTendered() : null,
+        paymentReference: this.paymentReferenceToSend,
+        buyerCuit: this.showBuyerCuitField() ? this.buyerCuit().trim() || null : null,
       })
       .subscribe({
         next: (order) => {
@@ -220,5 +289,9 @@ export class AdminPosComponent {
     this.coupon.set(null);
     this.couponInput.set('');
     this.leavePending.set(false);
+    this.amountTendered.set(null);
+    this.transferSenderName.set('');
+    this.posnetTicketNumber.set('');
+    this.buyerCuit.set('');
   }
 }

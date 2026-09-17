@@ -58,6 +58,13 @@ export interface Product {
    * bajo" (para las alertas de reposición). Vacío = usar el default global (3).
    */
   lowStockThreshold?: number;
+  /**
+   * Código de barras real (EAN/UPC de fábrica) — opcional. Distinto del QR
+   * propio de la tienda (`admin-product-qr`, apunta a la ficha del producto);
+   * este es el que trae la etiqueta del fabricante, para cargarlo al vuelo
+   * con un lector en Venta en el local.
+   */
+  barcode?: string;
 }
 
 /**

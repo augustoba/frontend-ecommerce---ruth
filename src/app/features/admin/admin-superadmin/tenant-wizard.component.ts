@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   ElementRef,
   HostListener,
   inject,
@@ -13,6 +14,7 @@ import {
 import { NgStyle } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TenantAdminService, TenantRecord } from '../../../core/services/tenant-admin.service';
+import { PlanAdminService } from '../../../core/services/plan-admin.service';
 import { DemoTenantService } from '../../../core/services/demo-tenant.service';
 import { CloudinaryService } from '../../../core/services/cloudinary.service';
 import { resizeImageFile, validateImageFile } from '../../../core/utils/image-resize';
@@ -22,6 +24,8 @@ import { CatalogPageComponent } from '../../catalog/catalog-page/catalog-page.co
 import { HeaderComponent } from '../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
 import { LAYOUTS, layoutSwatchVars } from '../admin-appearance/admin-appearance.component';
+import { PlanRecord } from '../../../core/services/plan-admin.service';
+import { MODULE_OPTIONS } from '../../../core/models/plan-module.model';
 
 type WizardStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 const DEFAULT_PREVIEW_COLOR = '#f97316';
@@ -49,6 +53,7 @@ export interface TenantDraft {
 })
 export class TenantWizardComponent {
   private readonly tenantAdmin = inject(TenantAdminService);
+  private readonly planAdmin = inject(PlanAdminService);
   private readonly demoTenant = inject(DemoTenantService);
   private readonly cloudinary = inject(CloudinaryService);
 
@@ -64,6 +69,13 @@ export class TenantWizardComponent {
   readonly step = signal<WizardStep>(1);
   readonly creating = signal(false);
   readonly error = signal<string | null>(null);
+
+  // Plan (Fase 14) — qué módulos va a tener la tienda (sitio web, punto de
+  // venta, o ambos). Se elige entre los planes ya creados (ver "Planes" en
+  // Superadmin) — si sólo hay uno, no hace falta elegir nada.
+  readonly plans = this.planAdmin.plans;
+  readonly draftPlanId = signal<string | null>(null);
+  private planSeeded = false;
 
   // Paso 1: diseño
   readonly draftLayout = signal('classic');
@@ -122,6 +134,28 @@ export class TenantWizardComponent {
   // Paso 5: previsualización a pantalla completa
   readonly fullscreenActive = signal(false);
   private awaitingFullscreenExit = false;
+
+  constructor() {
+    this.planAdmin.ensureLoaded();
+    // Selecciona el plan "default" apenas carga la lista — sólo la primera
+    // vez, para no pisar una elección manual si el listado se recarga.
+    effect(() => {
+      const list = this.plans();
+      if (this.planSeeded || !list.length) return;
+      this.planSeeded = true;
+      this.draftPlanId.set(list.find((p) => p.slug === 'default')?.id ?? list[0].id);
+    });
+  }
+
+  setPlan(id: string): void {
+    this.draftPlanId.set(id);
+  }
+
+  /** "Sitio web, Mercado Pago, Punto de venta…" — para distinguir planes de un vistazo. */
+  planModuleSummary(plan: PlanRecord): string {
+    const labels = MODULE_OPTIONS.filter((m) => plan.enabledModules.includes(m.key)).map((m) => m.label);
+    return labels.length ? labels.join(' · ') : 'Sin módulos';
+  }
 
   @HostListener('document:fullscreenchange')
   onFullscreenChange(): void {
@@ -312,6 +346,7 @@ export class TenantWizardComponent {
         facebookUrl: this.facebookUrl().trim() || undefined,
         logoUrl,
         logoShape: this.logoShape(),
+        planId: this.draftPlanId() ?? undefined,
       },
       (tenant) => {
         this.creating.set(false);

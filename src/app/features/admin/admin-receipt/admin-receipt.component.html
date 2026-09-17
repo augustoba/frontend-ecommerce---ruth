@@ -81,7 +81,44 @@
           <span>Pago</span><span>{{ paymentLabels[order.paymentMethod] }}</span>
         </div>
       }
+      @if (order.amountTendered != null) {
+        <div class="flex justify-between text-stone-600">
+          <span>Paga con</span><span>{{ order.amountTendered | currency: 'ARS' : 'symbol' : '1.0-0' }}</span>
+        </div>
+        <div class="flex justify-between text-stone-600">
+          <span>Vuelto</span>
+          <span>{{ order.amountTendered - order.total | currency: 'ARS' : 'symbol' : '1.0-0' }}</span>
+        </div>
+      }
+      @if (order.paymentReference) {
+        <div class="flex justify-between text-stone-600">
+          <span>{{ order.paymentMethod === 'POSNET' ? 'Ticket' : 'Ref.' }}</span>
+          <span>{{ order.paymentReference }}</span>
+        </div>
+      }
     </div>
+
+    @if (order.invoiceType?.startsWith('FACTURA_')) {
+      <div class="mt-4 border-t border-dashed border-stone-300 pt-3 text-xs text-stone-600">
+        <p class="font-bold text-stone-700">{{ order.invoiceType?.replace('_', ' ') }}</p>
+        @if (order.invoiceBuyerCuit) {
+          <p>CUIT: <span class="font-mono">{{ order.invoiceBuyerCuit }}</span></p>
+        }
+        <p>CAE: <span class="font-mono">{{ order.invoiceCae }}</span></p>
+        <p>Vto. CAE: {{ formatCaeDate(order.invoiceCaeVencimiento) }}</p>
+        <p>N°: {{ order.invoicePuntoVenta | number: '4.0-0' }}-{{ order.invoiceNumber | number: '8.0-0' }}</p>
+        @if (order.invoiceQrUrl) {
+          <img [src]="order.invoiceQrUrl" alt="QR AFIP" class="w-24 h-24 mx-auto mt-2" />
+        }
+      </div>
+    } @else if (order.channel === 'LOCAL') {
+      <div class="mt-4 border-t border-dashed border-stone-300 pt-3 text-xs text-stone-400 text-center">
+        <p>Comprobante no fiscal (ticket interno)</p>
+        @if (order.invoiceError) {
+          <p class="text-amber-600 mt-1">⚠️ No se pudo emitir la factura de ARCA: {{ order.invoiceError }}</p>
+        }
+      </div>
+    }
 
     <p class="text-center text-xs text-stone-400 mt-6">¡Gracias por tu compra! 🧸</p>
   </div>

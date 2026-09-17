@@ -7,7 +7,7 @@ export type OrderStatus = 'PENDIENTE' | 'PROCESADO' | 'CANCELADO';
 export type DeliveryMethod = 'PICKUP' | 'SHIPPING';
 
 /** Medio de pago que elige el cliente (para que el dueño sepa qué mandar). */
-export type PaymentMethod = 'TRANSFER' | 'QR_TRANSFER' | 'QR_CARD' | 'CASH' | 'MERCADOPAGO';
+export type PaymentMethod = 'TRANSFER' | 'QR_TRANSFER' | 'QR_CARD' | 'CASH' | 'MERCADOPAGO' | 'POSNET';
 
 export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   TRANSFER: 'Transferencia (alias/CBU)',
@@ -15,6 +15,7 @@ export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   QR_CARD: 'Tarjeta (QR o link)',
   CASH: 'Efectivo al recibir/retirar',
   MERCADOPAGO: 'Mercado Pago',
+  POSNET: 'Tarjeta (posnet del local)',
 };
 
 export interface OrderLine {
@@ -99,6 +100,24 @@ export interface Order {
   paymentStatus?: PaymentStatus | null;
   /** Link al checkout de Mercado Pago — redirigir acá apenas se crea el pedido. */
   mpCheckoutUrl?: string | null;
+  /** Mercado Pago aprobó el pago pero no se pudo confirmar el pedido solo — hace falta revisarlo a mano. null = sin problemas. */
+  paymentIssueNote?: string | null;
+  /** Venta presencial en efectivo: con cuánto pagó el cliente. Sólo tiene sentido con `paymentMethod === 'CASH'`. */
+  amountTendered?: number | null;
+  /** Nombre de quien transfirió, o número de ticket del posnet, según el medio — anotado a mano, sin integración real. */
+  paymentReference?: string | null;
+  /** "TICKET_INTERNO" | "FACTURA_A" | "FACTURA_B" | "FACTURA_C" — sólo se completa al confirmar una venta presencial (canal LOCAL). */
+  invoiceType?: string | null;
+  /** CUIT del comprador, si se cargó al cobrar (sólo tiene efecto en tiendas Responsable Inscripto — habilita Factura A). */
+  invoiceBuyerCuit?: string | null;
+  invoiceCae?: string | null;
+  /** yyyyMMdd, tal cual lo devuelve ARCA. */
+  invoiceCaeVencimiento?: string | null;
+  invoiceNumber?: number | null;
+  invoicePuntoVenta?: number | null;
+  invoiceQrUrl?: string | null;
+  /** ARCA rechazó la Factura C (o falló la conexión) — la venta quedó igual como ticket interno. null = sin problemas. */
+  invoiceError?: string | null;
 }
 
 /** Sólo aplica a pedidos con `paymentMethod === 'MERCADOPAGO'`. */

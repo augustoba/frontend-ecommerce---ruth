@@ -30,6 +30,23 @@ export interface MercadoPagoConfig {
   publicKey: string | null;
 }
 
+/**
+ * Credenciales de ARCA DE LA TIENDA (Fase 14) — el certificado/clave nunca
+ * viajan del backend hacia acá, sólo `certificadoSet`/`clavePrivadaSet`
+ * dicen si hay uno guardado (mismo criterio que `MercadoPagoConfig`).
+ */
+export interface ArcaConfig {
+  arcaEnabled: boolean;
+  /** true = homologación (testing); false = producción. */
+  arcaModoPrueba: boolean;
+  cuit: string | null;
+  puntoVenta: number | null;
+  condicionIva: string | null;
+  certificadoSet: boolean;
+  clavePrivadaSet: boolean;
+  invoiceMode: 'TICKET_INTERNO' | 'FACTURA_ARCA';
+}
+
 export interface SiteSettings {
   storeName: string;
   whatsappNumber: string;
@@ -118,6 +135,34 @@ export interface SiteSettings {
    * local" (`admin-pos`), que sigue ofreciendo todos los medios.
    */
   mercadoPagoAvailable: boolean;
+  /**
+   * Módulo `POS` habilitado en el plan (Fase 14) — el panel lo usa para
+   * decidir si mostrar el punto de venta (kiosco) en el menú.
+   */
+  posEnabled: boolean;
+  /**
+   * Módulo `ECOMMERCE_SITE` habilitado en el plan (Fase 14) — un tenant sin
+   * esto no tiene sitio público (el backend ya bloquea las rutas públicas);
+   * el panel lo usa para no mostrar pantallas de ecommerce (Catálogo
+   * online, Apariencia, Carrusel, etc.) que no aplican.
+   */
+  ecommerceSiteEnabled: boolean;
+  /**
+   * true sólo si el módulo `ARCA_INVOICING` está habilitado en el plan Y la
+   * tienda cargó CUIT + certificado + punto de venta — recién ahí el punto
+   * de venta puede ofrecer "Factura" real además de "Ticket".
+   */
+  arcaAvailable: boolean;
+  /** Qué emite por defecto el punto de venta: "TICKET_INTERNO" | "FACTURA_ARCA". */
+  invoiceMode: 'TICKET_INTERNO' | 'FACTURA_ARCA';
+  /**
+   * Condición frente al IVA de la tienda ante ARCA. El panel sólo la usa
+   * para decidir si mostrar el campo de CUIT del comprador en el punto de
+   * venta: con "RESPONSABLE_INSCRIPTO" se puede emitir Factura A (con CUIT)
+   * o B (sin CUIT, consumidor final); con Monotributo/Exento siempre es
+   * Factura C y el campo no tiene sentido.
+   */
+  arcaCondicionIva: string | null;
 }
 
 /** Logo por defecto (archivo estático en `public/`) si el negocio no subió uno. */
@@ -166,6 +211,11 @@ const DEFAULTS: SiteSettings = {
   cloudinaryUploadPreset: 'estilospequenos',
   socialShareEnabled: true,
   mercadoPagoAvailable: false,
+  posEnabled: true,
+  ecommerceSiteEnabled: true,
+  arcaAvailable: false,
+  invoiceMode: 'TICKET_INTERNO',
+  arcaCondicionIva: null,
 };
 
 /**
@@ -449,6 +499,36 @@ export class SettingsService {
       map((res) => {
         this.saving.set(false);
         this.reload(); // refresca `mercadoPagoAvailable` en el settings público
+        return res;
+      }),
+      catchError(() => {
+        this.saving.set(false);
+        return of(null);
+      })
+    );
+  }
+
+  /** Credenciales de ARCA de la tienda. Lo edita el admin normal (`PAYMENTS_MANAGE`). */
+  getArcaConfig(): Observable<ArcaConfig | null> {
+    return this.http.get<ArcaConfig>(apiUrl('/admin/settings/arca')).pipe(catchError(() => of(null)));
+  }
+
+  /** `certificadoPem`/`clavePrivadaPem` vacíos/null = no tocar los que ya están guardados. */
+  updateArcaConfig(req: {
+    arcaEnabled: boolean;
+    arcaModoPrueba: boolean;
+    cuit: string | null;
+    puntoVenta: number | null;
+    condicionIva: string | null;
+    certificadoPem: string | null;
+    clavePrivadaPem: string | null;
+    invoiceMode: string;
+  }): Observable<ArcaConfig | null> {
+    this.saving.set(true);
+    return this.http.put<ArcaConfig>(apiUrl('/admin/settings/arca'), req).pipe(
+      map((res) => {
+        this.saving.set(false);
+        this.reload(); // refresca `arcaAvailable`/`invoiceMode` en el settings público
         return res;
       }),
       catchError(() => {

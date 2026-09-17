@@ -94,6 +94,7 @@ export class AdminProductFormComponent {
     sizeScaleId: [this.editingProduct?.sizeScaleId ?? ''],
     supplierId: [this.editingProduct?.supplierId ?? ''],
     costPrice: [this.editingProduct?.costPrice ?? 0, [Validators.min(0)]],
+    barcode: [this.editingProduct?.barcode ?? ''],
   });
 
   /** Umbral de stock bajo propio del producto (vacío = usar el default global). */
@@ -362,6 +363,7 @@ export class AdminProductFormComponent {
       videoUrl: value.videoUrl.trim() || undefined,
       sizeScaleId: value.sizeScaleId || undefined,
       supplierId: value.supplierId || undefined,
+      barcode: value.barcode.trim() || undefined,
       costPrice: value.costPrice > 0 ? value.costPrice : undefined,
       lowStockThreshold: this.lowStockThreshold() ?? undefined,
       images: this.images(),

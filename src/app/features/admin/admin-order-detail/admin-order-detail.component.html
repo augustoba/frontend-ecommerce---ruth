@@ -32,6 +32,13 @@
     </span>
   </div>
 
+  @if (order.paymentIssueNote) {
+    <div class="mb-6 rounded-2xl bg-amber-50 ring-1 ring-amber-300 p-4 text-sm text-amber-800">
+      <p class="font-bold mb-1">⚠️ Necesita revisión manual</p>
+      <p>{{ order.paymentIssueNote }}</p>
+    </div>
+  }
+
   <div class="flex flex-wrap gap-2 mb-6">
     <button
       type="button"
@@ -107,6 +114,34 @@
           <p class="text-xs font-semibold text-mint-600 mt-1.5">✓ Pago acreditado por Mercado Pago.</p>
         } @else if (order.paymentStatus === 'REJECTED') {
           <p class="text-xs font-semibold text-red-500 mt-1.5">✕ El pago no se acreditó.</p>
+        }
+      }
+      @if (order.amountTendered != null) {
+        <p class="text-xs text-stone-500 mt-1.5">
+          Pagó con {{ order.amountTendered | currency: 'ARS' : 'symbol' : '1.0-0' }} —
+          vuelto {{ order.amountTendered - order.total | currency: 'ARS' : 'symbol' : '1.0-0' }}
+        </p>
+      }
+      @if (order.paymentReference) {
+        <p class="text-xs text-stone-500 mt-1.5">
+          {{ order.paymentMethod === 'POSNET' ? 'N° de ticket' : 'Referencia' }}: {{ order.paymentReference }}
+        </p>
+      }
+      @if (order.invoiceType?.startsWith('FACTURA_')) {
+        <p class="text-xs font-semibold text-mint-600 mt-1.5">
+          🧾 {{ order.invoiceType?.replace('_', ' ') }} — CAE {{ order.invoiceCae }}
+          ({{ order.invoicePuntoVenta }}-{{ order.invoiceNumber }})
+        </p>
+      } @else if (order.channel === 'LOCAL' && order.status === 'PROCESADO') {
+        <p class="text-xs text-stone-500 mt-1.5">📄 Ticket interno (no fiscal)</p>
+        @if (order.invoiceError) {
+          <p class="text-xs font-semibold text-amber-700 mt-1">⚠️ ARCA rechazó la factura: {{ order.invoiceError }}</p>
+        }
+        @if (canManage() && arcaAvailable()) {
+          <button type="button" (click)="retryInvoice()" [disabled]="saving()"
+            class="text-xs font-bold text-brand-600 hover:underline mt-1.5 disabled:opacity-50">
+            🧾 Intentar facturar con ARCA
+          </button>
         }
       }
     </div>

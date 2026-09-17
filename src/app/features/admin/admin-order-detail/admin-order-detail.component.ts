@@ -5,6 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { OrderService } from '../../../core/services/order.service';
 import { ProductService } from '../../../core/services/product.service';
+import { SettingsService } from '../../../core/services/settings.service';
 import { WhatsappService } from '../../../core/services/whatsapp.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -23,6 +24,8 @@ export class AdminOrderDetailComponent {
   private readonly router = inject(Router);
   private readonly orderService = inject(OrderService);
   private readonly productService = inject(ProductService);
+  private readonly settingsService = inject(SettingsService);
+  readonly arcaAvailable = () => this.settingsService.settings().arcaAvailable;
   private readonly whatsapp = inject(WhatsappService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
@@ -161,6 +164,11 @@ export class AdminOrderDetailComponent {
       danger: true,
     });
     if (ok) this.run(this.orderService.cancel(this.orderId), () => this.router.navigate(['/admin/pedidos']));
+  }
+
+  /** Reintenta emitir la Factura de ARCA de esta venta (quedó como ticket interno porque ARCA la rechazó o no estaba configurada). */
+  retryInvoice(): void {
+    this.run(this.orderService.retryInvoice(this.orderId));
   }
 
   private run(obs: Observable<Order>, onSuccess?: () => void): void {

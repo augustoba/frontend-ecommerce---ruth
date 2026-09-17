@@ -59,6 +59,14 @@ export const routes: Routes = [
     title: 'Recuperar contraseña | Admin',
   },
   {
+    path: 'admin/restablecer-clave',
+    loadComponent: () =>
+      import('./features/admin/admin-reset-password/admin-reset-password.component').then(
+        (m) => m.AdminResetPasswordComponent
+      ),
+    title: 'Elegir contraseña nueva | Admin',
+  },
+  {
     path: 'admin/recibo/:id',
     canActivate: [adminGuard, permissionGuard],
     data: { permission: 'ORDERS_VIEW' },
@@ -155,6 +163,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/admin-pos/admin-pos.component').then((m) => m.AdminPosComponent),
         title: 'Venta en el local | Admin',
+      },
+      {
+        path: 'kiosco',
+        canActivate: [permissionGuard],
+        data: { permission: 'POS_USE' },
+        loadComponent: () =>
+          import('./features/admin/admin-kiosco/admin-kiosco.component').then((m) => m.AdminKioscoComponent),
+        title: 'Punto de venta | Admin',
       },
       {
         path: 'cambios',
@@ -388,6 +404,16 @@ export const routes: Routes = [
         title: 'Mercado Pago | Admin',
       },
       {
+        path: 'config/arca',
+        canActivate: [permissionGuard],
+        data: { permission: 'PAYMENTS_MANAGE' },
+        loadComponent: () =>
+          import('./features/admin/admin-config/admin-arca.component').then(
+            (m) => m.AdminArcaComponent
+          ),
+        title: 'Facturación (ARCA) | Admin',
+      },
+      {
         path: 'config/ayuda',
         canActivate: [permissionGuard],
         data: { permission: 'PLATFORM_SETTINGS_MANAGE' },
@@ -432,6 +458,15 @@ export const routes: Routes = [
             (m) => m.AdminSuperadminTiendasComponent
           ),
         title: 'Tiendas | Admin',
+      },
+      {
+        path: 'superadmin/planes',
+        canActivate: [superAdminGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-superadmin/admin-plans.component').then(
+            (m) => m.AdminPlansComponent
+          ),
+        title: 'Planes | Admin',
       },
       {
         path: 'cuenta',

@@ -74,7 +74,12 @@
       <tbody>
         @for (order of orders(); track order.id) {
           <tr class="border-b border-stone-50 last:border-0 hover:bg-stone-50/60">
-            <td class="p-4 font-mono font-semibold text-stone-800">{{ order.code }}</td>
+            <td class="p-4 font-mono font-semibold text-stone-800">
+              {{ order.code }}
+              @if (order.paymentIssueNote) {
+                <span class="ml-1" title="Mercado Pago aprobó el pago pero no se pudo confirmar solo — revisar">⚠️</span>
+              }
+            </td>
             <td class="p-4 text-stone-600">{{ order.customerName }}</td>
             <td class="p-4 text-stone-500">{{ order.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
             <td class="p-4 text-stone-500">{{ order.lines.length }}</td>
