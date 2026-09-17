@@ -1,12 +1,19 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PlanAdminService, PlanRecord } from '../../../core/services/plan-admin.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { MODULE_OPTIONS } from '../../../core/models/plan-module.model';
 
+const BUSINESS_MODEL_LABELS: Record<string, string> = {
+  ECOMMERCE: 'Ecommerce',
+  POS: 'Punto de venta',
+};
+
 /**
- * Una tarjeta editable por plan (límites, módulos, branding) — hoy sólo hay
- * un plan ("default"), pero está pensado para cuando haya varios. Self-
+ * Una tarjeta editable por plan (límites, módulos, branding) — Fase 17: el
+ * `businessModel` del plan (fijo, no se edita acá) filtra qué módulos se
+ * pueden tildar, así no aparece "Mercado Pago" como opción en un plan de
+ * Punto de venta ni "Punto de venta (kiosco)" en uno de Ecommerce. Self-
  * contained: guarda directo contra `PlanAdminService`, no emite eventos.
  */
 @Component({
@@ -20,8 +27,15 @@ export class PlanEditorComponent {
   private readonly toast = inject(ToastService);
 
   readonly plan = input.required<PlanRecord>();
-  readonly moduleOptions = MODULE_OPTIONS;
   readonly saving = this.planAdmin.saving;
+
+  readonly businessModelLabel = computed(() => BUSINESS_MODEL_LABELS[this.plan().businessModel] ?? this.plan().businessModel);
+
+  /** Sólo los módulos compatibles con el modelo de negocio de este plan — el resto ni se muestra. */
+  readonly moduleOptions = computed(() => {
+    const compatible = new Set(this.plan().compatibleModules);
+    return MODULE_OPTIONS.filter((m) => compatible.has(m.key));
+  });
 
   private readonly touched = signal(false);
   private seeded = false;

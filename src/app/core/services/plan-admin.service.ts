@@ -3,14 +3,20 @@ import { HttpClient } from '@angular/common/http';
 import { CollectionStore } from '../state/collection-store';
 import { apiUrl } from '../config/site-config';
 
+export type BusinessModel = 'ECOMMERCE' | 'POS';
+
 export interface PlanRecord {
   id: string;
   slug: string;
   name: string;
+  /** Fijo, no se edita — determina qué módulos son compatibles (ver `compatibleModules`). */
+  businessModel: BusinessModel;
   /** null = sin límite. */
   maxProducts: number | null;
   maxAdminUsers: number | null;
   enabledModules: string[];
+  /** Únicos módulos que tiene sentido tildar para este plan (ver `Modules.compatibleWith` en el backend). */
+  compatibleModules: string[];
   showPlatformBranding: boolean;
   /** Cuántas tiendas usan este plan hoy. */
   tenantCount: number;

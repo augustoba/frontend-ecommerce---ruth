@@ -1342,6 +1342,25 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       en esta sesión) — a diferencia de toda fase anterior de este
       proyecto, esta quedó sin el paso de verificación visual real;
       recomendado antes de dar por cerrado el trabajo.
+59. **Editor de planes filtrado por modelo de negocio (2026-09-17,
+    backend Fase 17):** el usuario notó que a "Estilos Pequeños"
+    (ecommerce puro) le aparecía "Punto de venta (kiosco)" en el menú —
+    causa: sólo había un plan con todos los módulos prendidos. Pidió
+    además que el editor de planes del superadmin no deje tildar
+    módulos incompatibles con el modelo de negocio del plan (ej.
+    "Mercado Pago" no tiene sentido en un plan de Punto de venta).
+    - `plan-admin.service.ts`: `PlanRecord` sumó `businessModel`
+      (`'ECOMMERCE' | 'POS'`, fijo) y `compatibleModules` (calculado por
+      el backend).
+    - `plan-editor.component.ts`: `moduleOptions` pasó de una constante
+      fija a un `computed()` que filtra `MODULE_OPTIONS` contra
+      `plan().compatibleModules` — un módulo incompatible directamente
+      no se renderiza como checkbox (no sólo se deshabilita). Header de
+      la tarjeta muestra una etiqueta con el modelo de negocio del plan.
+    - Verificado con `ng build` (sin errores) y contra la API real del
+      backend (dos planes reales, "Ecommerce" y "Punto de venta", cada
+      uno mostrando sólo sus módulos compatibles). **No se pudo
+      verificar en el navegador** (mismo motivo que el ítem anterior).
 
 ## 12. Backend (`../backend/`) — resumen
 

@@ -11,6 +11,8 @@ export interface TenantRecord {
   rubroLabel: string;
   active: boolean;
   createdAt: string;
+  /** Módulo ECOMMERCE_SITE de su plan — false = tienda sólo punto de venta, sin sitio público (ver Fase 17). */
+  ecommerceSiteEnabled: boolean;
 }
 
 export interface RubroOption {

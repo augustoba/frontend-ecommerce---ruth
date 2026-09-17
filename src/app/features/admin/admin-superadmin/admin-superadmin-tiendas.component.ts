@@ -91,10 +91,16 @@ export class AdminSuperadminTiendasComponent {
     this.wizardDraft.set(null);
   }
 
-  /** Activa el selector de tienda modo demo con esta tienda y va a la home pública a mirarla. */
+  /**
+   * Activa el selector de tienda modo demo con esta tienda y va a mirarla —
+   * a la home pública si tiene sitio ecommerce, o directo al punto de venta
+   * si es una tienda sólo-POS (no tiene sentido mandarla a `/`, que le da
+   * 503 "sin sitio online").
+   */
   ver(tenant: TenantRecord): void {
     this.demoTenant.view(tenant.slug);
-    this.router.navigateByUrl('/').then(() => window.location.reload());
+    const destino = tenant.ecommerceSiteEnabled ? '/' : '/admin/kiosco';
+    this.router.navigateByUrl(destino).then(() => window.location.reload());
   }
 
   /**
