@@ -13,7 +13,7 @@ interface NavItem {
   path: string;
   label: string;
   /** Contador a mostrar como badge (se resuelve en el template). */
-  badge?: 'pending';
+  badge?: 'pending' | 'expiringCae';
   /** Ruta exacta (para no marcar activo en sub-rutas). */
   exact?: boolean;
   /** Permiso necesario para ver el item (sin permiso = siempre visible). */
@@ -52,6 +52,8 @@ const GROUPS: NavGroup[] = [
       { path: '/admin/cupones', label: 'Cupones', permission: 'COUPONS_MANAGE', moduleFlag: 'ecommerce' },
       { path: '/admin/campanias', label: 'Campañas', permission: 'MARKETING_MANAGE', moduleFlag: 'ecommerce' },
       { path: '/admin/metricas', label: 'Métricas', permission: 'METRICS_VIEW' },
+      { path: '/admin/gastos', label: 'Gastos', permission: 'EXPENSES_MANAGE' },
+      { path: '/admin/balance', label: 'Balance', permission: 'FINANCE_VIEW' },
     ],
   },
   {
@@ -60,6 +62,7 @@ const GROUPS: NavGroup[] = [
     icon: '📦',
     items: [
       { path: '/admin/productos', label: 'Productos', permission: 'PRODUCTS_VIEW' },
+      { path: '/admin/movimientos-stock', label: 'Movimientos de stock', permission: 'STOCK_MOVEMENTS_VIEW' },
       { path: '/admin/parametrias', label: 'Parametrías', permission: 'PARAMS_MANAGE' },
       { path: '/admin/talles', label: 'Talles', permission: 'SIZE_SCALES_MANAGE' },
       { path: '/admin/proveedores', label: 'Proveedores', permission: 'SUPPLIERS_MANAGE' },
@@ -75,7 +78,7 @@ const GROUPS: NavGroup[] = [
       { path: '/admin/config/whatsapp', label: 'Mensaje de WhatsApp', permission: 'PLATFORM_SETTINGS_MANAGE', moduleFlag: 'ecommerce' },
       { path: '/admin/config/pagos', label: 'Medios de pago', permission: 'PAYMENTS_MANAGE', moduleFlag: 'ecommerce' },
       { path: '/admin/config/mercadopago', label: 'Mercado Pago', permission: 'PAYMENTS_MANAGE', moduleFlag: 'ecommerce' },
-      { path: '/admin/config/arca', label: 'Facturación (ARCA)', permission: 'PAYMENTS_MANAGE', moduleFlag: 'pos' },
+      { path: '/admin/config/arca', label: 'Facturación (ARCA)', badge: 'expiringCae', permission: 'PAYMENTS_MANAGE', moduleFlag: 'pos' },
       { path: '/admin/config/redes', label: 'Redes sociales', permission: 'PLATFORM_SETTINGS_MANAGE', moduleFlag: 'ecommerce' },
       { path: '/admin/config/nosotros', label: 'Sobre nosotros', permission: 'PLATFORM_SETTINGS_MANAGE', moduleFlag: 'ecommerce' },
       { path: '/admin/config/ayuda', label: 'Cómo comprar + FAQ', permission: 'PLATFORM_SETTINGS_MANAGE', moduleFlag: 'ecommerce' },
@@ -135,6 +138,7 @@ export class AdminLayoutComponent {
   readonly logoSrc = this.settingsService.logoSrc;
   readonly pendingOrders = this.orderService.pendingCount;
   readonly lowStockCount = this.dashboardService.lowStockCount;
+  readonly expiringCaeCount = this.dashboardService.expiringCaeCount;
 
   /** URL actual (para saber qué grupo está activo). */
   private readonly currentUrl = toSignal(
@@ -166,9 +170,12 @@ export class AdminLayoutComponent {
     this.persistOpen(next);
   }
 
-  /** Badge total del grupo cuando está colapsado (hoy: sólo pedidos pendientes). */
+  /** Badge total del grupo cuando está colapsado. */
   groupBadge(group: NavGroup): number {
-    return group.items.some((it) => it.badge === 'pending') ? this.pendingOrders() : 0;
+    let total = 0;
+    if (group.items.some((it) => it.badge === 'pending')) total += this.pendingOrders();
+    if (group.items.some((it) => it.badge === 'expiringCae')) total += this.expiringCaeCount();
+    return total;
   }
 
   // --- Drawer mobile ---
@@ -178,6 +185,7 @@ export class AdminLayoutComponent {
   constructor() {
     if (this.authService.has('ORDERS_VIEW')) this.orderService.ensureLoaded();
     if (this.authService.has('PRODUCTS_VIEW')) this.dashboardService.ensureLowStockLoaded();
+    if (this.authService.has('PAYMENTS_MANAGE')) this.dashboardService.ensureExpiringCaeLoaded();
     // cerrar el menú mobile al navegar
     this.router.events
       .pipe(

@@ -132,6 +132,51 @@
           🧾 {{ order.invoiceType?.replace('_', ' ') }} — CAE {{ order.invoiceCae }}
           ({{ order.invoicePuntoVenta }}-{{ order.invoiceNumber }})
         </p>
+
+        <!-- Notas de crédito (ítem 2) -->
+        <div class="mt-2">
+          @for (cn of creditNotes(); track cn.id) {
+            <p class="text-xs mt-1" [class.text-mint-600]="!cn.error" [class.text-amber-700]="cn.error">
+              {{ cn.error ? '⚠️' : '↩️' }} {{ cn.type.replace('_', ' ') }}
+              {{ cn.error ? cn.error : ('CAE ' + cn.cae + ' — ' + (cn.amount | currency: 'ARS' : 'symbol' : '1.0-0')) }}
+              @if (cn.reason) { — {{ cn.reason }} }
+            </p>
+          }
+          @if (canManage() && !creditNoteFormOpen()) {
+            <button type="button" (click)="openCreditNoteForm()" class="text-xs font-bold text-brand-600 hover:underline mt-1.5">
+              ↩️ Emitir Nota de Crédito
+            </button>
+          }
+          @if (creditNoteFormOpen()) {
+            <div class="mt-2 p-3 bg-stone-50 rounded-lg ring-1 ring-stone-200 max-w-sm">
+              <label class="block text-xs font-semibold text-stone-500 mb-1">Monto</label>
+              <input
+                type="number"
+                min="0"
+                [ngModel]="creditNoteAmount()"
+                (ngModelChange)="creditNoteAmount.set($event)"
+                class="w-full rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm mb-2"
+              />
+              <label class="block text-xs font-semibold text-stone-500 mb-1">Motivo</label>
+              <input
+                type="text"
+                [ngModel]="creditNoteReason()"
+                (ngModelChange)="creditNoteReason.set($event)"
+                placeholder="Ej: devolución parcial"
+                class="w-full rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm mb-2"
+              />
+              <div class="flex gap-2">
+                <button type="button" (click)="emitCreditNote()" [disabled]="creditNoteSaving()"
+                  class="text-xs font-bold bg-brand-500 hover:bg-brand-600 text-white py-1.5 px-3 rounded-full disabled:opacity-50">
+                  Emitir
+                </button>
+                <button type="button" (click)="creditNoteFormOpen.set(false)" class="text-xs font-semibold text-stone-400 hover:text-stone-600">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          }
+        </div>
       } @else if (order.channel === 'LOCAL' && order.status === 'PROCESADO') {
         <p class="text-xs text-stone-500 mt-1.5">📄 Ticket interno (no fiscal)</p>
         @if (order.invoiceError) {

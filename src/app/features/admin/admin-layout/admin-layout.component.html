@@ -7,7 +7,7 @@
         stroke-linecap="round" aria-hidden="true">
         <path d="M4 6h16M4 12h16M4 18h16" />
       </svg>
-      @if (pendingOrders() + lowStockCount() > 0) {
+      @if (pendingOrders() + lowStockCount() + expiringCaeCount() > 0) {
         <span class="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-red-400 ring-2 ring-stone-900"></span>
       }
     </button>
@@ -70,6 +70,9 @@
                 <span class="flex-1">{{ item.label }}</span>
                 @if (item.badge === 'pending' && pendingOrders() > 0) {
                   <span class="bg-amber-400 text-amber-950 text-xs font-bold rounded-full px-2 py-0.5">{{ pendingOrders() }}</span>
+                }
+                @if (item.badge === 'expiringCae' && expiringCaeCount() > 0) {
+                  <span class="bg-amber-400 text-amber-950 text-xs font-bold rounded-full px-2 py-0.5">{{ expiringCaeCount() }}</span>
                 }
               </a>
             }

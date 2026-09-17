@@ -1300,6 +1300,48 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       claramente distintos entre sí y de la tienda piloto (paleta,
       tipografía, logo, tagline y carrusel), y la piloto no tuvo ningún
       cambio visual (sigue con Baloo 2 + paleta naranja + su logo real).
+58. **Frontend del lote grande de mejoras (2026-09-17) — costeo real,
+    Gastos/Balance, ARCA (IVA/NC), stock, código de barras.** El backend
+    de todo esto se hizo en la misma sesión (ver `../backend/PLAN_SAAS.md`
+    Fase 16) — este ítem es sólo la parte de UI, para que ningún cambio
+    de backend quedara sin su pantalla (pedido explícito del usuario tras
+    notar que el módulo de Gastos/Balance de la sesión anterior había
+    quedado sólo en el backend).
+    - **Pantallas nuevas**: `admin-expenses` (`/admin/gastos`, gastos +
+      presupuesto mensual por categoría con alerta si se supera — la
+      categoría reusa la parametría `grp-categoria-gasto` ya sembrada
+      por el backend), `admin-balance` (`/admin/balance`, totales del
+      período + gráfico de barras verde/rojo mes a mes, mismo patrón de
+      `admin-metrics` — divs + Tailwind, sin librería de charts nueva),
+      `admin-stock-movements` (`/admin/movimientos-stock`: ajuste manual
+      con motivo, registrar compra a proveedor con recálculo de costo
+      por promedio ponderado, alerta de stock bajo por mail, e historial
+      filtrable), `admin-product-barcode` (`/admin/codigo-producto/:id`,
+      etiqueta imprimible del código de barras interno — clon de
+      `admin-product-qr`, librería nueva `jsbarcode`).
+    - **Pantallas existentes extendidas**: `admin-product-form` (select
+      de alícuota de IVA, botón "Generar código de barras" + link a la
+      etiqueta imprimible), `admin-order-detail` (sección de Notas de
+      Crédito dentro del bloque de factura aprobada: listado + form de
+      emisión inline).
+    - **Menú/permisos**: 3 permisos nuevos (`EXPENSES_MANAGE`,
+      `FINANCE_VIEW`, `STOCK_MOVEMENTS_VIEW`) sumados a
+      `permission.model.ts` (espejo del enum del backend) y al menú
+      lateral; badge nuevo de "CAE por vencer" en el item de Facturación
+      ARCA (mismo patrón "notificaciones no leídas" que ya usaba el
+      badge de stock bajo).
+    - **Verificado**: `ng build` (producción) sin errores después de cada
+      tanda — corrigió dos bugs reales de sintaxis del control de flujo
+      nuevo de Angular (`@else if (expr; as x)` no es válido — el `as`
+      sólo se puede usar en el `@if` primario, hubo que reordenar las
+      cadenas condicionales en `admin-balance` y `admin-product-barcode`)
+      y una violación de encapsulamiento (un template no puede leer un
+      campo `private` de su propio componente — `editingId` de
+      `admin-product-form` pasó a público). **No se pudo verificar en el
+      navegador** (la extensión de Claude in Chrome no estaba conectada
+      en esta sesión) — a diferencia de toda fase anterior de este
+      proyecto, esta quedó sin el paso de verificación visual real;
+      recomendado antes de dar por cerrado el trabajo.
 
 ## 12. Backend (`../backend/`) — resumen
 

@@ -28,3 +28,12 @@ export interface LowStockItem {
   stock: number;
   threshold: number;
 }
+
+/** Un pedido con Factura ARCA cuyo CAE vence pronto (ítem 5). */
+export interface ExpiringCaeItem {
+  orderId: string;
+  code: string;
+  invoiceType: string;
+  caeVencimiento: string;
+  diasRestantes: number;
+}

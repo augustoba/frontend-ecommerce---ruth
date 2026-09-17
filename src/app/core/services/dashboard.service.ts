@@ -2,7 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { apiUrl } from '../config/site-config';
 import { LoadStatus } from '../state/collection-store';
-import { Dashboard, LowStockItem } from '../models/dashboard.model';
+import { Dashboard, ExpiringCaeItem, LowStockItem } from '../models/dashboard.model';
 
 /** Clave de un talle en alerta de stock (para marcarlo como "visto"). */
 export const lowStockKey = (item: Pick<LowStockItem, 'productId' | 'size'>): string =>
@@ -40,6 +40,23 @@ export class DashboardService {
   );
   /** Total de talles en la lista de reposición (revisados + sin revisar). */
   readonly lowStockTotal = computed(() => this.lowStockSignal().length);
+
+  // --- CAE por vencer (ítem 5) ---
+  private readonly expiringCaeSignal = signal<ExpiringCaeItem[]>([]);
+  private expiringCaeLoaded = false;
+  readonly expiringCae = this.expiringCaeSignal.asReadonly();
+  readonly expiringCaeCount = computed(() => this.expiringCaeSignal().length);
+
+  ensureExpiringCaeLoaded(): void {
+    if (this.expiringCaeLoaded) return;
+    this.expiringCaeLoaded = true;
+    this.http.get<ExpiringCaeItem[]>(apiUrl('/admin/expiring-cae')).subscribe({
+      next: (items) => this.expiringCaeSignal.set(items),
+      error: () => {
+        this.expiringCaeLoaded = false;
+      },
+    });
+  }
 
   reload = (): void => this.loadDashboard();
 

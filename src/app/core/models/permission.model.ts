@@ -18,7 +18,10 @@ export type Permission =
   | 'CAROUSEL_MANAGE'
   | 'PAYMENTS_MANAGE'
   | 'PLATFORM_SETTINGS_MANAGE'
-  | 'USERS_MANAGE';
+  | 'USERS_MANAGE'
+  | 'EXPENSES_MANAGE'
+  | 'FINANCE_VIEW'
+  | 'STOCK_MOVEMENTS_VIEW';
 
 /** Info de un permiso para armar los checkboxes (viene de `/api/admin/permissions`). */
 export interface PermissionInfo {

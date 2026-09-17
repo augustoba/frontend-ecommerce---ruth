@@ -353,14 +353,47 @@
 
           <div>
             <label class="block text-xs font-semibold text-stone-500 mb-1" for="barcode">Código de barras</label>
-            <input
-              id="barcode"
-              type="text"
-              formControlName="barcode"
-              placeholder="Escaneá o tipeá el código de la etiqueta"
-              class="w-full rounded-lg border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
-            />
+            <div class="flex gap-2">
+              <input
+                id="barcode"
+                type="text"
+                formControlName="barcode"
+                placeholder="Escaneá o tipeá el código de la etiqueta"
+                class="w-full rounded-lg border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+              />
+              @if (isEditMode && !form.controls.barcode.value) {
+                <button
+                  type="button"
+                  (click)="generateBarcode()"
+                  [disabled]="generatingBarcode()"
+                  class="shrink-0 rounded-lg border border-stone-200 px-3 text-xs font-semibold text-stone-600 hover:bg-stone-50 disabled:opacity-50"
+                >
+                  Generar
+                </button>
+              }
+            </div>
             <p class="text-xs text-stone-400 mt-1">Para cargarlo rápido en "Venta en el local" con un lector.</p>
+            @if (isEditMode && form.controls.barcode.value) {
+              <a [routerLink]="['/admin/codigo-producto', editingId]" class="inline-block mt-1 text-xs font-semibold text-brand-600 hover:underline">
+                🖨️ Imprimir etiqueta
+              </a>
+            }
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-stone-500 mb-1" for="ivaRate">Alícuota de IVA</label>
+            <select
+              id="ivaRate"
+              formControlName="ivaRate"
+              class="w-full rounded-lg border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+            >
+              <option [value]="21">21% (general)</option>
+              <option [value]="10.5">10,5%</option>
+              <option [value]="5">5%</option>
+              <option [value]="2.5">2,5%</option>
+              <option [value]="0">0% / Exento</option>
+            </select>
+            <p class="text-xs text-stone-400 mt-1">Sólo importa si facturás con ARCA como Responsable Inscripto.</p>
           </div>
 
           <div class="sm:col-span-2 border-t border-stone-200 pt-3">

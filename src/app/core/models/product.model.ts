@@ -65,6 +65,11 @@ export interface Product {
    * con un lector en Venta en el local.
    */
   barcode?: string;
+  /**
+   * Alícuota de IVA (21, 10.5, 5, 2.5 o 0) — vacío = 21% (default). Sólo
+   * importa para Factura A/B de ARCA (la C no discrimina IVA).
+   */
+  ivaRate?: number;
 }
 
 /**

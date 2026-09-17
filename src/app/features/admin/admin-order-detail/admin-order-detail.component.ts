@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -10,12 +11,14 @@ import { WhatsappService } from '../../../core/services/whatsapp.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { CreditNoteService } from '../../../core/services/credit-note.service';
 import { Order, PAYMENT_LABELS } from '../../../core/models/order.model';
 import { Product, ProductSize, stockForSize } from '../../../core/models/product.model';
+import { CreditNote } from '../../../core/models/credit-note.model';
 
 @Component({
   selector: 'app-admin-order-detail',
-  imports: [CurrencyPipe, DatePipe, RouterLink],
+  imports: [CurrencyPipe, DatePipe, RouterLink, FormsModule],
   templateUrl: './admin-order-detail.component.html',
   styleUrl: './admin-order-detail.component.css',
 })
@@ -30,9 +33,54 @@ export class AdminOrderDetailComponent {
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
   private readonly confirm = inject(ConfirmService);
+  private readonly creditNoteService = inject(CreditNoteService);
 
   /** true si el usuario puede confirmar / cancelar / editar líneas. */
   readonly canManage = () => this.auth.has('ORDERS_MANAGE');
+
+  // --- Notas de crédito (ítem 2) ---
+  readonly creditNotes = signal<CreditNote[]>([]);
+  readonly creditNoteAmount = signal<number | null>(null);
+  readonly creditNoteReason = signal('');
+  readonly creditNoteSaving = signal(false);
+  readonly creditNoteFormOpen = signal(false);
+
+  private loadCreditNotes(): void {
+    this.creditNoteService.list(this.orderId).subscribe({
+      next: (list) => this.creditNotes.set(list),
+      error: () => {},
+    });
+  }
+
+  openCreditNoteForm(): void {
+    const order = this.order();
+    this.creditNoteAmount.set(order?.total ?? null);
+    this.creditNoteReason.set('');
+    this.creditNoteFormOpen.set(true);
+  }
+
+  emitCreditNote(): void {
+    const amount = this.creditNoteAmount();
+    if (!amount || amount <= 0) {
+      this.toast.error('Cargá un monto válido.');
+      return;
+    }
+    this.creditNoteSaving.set(true);
+    this.creditNoteService.emit(this.orderId, amount, this.creditNoteReason().trim()).subscribe({
+      next: (cn) => {
+        this.creditNoteSaving.set(false);
+        this.creditNoteFormOpen.set(false);
+        this.creditNotes.update((list) => [cn, ...list]);
+        if (cn.error) this.toast.error('ARCA rechazó la nota de crédito: ' + cn.error);
+        else this.toast.success('Nota de crédito emitida.');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.creditNoteSaving.set(false);
+        const msg = (err?.error as { message?: string })?.message;
+        this.toast.error(msg || 'No se pudo emitir la nota de crédito.');
+      },
+    });
+  }
 
   private readonly orderId = this.route.snapshot.paramMap.get('id') ?? '';
 
@@ -64,6 +112,7 @@ export class AdminOrderDetailComponent {
           error: () => {},
         });
       }
+      if (order.invoiceType?.startsWith('FACTURA_')) this.loadCreditNotes();
     }
   }
 
@@ -184,6 +233,7 @@ export class AdminOrderDetailComponent {
             error: () => {},
           });
         }
+        if (updated.invoiceType?.startsWith('FACTURA_')) this.loadCreditNotes();
         this.saving.set(false);
         onSuccess?.();
       },
