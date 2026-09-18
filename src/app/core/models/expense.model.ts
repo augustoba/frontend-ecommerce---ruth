@@ -31,21 +31,10 @@ export interface BudgetStatus {
 }
 
 /**
- * Categorías fijas del lado del frontend (no hay una parametría de "categoría
- * de gasto" en el backend — `categoryOptionId` es sólo un string libre).
+ * Id de la parametría "Categoría de gasto" (seedeada por
+ * `DataSeeder.seedExpenseCategoryParamGroup`, ver backend). El dueño
+ * agrega/edita/borra las opciones desde `/admin/parametrias` como con
+ * cualquier otra parametría — `categoryOptionId` es la FK "blanda" a una
+ * opción de este grupo.
  */
-export const EXPENSE_CATEGORIES: { id: string; label: string }[] = [
-  { id: 'alquiler', label: 'Alquiler' },
-  { id: 'servicios', label: 'Servicios (luz/agua/internet)' },
-  { id: 'sueldos', label: 'Sueldos' },
-  { id: 'mercaderia', label: 'Mercadería / insumos' },
-  { id: 'impuestos', label: 'Impuestos' },
-  { id: 'marketing', label: 'Marketing / publicidad' },
-  { id: 'envios', label: 'Envíos / logística' },
-  { id: 'otros', label: 'Otros' },
-];
-
-export function expenseCategoryLabel(id: string | null | undefined): string {
-  if (!id) return 'Sin categoría';
-  return EXPENSE_CATEGORIES.find((c) => c.id === id)?.label ?? id;
-}
+export const EXPENSE_CATEGORY_GROUP_ID = 'grp-categoria-gasto';

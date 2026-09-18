@@ -96,7 +96,7 @@
       <div class="flex flex-wrap items-end gap-3">
         <select [ngModel]="budgetCategoryId()" (ngModelChange)="budgetCategoryId.set($event)" class="rounded-lg border border-stone-200 px-3 py-2 text-sm">
           <option value="">— Categoría —</option>
-          @for (c of categories; track c.id) {
+          @for (c of categories(); track c.id) {
             <option [value]="c.id">{{ c.label }}</option>
           }
         </select>
@@ -139,7 +139,7 @@
       class="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm mb-3"
     >
       <option value="">— Sin categoría —</option>
-      @for (c of categories; track c.id) {
+      @for (c of categories(); track c.id) {
         <option [value]="c.id">{{ c.label }}</option>
       }
     </select>

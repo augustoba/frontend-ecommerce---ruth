@@ -4,9 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ExpenseService } from '../../../core/services/expense.service';
 import { ExpenseBudgetService } from '../../../core/services/expense-budget.service';
+import { ParamService } from '../../../core/services/param.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { Expense, ExpenseInput, EXPENSE_CATEGORIES, expenseCategoryLabel } from '../../../core/models/expense.model';
+import { Expense, ExpenseInput, EXPENSE_CATEGORY_GROUP_ID } from '../../../core/models/expense.model';
 import { downloadCsv } from '../../../core/utils/csv';
 
 interface Draft {
@@ -32,6 +33,7 @@ const EMPTY: Draft = { date: today(), categoryOptionId: '', amount: null, descri
 export class AdminExpensesComponent {
   private readonly expenseService = inject(ExpenseService);
   private readonly budgetService = inject(ExpenseBudgetService);
+  private readonly paramService = inject(ParamService);
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);
 
@@ -42,12 +44,17 @@ export class AdminExpensesComponent {
   readonly budgetStatus = this.budgetService.statusList;
   readonly budgetSaving = this.budgetService.saving;
 
-  readonly categories = EXPENSE_CATEGORIES;
-  readonly categoryLabel = expenseCategoryLabel;
+  /** Opciones de la parametría "Categoría de gasto" — editable desde /admin/parametrias. */
+  readonly categories = computed(
+    () => this.paramService.getGroup(EXPENSE_CATEGORY_GROUP_ID)?.options ?? []
+  );
+  readonly categoryLabel = (id: string | null | undefined): string =>
+    id ? this.paramService.labelFor(EXPENSE_CATEGORY_GROUP_ID, id) || id : 'Sin categoría';
 
   constructor() {
     this.expenseService.ensureLoaded();
     this.budgetService.ensureLoaded();
+    this.paramService.ensureLoaded();
   }
 
   // --- filtro de fecha ---
