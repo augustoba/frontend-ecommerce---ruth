@@ -200,6 +200,11 @@
         @if (emailInvalid()) {
           <p class="mt-1 text-xs text-amber-600">Revisá el email, parece que está mal escrito.</p>
         }
+        @if (submitted() && mpEmailMissing()) {
+          <p class="mt-1 text-xs text-red-500 font-semibold">
+            Para pagar con Mercado Pago necesitamos tu mail (te mandamos el comprobante ahí).
+          </p>
+        }
 
         <!-- Entrega -->
         <p class="block text-sm font-semibold text-stone-700 mt-5 mb-2">¿Cómo lo recibís?</p>
@@ -316,16 +321,30 @@
           </div>
         </div>
 
+        @if (orderError()) {
+          <p class="text-sm text-red-500 font-semibold mt-4">{{ orderError() }}</p>
+        }
+
         <button
           type="button"
           (click)="sendOrder()"
           [disabled]="sending() || hasStockProblems() || (submitted() && !canSend())"
           class="mt-5 w-full flex items-center justify-center gap-2 bg-mint-500 hover:bg-mint-600 disabled:bg-stone-300 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-full transition-colors text-lg"
         >
-          <span aria-hidden="true">💬</span> {{ sending() ? 'Creando el pedido…' : 'Comprar por WhatsApp' }}
+          @if (paymentMethod() === 'MERCADOPAGO') {
+            <span aria-hidden="true">💳</span>
+            {{ sending() ? 'Redirigiendo a Mercado Pago…' : 'Pagar con Mercado Pago' }}
+          } @else {
+            <span aria-hidden="true">💬</span>
+            {{ sending() ? 'Creando el pedido…' : 'Comprar por WhatsApp' }}
+          }
         </button>
         <p class="text-xs text-stone-400 text-center mt-2">
-          Se abre WhatsApp con tu pedido armado (entrega y forma de pago incluidas). Enviás el mensaje y coordinamos el resto.
+          @if (paymentMethod() === 'MERCADOPAGO') {
+            Te vamos a redirigir a Mercado Pago para completar el pago de forma segura.
+          } @else {
+            Se abre WhatsApp con tu pedido armado (entrega y forma de pago incluidas). Enviás el mensaje y coordinamos el resto.
+          }
         </p>
       } @else {
         <div class="text-center py-4">

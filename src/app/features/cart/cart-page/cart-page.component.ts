@@ -220,6 +220,7 @@ export class CartPageComponent {
 
   readonly orderSent = signal(false);
   readonly sending = signal(false);
+  readonly orderError = signal<string | null>(null);
   /** Pedido ya creado para este carrito (se reusa si el cliente reabre WhatsApp) */
   readonly currentOrder = signal<Order | null>(null);
 
@@ -234,9 +235,15 @@ export class CartPageComponent {
   readonly referenceMissing = computed(
     () => this.referenceRequired() && !this.shippingReference().trim()
   );
+  /** Mercado Pago manda el comprobante por mail — sin eso no hay forma de mandarlo. */
+  readonly mpEmailMissing = computed(
+    () => this.paymentMethod() === 'MERCADOPAGO' && !this.customerEmail().trim()
+  );
+
   readonly canSend = computed(() => {
     if (this.hasStockProblems()) return false;
     if (!this.deliveryMethod() || this.shippingAddressMissing() || this.referenceMissing()) return false;
+    if (this.mpEmailMissing()) return false;
     // si el negocio todavía no cargó medios de pago, se coordina por WhatsApp
     if (this.paymentOptions().length === 0) return true;
     return !!this.paymentMethod() && this.paymentOptions().includes(this.paymentMethod()!);
@@ -280,7 +287,9 @@ export class CartPageComponent {
 
     const isShipping = this.deliveryMethod() === 'SHIPPING';
     const addr = this.shippingAddr();
+    const isMercadoPago = this.paymentMethod() === 'MERCADOPAGO';
 
+    this.orderError.set(null);
     this.sending.set(true);
     this.orderService
       .create(this.customerName(), this.items(), {
@@ -295,13 +304,28 @@ export class CartPageComponent {
       })
       .subscribe({
         next: (order) => {
+          // Mercado Pago paga de verdad online: no hay nada que coordinar por
+          // WhatsApp, se redirige directo al checkout de MP.
+          if (isMercadoPago && order.mpCheckoutUrl) {
+            rememberOrder(order.code, this.customerName());
+            window.location.href = order.mpCheckoutUrl;
+            return;
+          }
           this.sending.set(false);
           this.currentOrder.set(order);
           this.orderSent.set(true);
           rememberOrder(order.code, this.customerName());
           this.whatsappService.openOrderChat(order);
         },
-        error: () => this.sending.set(false),
+        error: (err) => {
+          this.sending.set(false);
+          this.orderError.set(
+            (err?.error as { message?: string })?.message ??
+              (isMercadoPago
+                ? 'No pudimos iniciar el pago con Mercado Pago. Probá de nuevo.'
+                : 'No pudimos crear el pedido. Probá de nuevo.')
+          );
+        },
       });
   }
 }

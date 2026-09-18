@@ -53,6 +53,20 @@ export interface SiteSettings {
    */
   cloudinaryCloudName: string | null;
   cloudinaryUploadPreset: string | null;
+  /**
+   * true sólo si el dueño activó el checkout Y ya cargó su Access Token —
+   * recién ahí tiene sentido ofrecer "Pagar con Mercado Pago" en el carrito.
+   * Cuando está en true, Mercado Pago pasa a ser el ÚNICO medio de pago
+   * online (ver `availablePaymentMethods`) — no aplica a la venta local.
+   */
+  mercadoPagoAvailable: boolean;
+}
+
+/** Credenciales de Mercado Pago. `accessToken` nunca viaja del backend — sólo `accessTokenSet`. */
+export interface MercadoPagoConfig {
+  mpEnabled: boolean;
+  accessTokenSet: boolean;
+  publicKey: string | null;
 }
 
 /** Logo por defecto (archivo estático en `public/`) si el negocio no subió uno. */
@@ -91,6 +105,7 @@ const DEFAULTS: SiteSettings = {
   // campos, ej. justo después de deployar esta migración).
   cloudinaryCloudName: 'jitutkbc',
   cloudinaryUploadPreset: 'estilospequenos',
+  mercadoPagoAvailable: false,
 };
 
 /**
@@ -115,6 +130,9 @@ export class SettingsService {
   /** Medios de pago que se ofrecen en el checkout: habilitados Y con su dato cargado. */
   readonly availablePaymentMethods = computed<PaymentMethod[]>(() => {
     const s = this.settingsSignal();
+    // Mercado Pago es excluyente en la venta online: si está activo, es la
+    // única opción del carrito (no coexiste con transferencia/QR/efectivo).
+    if (s.mercadoPagoAvailable) return ['MERCADOPAGO'];
     const out: PaymentMethod[] = [];
     if (s.paymentTransferEnabled && s.paymentTransferAlias?.trim()) out.push('TRANSFER');
     if (s.paymentQrTransferEnabled && s.paymentQrTransferImage) out.push('QR_TRANSFER');
@@ -271,6 +289,38 @@ export class SettingsService {
     return this.http.put<MailConfig>(apiUrl('/admin/settings/mail'), req).pipe(
       map((res) => {
         this.saving.set(false);
+        return res;
+      }),
+      catchError(() => {
+        this.saving.set(false);
+        return of(null);
+      })
+    );
+  }
+
+  /** Credenciales de Mercado Pago. Las carga/edita el dueño de la tienda (`PAYMENTS_MANAGE`). */
+  getMercadoPagoConfig(): Observable<MercadoPagoConfig | null> {
+    return this.http
+      .get<MercadoPagoConfig>(apiUrl('/admin/settings/mercadopago'))
+      .pipe(catchError(() => of(null)));
+  }
+
+  /**
+   * Guarda la config de Mercado Pago. `accessToken` vacío/null = no tocar el
+   * que ya está guardado (mismo criterio que el resto de los secretos del
+   * panel). Recarga `/api/settings` al terminar para que el carrito refleje
+   * al toque si Mercado Pago pasa a estar disponible u ocultarse.
+   */
+  updateMercadoPagoConfig(req: {
+    mpEnabled: boolean;
+    accessToken: string | null;
+    publicKey: string | null;
+  }): Observable<MercadoPagoConfig | null> {
+    this.saving.set(true);
+    return this.http.put<MercadoPagoConfig>(apiUrl('/admin/settings/mercadopago'), req).pipe(
+      map((res) => {
+        this.saving.set(false);
+        this.reload();
         return res;
       }),
       catchError(() => {
