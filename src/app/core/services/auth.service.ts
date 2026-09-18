@@ -135,14 +135,33 @@ export class AuthService {
   }
 
   /**
-   * "Olvidé mi contraseña": le pide al backend que le mande una contraseña
-   * nueva por mail (no queda logueado; hay que entrar con esa y cambiarla).
-   * Responde igual exista o no el DNI, así que `ok: true` no confirma nada.
+   * "Olvidé mi contraseña": le pide al backend que le mande un link (de un
+   * solo uso, vence en 1 hora) para elegir una contraseña nueva. Responde
+   * igual exista o no el DNI, así que `ok: true` no confirma nada.
    */
   forgotPassword(dni: string): Observable<AuthResult> {
     return this.http.post(apiUrl('/auth/forgot-password'), { dni }).pipe(
       map(() => ({ ok: true }) as AuthResult),
       catchError((err: HttpErrorResponse) => this.handleAuthError(err))
+    );
+  }
+
+  /**
+   * Confirma la recuperación con el token del link + la contraseña nueva.
+   * No queda logueado: el mensaje de éxito manda a hacer login con la nueva.
+   * 400 = el link venció o ya se usó (mensaje del backend, se muestra tal cual).
+   */
+  resetPassword(token: string, newPassword: string): Observable<AuthResult> {
+    return this.http.post(apiUrl('/auth/reset-password'), { token, newPassword }).pipe(
+      map(() => ({ ok: true }) as AuthResult),
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 429) return this.handleAuthError(err);
+        const bodyMsg = (err.error as { message?: string } | null)?.message;
+        return of<AuthResult>({
+          ok: false,
+          message: bodyMsg || 'No se pudo cambiar la contraseña. Probá de nuevo.',
+        });
+      })
     );
   }
 
