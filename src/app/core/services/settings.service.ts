@@ -69,6 +69,12 @@ export interface MercadoPagoConfig {
   publicKey: string | null;
 }
 
+/** Alerta diaria por mail de talles en stock bajo. */
+export interface StockAlertConfig {
+  lowStockAlertEnabled: boolean;
+  lowStockAlertEmail: string | null;
+}
+
 /** Logo por defecto (archivo estático en `public/`) si el negocio no subió uno. */
 export const LOGO_FALLBACK = 'logo.jpeg';
 
@@ -321,6 +327,27 @@ export class SettingsService {
       map((res) => {
         this.saving.set(false);
         this.reload();
+        return res;
+      }),
+      catchError(() => {
+        this.saving.set(false);
+        return of(null);
+      })
+    );
+  }
+
+  /** Alerta diaria por mail de talles en stock bajo. La carga/edita `PRODUCTS_MANAGE`. */
+  getStockAlertConfig(): Observable<StockAlertConfig | null> {
+    return this.http
+      .get<StockAlertConfig>(apiUrl('/admin/settings/stock-alert'))
+      .pipe(catchError(() => of(null)));
+  }
+
+  updateStockAlertConfig(req: StockAlertConfig): Observable<StockAlertConfig | null> {
+    this.saving.set(true);
+    return this.http.put<StockAlertConfig>(apiUrl('/admin/settings/stock-alert'), req).pipe(
+      map((res) => {
+        this.saving.set(false);
         return res;
       }),
       catchError(() => {

@@ -74,5 +74,12 @@ export class AdminConfigHubComponent {
       desc: 'Credenciales SMTP para mandar los mails de campañas.',
       where: 'Lo usa la campaña automática de cupones (ver Campañas).',
     },
+    {
+      path: '/admin/config/stock-bajo',
+      icon: '📦',
+      title: 'Alertas de stock bajo',
+      desc: 'Mail diario con los talles por reponer, sin tener que mirar el panel.',
+      where: 'Se manda a las 7 AM si hay algo por debajo del umbral.',
+    },
   ];
 }
