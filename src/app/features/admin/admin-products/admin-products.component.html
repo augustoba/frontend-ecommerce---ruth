@@ -158,6 +158,14 @@
                   >
                     🏷️ QR
                   </a>
+                  @if (product.barcode) {
+                    <a
+                      [routerLink]="['/admin/codigo-barras', product.id]"
+                      class="text-stone-400 hover:text-brand-600 font-semibold"
+                    >
+                      📊 Código
+                    </a>
+                  }
                   <button
                     type="button"
                     (click)="duplicate(product.id)"

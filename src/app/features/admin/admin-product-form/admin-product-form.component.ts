@@ -45,7 +45,7 @@ export class AdminProductFormComponent {
   readonly sizeScales = this.sizeScaleService.scales;
   readonly saving = this.productService.saving;
 
-  private readonly editingId = this.route.snapshot.paramMap.get('id');
+  readonly editingId = this.route.snapshot.paramMap.get('id');
   readonly isEditMode = !!this.editingId;
 
   /** El producto a editar lo trae el `productResolver` (route data). */
@@ -92,6 +92,7 @@ export class AdminProductFormComponent {
     sizeScaleId: [this.editingProduct?.sizeScaleId ?? ''],
     supplierId: [this.editingProduct?.supplierId ?? ''],
     costPrice: [this.editingProduct?.costPrice ?? 0, [Validators.min(0)]],
+    barcode: [this.editingProduct?.barcode ?? ''],
   });
 
   /** Umbral de stock bajo propio del producto (vacío = usar el default global). */
@@ -340,6 +341,17 @@ export class AdminProductFormComponent {
     return Math.abs(amount).toLocaleString('es-AR');
   }
 
+  /** Sólo tiene sentido con el producto ya guardado (necesita su id). No pisa un código ya cargado. */
+  readonly generatingBarcode = signal(false);
+  generateBarcode(): void {
+    if (!this.editingId || this.generatingBarcode()) return;
+    this.generatingBarcode.set(true);
+    this.productService.generateBarcode(this.editingId, (p) => {
+      this.generatingBarcode.set(false);
+      this.form.controls.barcode.setValue(p.barcode ?? '');
+    });
+  }
+
   save(): void {
     this.submitted.set(true);
     if (
@@ -362,6 +374,7 @@ export class AdminProductFormComponent {
       supplierId: value.supplierId || undefined,
       costPrice: value.costPrice > 0 ? value.costPrice : undefined,
       lowStockThreshold: this.lowStockThreshold() ?? undefined,
+      barcode: value.barcode.trim() || undefined,
       images: this.images(),
       params: this.selectedParams(),
       sizeStocks: Array.from(this.sizeStocks(), ([size, stock]) => ({ size, stock })),

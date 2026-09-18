@@ -58,6 +58,12 @@ export interface Product {
    * bajo" (para las alertas de reposición). Vacío = usar el default global (3).
    */
   lowStockThreshold?: number;
+  /**
+   * Código de barras interno, opcional — alternativa/complemento al QR (que
+   * siempre existe, no hace falta cargarlo). Se puede tipear uno real del
+   * fabricante o generar uno propio desde la ficha del producto.
+   */
+  barcode?: string;
 }
 
 /**

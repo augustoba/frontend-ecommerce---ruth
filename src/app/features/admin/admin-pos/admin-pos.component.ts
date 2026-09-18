@@ -52,11 +52,18 @@ export class AdminPosComponent {
     this.search.set(product.name);
   }
 
-  /** Productos que matchean el buscador (ordenados por nombre). */
+  /**
+   * Productos que matchean el buscador (ordenados por nombre). También
+   * matchea por código de barras completo — un lector USB conectado no es
+   * más que un teclado que "tipea" el código y aprieta Enter en el foco
+   * actual, así que alcanza con que el buscador lo reconozca.
+   */
   readonly matchingProducts = computed(() => {
     const term = this.search().trim().toLowerCase();
     const list = term
-      ? this.products().filter((p) => p.name.toLowerCase().includes(term))
+      ? this.products().filter(
+          (p) => p.name.toLowerCase().includes(term) || p.barcode?.toLowerCase() === term
+        )
       : this.products();
     return [...list].sort((a, b) => a.name.localeCompare(b.name));
   });

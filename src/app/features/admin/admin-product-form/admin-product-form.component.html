@@ -308,6 +308,46 @@
         </p>
       </div>
 
+      <!-- Código de barras: opcional, alternativa/complemento al QR (que siempre existe) -->
+      <div class="sm:col-span-2 rounded-xl bg-stone-50 ring-1 ring-black/5 p-4 mt-2">
+        <p class="text-sm font-semibold text-stone-700">Código de barras</p>
+        <p class="text-xs text-stone-400 mb-3">
+          Opcional. El producto siempre tiene su QR (no hace falta cargar nada); esto es además, por si
+          preferís un código de barras para el lector del POS — el del fabricante, o uno interno generado acá.
+        </p>
+        <div class="flex flex-wrap items-end gap-2">
+          <div class="flex-1 min-w-[10rem]">
+            <label class="block text-xs font-semibold text-stone-500 mb-1" for="barcode">Código</label>
+            <input
+              id="barcode"
+              type="text"
+              formControlName="barcode"
+              placeholder="Escaneá o tipeá uno, o generá uno interno"
+              class="w-full rounded-lg border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+            />
+          </div>
+          @if (isEditMode) {
+            <button
+              type="button"
+              (click)="generateBarcode()"
+              [disabled]="generatingBarcode() || !!form.controls.barcode.value"
+              class="bg-stone-800 hover:bg-stone-900 disabled:bg-stone-300 disabled:cursor-not-allowed text-white font-semibold py-2.5 px-4 rounded-lg text-sm"
+            >
+              {{ generatingBarcode() ? 'Generando…' : 'Generar código interno' }}
+            </button>
+            @if (form.controls.barcode.value) {
+              <a [routerLink]="['/admin/codigo-barras', editingId]"
+                class="text-sm font-semibold text-brand-600 hover:underline py-2.5">
+                🏷️ Ver etiqueta
+              </a>
+            }
+          }
+        </div>
+        @if (!isEditMode) {
+          <p class="text-xs text-stone-400 mt-2">Guardá el producto primero para poder generar uno interno.</p>
+        }
+      </div>
+
       <!-- Compra / proveedor: datos internos, NO se muestran en la tienda -->
       <div class="sm:col-span-2 rounded-xl bg-stone-50 ring-1 ring-black/5 p-4 mt-2">
         <p class="text-sm font-semibold text-stone-700">Compra / proveedor</p>

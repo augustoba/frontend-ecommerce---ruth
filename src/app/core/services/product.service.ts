@@ -162,6 +162,23 @@ export class ProductService {
     });
   }
 
+  /** Busca un producto por código de barras (para "cargar por código" en el panel/POS). 404 si no existe. */
+  findByBarcode(code: string): Observable<Product> {
+    return this.http.get<Product>(apiUrl('/admin/products/by-barcode'), { params: { code } });
+  }
+
+  /** Genera un código interno (no pisa uno ya cargado). Recarga las listas al terminar. */
+  generateBarcode(id: string, onSuccess?: (product: Product) => void): void {
+    this.http.post<Product>(apiUrl(`/admin/products/${id}/generate-barcode`), {}).subscribe({
+      next: (p) => {
+        this.adminStore.reload();
+        this.publicStore.load();
+        onSuccess?.(p);
+      },
+      error: () => {},
+    });
+  }
+
   private mutate(obs: Observable<unknown>, onSuccess?: () => void): void {
     this.adminStore.mutate(obs, () => {
       this.publicStore.load();
