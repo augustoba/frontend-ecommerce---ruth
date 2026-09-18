@@ -111,6 +111,14 @@ export class AdminPosComponent {
   });
   readonly total = computed(() => this.subtotal() - this.discountAmount() - this.couponAmount());
 
+  /** Sólo tiene sentido si paga en efectivo — cartel grande de vuelto para el vendedor. */
+  readonly cashReceived = signal<number | null>(null);
+  readonly changeDue = computed(() => {
+    const received = this.cashReceived();
+    if (this.paymentMethod() !== 'CASH' || received === null) return null;
+    return received - this.total();
+  });
+
   stockOf(product: Product, size: string): number {
     return stockForSize(product, size);
   }
@@ -214,5 +222,6 @@ export class AdminPosComponent {
     this.coupon.set(null);
     this.couponInput.set('');
     this.leavePending.set(false);
+    this.cashReceived.set(null);
   }
 }

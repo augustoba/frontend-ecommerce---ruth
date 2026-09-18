@@ -152,6 +152,29 @@
       </div>
     </div>
 
+    @if (paymentMethod() === 'CASH') {
+      <div class="mt-3">
+        <label class="block text-xs font-semibold text-stone-500 mb-1">Efectivo recibido</label>
+        <input type="number" min="0" inputmode="decimal"
+          [ngModel]="cashReceived()" (ngModelChange)="cashReceived.set($event === '' ? null : +$event)"
+          placeholder="$ 0"
+          class="w-full rounded-lg border border-stone-200 px-3 py-2 text-lg font-bold" />
+      </div>
+      @if (cashReceived() !== null) {
+        @if (changeDue()! >= 0) {
+          <div class="mt-3 rounded-xl bg-mint-500 text-white text-center py-4 px-3">
+            <p class="text-xs font-bold uppercase tracking-wide opacity-90">Vuelto</p>
+            <p class="text-4xl font-display font-extrabold">{{ changeDue() | currency: 'ARS' : 'symbol' : '1.0-0' }}</p>
+          </div>
+        } @else {
+          <div class="mt-3 rounded-xl bg-red-500 text-white text-center py-4 px-3">
+            <p class="text-xs font-bold uppercase tracking-wide opacity-90">Falta</p>
+            <p class="text-4xl font-display font-extrabold">{{ -changeDue()! | currency: 'ARS' : 'symbol' : '1.0-0' }}</p>
+          </div>
+        }
+      }
+    }
+
     <label class="flex items-center gap-2 mt-4 text-xs text-stone-500 font-semibold">
       <input type="checkbox" [ngModel]="leavePending()" (ngModelChange)="leavePending.set($event)"
         class="w-4 h-4 accent-mint-500" />
