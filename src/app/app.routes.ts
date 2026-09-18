@@ -59,6 +59,14 @@ export const routes: Routes = [
     title: 'Recuperar contraseña | Admin',
   },
   {
+    path: 'admin/restablecer-clave',
+    loadComponent: () =>
+      import('./features/admin/admin-reset-password/admin-reset-password.component').then(
+        (m) => m.AdminResetPasswordComponent
+      ),
+    title: 'Elegir contraseña nueva | Admin',
+  },
+  {
     path: 'admin/recibo/:id',
     canActivate: [adminGuard, permissionGuard],
     data: { permission: 'ORDERS_VIEW' },
@@ -137,6 +145,17 @@ export const routes: Routes = [
           ),
         resolve: { product: productResolver },
         title: 'QR del producto | Admin',
+      },
+      {
+        path: 'codigo-barras/:id',
+        canActivate: [permissionGuard],
+        data: { permission: 'PRODUCTS_VIEW' },
+        loadComponent: () =>
+          import('./features/admin/admin-product-barcode/admin-product-barcode.component').then(
+            (m) => m.AdminProductBarcodeComponent
+          ),
+        resolve: { product: productResolver },
+        title: 'Código de barras del producto | Admin',
       },
       {
         path: 'turnos',
@@ -404,6 +423,16 @@ export const routes: Routes = [
             (m) => m.AdminMailSettingsComponent
           ),
         title: 'Servicio de mail | Admin',
+      },
+      {
+        path: 'config/stock-bajo',
+        canActivate: [permissionGuard],
+        data: { permission: 'PRODUCTS_MANAGE' },
+        loadComponent: () =>
+          import('./features/admin/admin-config/admin-stock-alert-settings.component').then(
+            (m) => m.AdminStockAlertSettingsComponent
+          ),
+        title: 'Alertas de stock bajo | Admin',
       },
       { path: 'ajustes', redirectTo: 'config', pathMatch: 'full' },
       {
