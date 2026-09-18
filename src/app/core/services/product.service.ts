@@ -141,8 +141,25 @@ export class ProductService {
     );
   }
 
-  setStock(id: string, size: string, stock: number): void {
-    this.mutate(this.http.patch(apiUrl(`/admin/products/${id}/stock`), { size, stock }));
+  /** Ajuste manual de stock (pisa el número) — `note` opcional queda en el historial de movimientos. */
+  setStock(id: string, size: string, stock: number, note?: string, onSuccess?: () => void): void {
+    this.mutate(this.http.patch(apiUrl(`/admin/products/${id}/stock`), { size, stock, note }), onSuccess);
+  }
+
+  /** Registra una compra a proveedor: suma stock y recalcula el costo por promedio ponderado. */
+  registerPurchase(
+    id: string,
+    input: { size: string; quantity: number; unitCost: number; supplierId?: string | null },
+    onSuccess?: (product: Product) => void
+  ): void {
+    this.http.post<Product>(apiUrl(`/admin/products/${id}/purchase`), input).subscribe({
+      next: (p) => {
+        this.adminStore.reload();
+        this.publicStore.load();
+        onSuccess?.(p);
+      },
+      error: () => {},
+    });
   }
 
   private mutate(obs: Observable<unknown>, onSuccess?: () => void): void {

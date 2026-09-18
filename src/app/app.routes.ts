@@ -298,6 +298,36 @@ export const routes: Routes = [
         title: 'Métricas | Admin',
       },
       {
+        path: 'gastos',
+        canActivate: [permissionGuard],
+        data: { permission: 'EXPENSES_MANAGE' },
+        loadComponent: () =>
+          import('./features/admin/admin-expenses/admin-expenses.component').then(
+            (m) => m.AdminExpensesComponent
+          ),
+        title: 'Gastos | Admin',
+      },
+      {
+        path: 'balance',
+        canActivate: [permissionGuard],
+        data: { permission: 'FINANCE_VIEW' },
+        loadComponent: () =>
+          import('./features/admin/admin-balance/admin-balance.component').then(
+            (m) => m.AdminBalanceComponent
+          ),
+        title: 'Balance | Admin',
+      },
+      {
+        path: 'movimientos-stock',
+        canActivate: [permissionGuard],
+        data: { permission: 'STOCK_MOVEMENTS_VIEW' },
+        loadComponent: () =>
+          import('./features/admin/admin-stock-movements/admin-stock-movements.component').then(
+            (m) => m.AdminStockMovementsComponent
+          ),
+        title: 'Movimientos de stock | Admin',
+      },
+      {
         path: 'config',
         canActivate: [permissionGuard],
         data: { permission: 'PLATFORM_SETTINGS_MANAGE' },

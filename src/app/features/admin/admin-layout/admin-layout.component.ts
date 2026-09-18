@@ -44,6 +44,8 @@ const GROUPS: NavGroup[] = [
       { path: '/admin/cupones', label: 'Cupones', permission: 'COUPONS_MANAGE' },
       { path: '/admin/campanias', label: 'Campañas', permission: 'MARKETING_MANAGE' },
       { path: '/admin/metricas', label: 'Métricas', permission: 'METRICS_VIEW' },
+      { path: '/admin/gastos', label: 'Gastos', permission: 'EXPENSES_MANAGE' },
+      { path: '/admin/balance', label: 'Balance', permission: 'FINANCE_VIEW' },
     ],
   },
   {
@@ -52,6 +54,7 @@ const GROUPS: NavGroup[] = [
     icon: '📦',
     items: [
       { path: '/admin/productos', label: 'Productos', permission: 'PRODUCTS_VIEW' },
+      { path: '/admin/movimientos-stock', label: 'Movimientos de stock', permission: 'STOCK_MOVEMENTS_VIEW' },
       { path: '/admin/parametrias', label: 'Parametrías', permission: 'PARAMS_MANAGE' },
       { path: '/admin/talles', label: 'Talles', permission: 'SIZE_SCALES_MANAGE' },
       { path: '/admin/proveedores', label: 'Proveedores', permission: 'SUPPLIERS_MANAGE' },
