@@ -42,9 +42,14 @@ export class ProductDetailPageComponent {
   readonly quantity = signal(1);
   readonly justAdded = signal(false);
 
-  /** Galería de fotos */
+  /**
+   * Galería de fotos. El listado público (de donde sale `product()`) ya no
+   * trae `images[]` completo — sólo `imageUrl` (portada) —, así que la
+   * galería se pide aparte al detalle (`fetchOnePublic`, ver constructor).
+   */
   readonly selectedImageIndex = signal(0);
-  readonly images = computed(() => this.product()?.images ?? []);
+  readonly detailImages = signal<string[]>([]);
+  readonly images = computed(() => this.detailImages());
   readonly mainImage = computed(
     () => this.images()[this.selectedImageIndex()] ?? this.product()?.imageUrl ?? ''
   );
@@ -114,11 +119,20 @@ export class ProductDetailPageComponent {
 
   constructor() {
     // Si cambia el producto (navegación entre fichas), reseteamos la selección
-    this.route.paramMap.subscribe(() => {
+    // y volvemos a pedir la galería completa del nuevo producto.
+    this.route.paramMap.subscribe((params) => {
       this.selectedSize.set(null);
       this.quantity.set(1);
       this.justAdded.set(false);
       this.selectedImageIndex.set(0);
+      this.detailImages.set([]);
+      const id = params.get('id');
+      if (id) {
+        this.productService.fetchOnePublic(id).subscribe({
+          next: (p) => this.detailImages.set(p.images ?? []),
+          error: () => {},
+        });
+      }
     });
   }
 

@@ -83,6 +83,17 @@ export class ProductService {
     return this.http.get<Product>(apiUrl(`/admin/products/${id}`));
   }
 
+  /**
+   * Detalle público de un producto (`GET /api/products/{id}`). A diferencia
+   * del listado (`/api/products`, en `availableProducts`), trae la galería
+   * completa (`images[]`) — el listado ya no la incluye (no se usa en las
+   * tarjetas, ver `ProductDtos.PublicProductListResponse` en el backend), así
+   * que la ficha de producto la pide aparte.
+   */
+  fetchOnePublic(id: string): Observable<Product> {
+    return this.http.get<Product>(apiUrl(`/products/${id}`));
+  }
+
   // --- Mutaciones (admin) ---
 
   create(input: ProductInput, onSuccess?: () => void): void {
