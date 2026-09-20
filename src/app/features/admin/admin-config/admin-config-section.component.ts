@@ -13,11 +13,12 @@ import { AdminMercadoPagoSettingsComponent } from './admin-mercadopago-settings.
 type Section = 'identity' | 'social' | 'about' | 'whatsapp' | 'pagos';
 
 /** Campos de `SiteSettings` que guardan la URL de una imagen (Cloudinary). */
-type ImageField = 'logoUrl' | 'paymentQrTransferImage' | 'paymentQrCardImage';
+type ImageField = 'logoUrl' | 'storePhotoUrl' | 'paymentQrTransferImage' | 'paymentQrCardImage';
 
 /** Carpeta y nombre en Cloudinary para cada campo de imagen. */
 const IMAGE_UPLOAD: Record<ImageField, { folder: string; publicId: string }> = {
   logoUrl: { folder: 'estilos-pequenos/logo', publicId: 'logo' },
+  storePhotoUrl: { folder: 'estilos-pequenos/local', publicId: 'foto-local' },
   paymentQrTransferImage: { folder: 'estilos-pequenos/pagos', publicId: 'qr-transferencia' },
   paymentQrCardImage: { folder: 'estilos-pequenos/pagos', publicId: 'qr-tarjeta' },
 };
@@ -38,7 +39,10 @@ const META: Record<Section, { title: string; blurb: string; focus: PreviewFocus[
   },
   about: {
     title: 'Sobre nosotros',
-    blurb: 'El texto de presentación del local. Se muestra en el pie de página, debajo del nombre.',
+    blurb:
+      'El texto de presentación del local. Se muestra en el pie de página, debajo del nombre. ' +
+      'Si activás la página "Quiénes somos", este mismo texto (completo) se muestra ahí también, ' +
+      'junto con la foto del local si cargaste una.',
     focus: ['about'],
   },
   whatsapp: {
@@ -194,6 +198,8 @@ export class AdminConfigSectionComponent {
             whatsappIntro: d.whatsappIntro?.trim() || null,
             whatsappClosing: d.whatsappClosing?.trim() || null,
             storeAddress: d.storeAddress?.trim() || null,
+            storePhotoUrl: d.storePhotoUrl || null,
+            aboutPageEnabled: d.aboutPageEnabled,
           });
 
     save$.subscribe((ok) => {

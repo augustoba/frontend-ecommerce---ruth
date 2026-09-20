@@ -6,14 +6,28 @@
   @if (helpText()) {
     <div class="bg-white rounded-2xl ring-1 ring-black/5 p-5 sm:p-6 text-stone-700 leading-relaxed whitespace-pre-line">{{ helpText() }}</div>
   } @else {
-    <div class="bg-white rounded-2xl ring-1 ring-black/5 p-5 sm:p-6 text-stone-700 leading-relaxed">
-      <ol class="list-decimal pl-5 space-y-2">
-        <li>Elegí las prendas, seleccioná el talle y agregalas al carrito.</li>
-        <li>En el carrito cargá tu nombre, elegí retiro o envío y la forma de pago.</li>
-        <li>Tocá <span class="font-semibold">"Comprar por WhatsApp"</span>: se abre el chat con el pedido ya armado.</li>
-        <li>Nos escribís y coordinamos el pago (te pasamos el alias o link de Mercado Pago) y la entrega.</li>
-      </ol>
-    </div>
+    <ol class="flex flex-col gap-3">
+      <li class="bg-white rounded-2xl ring-1 ring-black/5 p-5 flex items-start gap-4">
+        <span aria-hidden="true" class="text-2xl leading-none shrink-0">🛍️</span>
+        <p class="text-stone-700 leading-relaxed">Elegí las prendas, seleccioná el talle y agregalas al carrito.</p>
+      </li>
+      <li class="bg-white rounded-2xl ring-1 ring-black/5 p-5 flex items-start gap-4">
+        <span aria-hidden="true" class="text-2xl leading-none shrink-0">📝</span>
+        <p class="text-stone-700 leading-relaxed">En el carrito cargá tu nombre, elegí retiro o envío y la forma de pago.</p>
+      </li>
+      <li class="bg-white rounded-2xl ring-1 ring-black/5 p-5 flex items-start gap-4">
+        <span aria-hidden="true" class="text-2xl leading-none shrink-0">💬</span>
+        <p class="text-stone-700 leading-relaxed">
+          Tocá <span class="font-semibold">"Comprar por WhatsApp"</span>: se abre el chat con el pedido ya armado.
+        </p>
+      </li>
+      <li class="bg-white rounded-2xl ring-1 ring-black/5 p-5 flex items-start gap-4">
+        <span aria-hidden="true" class="text-2xl leading-none shrink-0">✅</span>
+        <p class="text-stone-700 leading-relaxed">
+          Nos escribís y coordinamos el pago (te pasamos el alias o link de Mercado Pago) y la entrega.
+        </p>
+      </li>
+    </ol>
   }
 
   @if (faq().length) {

@@ -35,6 +35,12 @@ export const routes: Routes = [
     title: 'Cómo comprar | Estilos Pequeños',
   },
   {
+    path: 'nosotros',
+    loadComponent: () =>
+      import('./features/about/about-page/about-page.component').then((m) => m.AboutPageComponent),
+    title: 'Quiénes somos | Estilos Pequeños',
+  },
+  {
     path: 'mis-pedidos',
     loadComponent: () =>
       import('./features/orders/mis-pedidos-page/mis-pedidos-page.component').then(

@@ -36,6 +36,10 @@ export interface SiteSettings {
   helpText: string | null;
   /** Preguntas frecuentes: bloques separados por línea en blanco (1ra línea = pregunta). */
   faqText: string | null;
+  /** Foto del local (URL o data URI). null = no tiene local físico o no la cargó. */
+  storePhotoUrl: string | null;
+  /** true = existe la página pública "Quiénes somos" (`/nosotros`) y aparece en el footer. */
+  aboutPageEnabled: boolean;
   /** Un medio de pago aparece en el checkout si está habilitado Y tiene su dato. */
   paymentTransferEnabled: boolean;
   paymentTransferAlias: string | null;
@@ -99,6 +103,8 @@ const DEFAULTS: SiteSettings = {
   storeAddress: null,
   helpText: null,
   faqText: null,
+  storePhotoUrl: null,
+  aboutPageEnabled: false,
   paymentTransferEnabled: false,
   paymentTransferAlias: null,
   paymentQrTransferEnabled: false,
@@ -196,10 +202,12 @@ export class SettingsService {
     const {
       storeName, whatsappNumber, aboutText, instagram, facebookUrl, logoUrl,
       whatsappIntro, whatsappClosing, storeAddress, helpText, faqText,
+      storePhotoUrl, aboutPageEnabled,
     } = full;
     return this.putMerged('/admin/settings/platform', {
       storeName, whatsappNumber, aboutText, instagram, facebookUrl, logoUrl,
       whatsappIntro, whatsappClosing, storeAddress, helpText, faqText,
+      storePhotoUrl, aboutPageEnabled,
     });
   }
 

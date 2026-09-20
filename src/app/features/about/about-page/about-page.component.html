@@ -1,0 +1,52 @@
+<section class="max-w-2xl mx-auto px-4 sm:px-6 py-8">
+  <a routerLink="/" class="text-sm font-semibold text-brand-600 hover:underline">← Volver al catálogo</a>
+
+  <div class="flex items-center gap-4 mt-4 mb-6">
+    <img [src]="logoSrc() | cldImg: 128" [alt]="settings().storeName"
+      class="h-16 w-16 rounded-full object-cover ring-1 ring-black/5 bg-white shrink-0" />
+    <h1 class="font-display font-extrabold text-2xl sm:text-3xl text-stone-800">{{ settings().storeName }}</h1>
+  </div>
+
+  @if (settings().aboutText) {
+    <div class="bg-white rounded-2xl ring-1 ring-black/5 p-5 sm:p-6 text-stone-700 leading-relaxed whitespace-pre-line mb-6">
+      {{ settings().aboutText }}
+    </div>
+  }
+
+  @if (settings().storePhotoUrl) {
+    <img [src]="settings().storePhotoUrl! | cldImg: 1200" alt="Foto de {{ settings().storeName }}"
+      class="w-full rounded-2xl ring-1 ring-black/5 object-cover max-h-96 mb-6" />
+  }
+
+  @if (settings().storeAddress) {
+    <div class="bg-white rounded-2xl ring-1 ring-black/5 p-5 sm:p-6 mb-6 flex items-start gap-2.5">
+      <span aria-hidden="true" class="text-lg leading-none">📍</span>
+      <div>
+        <p class="text-sm font-semibold text-stone-800">Nuestro local</p>
+        <p class="text-sm text-stone-600 mt-0.5">{{ settings().storeAddress }}</p>
+      </div>
+    </div>
+  }
+
+  <div class="bg-white rounded-2xl ring-1 ring-black/5 p-5 sm:p-6">
+    <p class="text-sm font-semibold text-stone-800 mb-3">Contacto y redes</p>
+    <div class="flex flex-col gap-3 text-sm">
+      <a [href]="whatsappUrl()" target="_blank" rel="noopener"
+        class="inline-flex items-center gap-2 font-semibold text-stone-700 hover:text-brand-600 transition-colors w-fit">
+        <span aria-hidden="true" class="text-lg leading-none">💬</span> Escribinos por WhatsApp
+      </a>
+      @if (instagramUrl()) {
+        <a [href]="instagramUrl()" target="_blank" rel="noopener"
+          class="inline-flex items-center gap-2 font-semibold text-stone-700 hover:text-brand-600 transition-colors w-fit">
+          <span aria-hidden="true" class="text-lg leading-none">📷</span> {{ instagramLabel() }}
+        </a>
+      }
+      @if (settings().facebookUrl) {
+        <a [href]="settings().facebookUrl" target="_blank" rel="noopener"
+          class="inline-flex items-center gap-2 font-semibold text-stone-700 hover:text-brand-600 transition-colors w-fit">
+          <span aria-hidden="true" class="text-lg leading-none">📘</span> Facebook
+        </a>
+      }
+    </div>
+  </div>
+</section>
