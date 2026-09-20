@@ -1254,6 +1254,42 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       un bug, es falta de datos — motivo por el que se agregó un seed de demo
       (ver `../backend-ecommer-ruth/database/README.md`).
 
+53. **Bug: las barras de ganancia del gráfico de Balance eran invisibles
+    (2026-09-20).** Lo reportó el cliente mirando `/admin/balance`.
+    - **Síntoma:** el gráfico "Resultado neto por mes" mostraba las barras de
+      pérdida en rojo, pero los meses con ganancia **no mostraban ninguna
+      barra** — el cartel de arriba decía "+$208.129" y en el gráfico no había
+      nada verde.
+    - **Causa raíz:** en `src/styles.css`, el `@theme` definía la escala `mint`
+      con **sólo 4 tonos** (`100`, `300`, `500`, `600`), pero el código usaba
+      **11**: `mint-50`, `mint-200`, `mint-400`, `mint-700`, `mint-800` y
+      `brand-800` **no existían** (`brand` y `accent` sí tienen la escala
+      completa, 50–700). Con Tailwind v4, una clase cuyo token de tema no existe
+      **no se genera: sin error y sin warning** — el elemento simplemente queda
+      sin color (fondo transparente, o texto heredado). Eran **16 usos** en toda
+      la app.
+    - En el gráfico se veía perfecto el mecanismo: las barras negativas usaban
+      `bg-red-400` (color estándar de Tailwind, existe → rojo y visible) y las
+      positivas `bg-mint-400` (no existía → **transparente**). Las alturas
+      estaban bien calculadas; invisible era sólo el relleno.
+    - **Fix:** completar las dos escalas en `@theme`.
+      `brand-800: #9a3412` es el valor **exacto** (la escala `brand` es
+      literalmente la `orange` de Tailwind: `brand-500`=`#f97316`=`orange-500`,
+      etc.). Los 5 tonos de `mint` que faltaban se interpolaron entre los que
+      ya estaban: `mint-50 #f0fdf6`, `mint-200 #b3efd3`, `mint-400 #5ed6a3`,
+      `mint-700 #17724c`, `mint-800 #125e40`. **Esos 5 son una elección:** si el
+      tono no cierra, se ajustan en `styles.css` (están comentados).
+    - **Verificado en el navegador:** los 3 meses positivos ahora salen verdes,
+      el punto verde de la leyenda aparece, la tarjeta "Resultado neto" queda
+      con fondo y texto verdes, y **las 16 clases antes rotas ahora existen** en
+      el CSS compilado. Cero errores de consola.
+    - **Nit que queda:** un mes con resultado exactamente $0 dibuja una línea
+      verde de 2px (por el `min-h-[2px]` + `>= 0`). Antes era invisible. Es
+      cosmético; lo correcto sería un color neutro para el cero.
+    - **Para no repetirlo:** un token de tema faltante no falla ruidosamente.
+      Vale la pena un chequeo tipo "toda clase `*-<color>-<n>` usada en los
+      templates existe en `@theme`" — habría cazado esto y los 16 usos.
+
 ## 12. Backend (`../backend-ecommer-ruth/`) — resumen
 
 > **Ruta real:** la carpeta del backend en esta máquina es

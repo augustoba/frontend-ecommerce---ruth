@@ -13,6 +13,7 @@
   --color-brand-500: #f97316;
   --color-brand-600: #ea580c;
   --color-brand-700: #c2410c;
+  --color-brand-800: #9a3412;
 
   --color-accent-50: #eef9ff;
   --color-accent-100: #d9f1ff;
@@ -23,10 +24,21 @@
   --color-accent-600: #1281d1;
   --color-accent-700: #1266a8;
 
+  /* Escala completa: el código usa de 50 a 800. Faltaban 50/200/400/700/800 y
+     esas clases NO existían en el CSS compilado, así que Tailwind no generaba
+     nada y el elemento quedaba sin color (transparente o heredado) — sin error
+     ni warning. Pasaba en 16 lugares, entre ellos las barras de ganancia del
+     Balance (el gráfico mostraba las pérdidas en rojo y las ganancias
+     invisibles). Si se agrega un tono nuevo, agregarlo también acá. */
+  --color-mint-50: #f0fdf6;
   --color-mint-100: #d7f7e9;
+  --color-mint-200: #b3efd3;
   --color-mint-300: #86e6bb;
+  --color-mint-400: #5ed6a3;
   --color-mint-500: #2fbf82;
   --color-mint-600: #219c69;
+  --color-mint-700: #17724c;
+  --color-mint-800: #125e40;
 
   --font-display: "Baloo 2", "Trebuchet MS", ui-rounded, system-ui, sans-serif;
   --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
