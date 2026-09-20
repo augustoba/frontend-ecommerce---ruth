@@ -17,17 +17,24 @@ si conviene tocar también este archivo o el `README.md`).
 ## Resumen rápido
 
 - Ecommerce de indumentaria infantil real ("Estilos Pequeños", Argentina).
-- **Checkout sin pasarela de pago:** el carrito arma un mensaje de WhatsApp
-  con el pedido y lo manda al número del dueño/a, que responde con el
-  alias/link de Mercado Pago para coordinar el pago a mano. Todo el flujo
-  es 100% client-side.
+- **Checkout con dos caminos, según lo que tenga configurado el dueño:**
+  - **Mercado Pago Checkout Pro** (desde 2026-09-17): el carrito muestra
+    "Pagar con Mercado Pago" y redirige al checkout de MP; el pedido se
+    confirma solo cuando MP avisa por webhook que el pago se acreditó.
+  - **Por WhatsApp** (el flujo original): el carrito arma un mensaje con el
+    pedido y lo manda al número del dueño/a, que coordina el pago a mano
+    (alias o link).
+  Son **excluyentes**: con Mercado Pago activo no se ofrecen transferencia/QR/
+  efectivo para la venta online. Ver `PROYECTO.md` §2 y el `PROYECTO.md` del
+  backend (#27 y #29).
 - **Frontend:** Angular 19 (standalone components + signals) + Tailwind
   CSS v4. Repo actual (`frontend/`), ya desarrollado.
-- **Backend:** Java 21 + Spring Boot 3 + MySQL 8 + JWT, carpeta hermana
-  `../backend/` (repo git propio). Package-by-layer. Ver `../backend/README.md`.
-- Correr en local: backend (`cd ../backend && ./mvnw spring-boot:run`) **y**
-  frontend (`npm start` → `http://localhost:4200`). El carrito es lo único
-  que sigue en `localStorage`.
+- **Backend:** Java 21 + Spring Boot 3 + MySQL 8 + JWT, en la carpeta hermana
+  `../backend-ecommer-ruth/` (repo git propio; la doc lo llamaba `../backend/`).
+  Package-by-layer. Ver `../backend-ecommer-ruth/README.md`.
+- Correr en local: backend (`cd ../backend-ecommer-ruth && ./mvnw spring-boot:run`)
+  **y** frontend (`npm start` → `http://localhost:4200`). El carrito y el token
+  son lo único que sigue en `localStorage`.
 
 ## Cómo trabaja el cliente (importante)
 

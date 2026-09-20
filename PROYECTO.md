@@ -2,7 +2,18 @@
 
 > Documento vivo del proyecto (overview general + detalle del frontend).
 > El detalle del backend (entidades, endpoints, auth) está en
-> `../backend/PROYECTO.md`. Última actualización: 2026-09-08.
+> `../backend-ecommer-ruth/PROYECTO.md` (esa es la carpeta real; este documento
+> la llamaba `../backend/`).
+>
+> **Última actualización: 2026-09-20** — en esa fecha se puso al día este
+> documento, que había quedado del **2026-09-08** y describía un proyecto de 12
+> días antes: decía que no había pasarela de pago (Mercado Pago Checkout Pro
+> está implementado desde el 2026-09-17), que el login era `admin`/`ruth123`
+> (es por DNI desde el 2026-09-11), y listaba como pendientes varias cosas ya
+> hechas. Se corrigieron las secciones 2, 3, 3bis, 5 y 12. **Las demás secciones
+> (6 a 11) siguen con la redacción del 2026-09-08** y pueden tener detalles
+> atrasados — para lo del backend, la fuente de verdad es
+> `../backend-ecommer-ruth/PROYECTO.md`.
 
 ## 1. Qué es esto
 
@@ -27,12 +38,19 @@ Mercado Pago para coordinar el pago manualmente.
 |---|---|---|
 | Framework front | Angular 19 (standalone components + signals) | — |
 | Estilos | Tailwind CSS v4 | Angular Material, Bootstrap, CSS plano |
-| Datos de productos (front) | Mock en código + `localStorage` (todavía sin conectar al backend) | Preparar capa HTTP desde ya |
+| Datos de productos (front) | Todos vía `HttpClient` contra `/api/*` (conectado al backend desde 2026-09-08) | — |
 | Backend | Java 21 + Spring Boot 3.3 + MySQL 8 + JWT (Maven) | Node/Nest, Quarkus, Gradle, Postgres/H2 |
 | Alcance v1 | Catálogo+filtros, carrito+checkout WhatsApp, panel admin, API backend | — |
-| Pasarela de pago | Ninguna — checkout por WhatsApp + alias/link MP manual | Mercado Pago Checkout Pro/API |
+| Pasarela de pago | **Mercado Pago Checkout Pro** (desde 2026-09-17), además del checkout por WhatsApp con alias/link manual | — |
 
-Sin dependencias de pasarela de pago en el proyecto.
+**Ojo:** la pasarela de pago **sí** existe. El sitio arrancó sin ninguna (checkout
+por WhatsApp + alias manual), pero desde el 2026-09-17 tiene **Mercado Pago
+Checkout Pro** implementado end-to-end (backend `PROYECTO.md` #27 y #29): si el
+dueño activa Mercado Pago en el panel, el carrito muestra "Pagar con Mercado
+Pago" y redirige al checkout de MP, y el pedido se confirma solo cuando MP avisa
+por webhook que el pago se acreditó. Si no está activado, sigue el flujo de
+WhatsApp de siempre. **Son excluyentes:** con MP activo, transferencia/QR/efectivo
+no se ofrecen para la venta online.
 
 ## 3. Cómo correr el proyecto en local
 
@@ -60,17 +78,19 @@ El frontend llama a `/api/*` y el dev-server lo redirige al backend
 (`proxy.conf.json` — se toma solo, sin flags). Si el backend está caído,
 la tienda muestra "no se pudo conectar" y estados de error con "reintentar".
 
-**Logins del panel** (`http://localhost:4200/admin`):
-- Cuenta de la tienda (Ruth): **`admin` / `ruth123`** — rol Administrador,
+**Logins del panel** (`http://localhost:4200/admin`) — **se entra por DNI**, no
+por usuario (cambió el 2026-09-11, ver ítem 46):
+- Cuenta de la tienda (Ruth): **DNI `11111111` / `ruth123`** — rol Administrador,
   ve todo lo de la tienda (productos, pedidos, POS, config del sitio, etc.)
   pero **no** ve el menú "🔒 Superadmin".
-- Tu cuenta superadmin: el DNI que hayas cargado en `application-local.yml`
-  (o en las env vars `SUPERADMIN_USER`/`SUPERADMIN_PASSWORD`/
-  `SUPERADMIN_FIRST_NAME`/`SUPERADMIN_LAST_NAME`) + la contraseña que
-  elegiste. Se siembra sola al arrancar el backend si esas 4 variables están
-  cargadas (si faltan, no se crea ninguna cuenta superadmin y
-  `/admin/superadmin/**` queda inaccesible para todos, vos incluido). Ver
-  ítem 45/46 del historial para el detalle técnico.
+- Cuenta superadmin (Augusto): DNI **`33756194`** / `augusto123` por defecto;
+  se puede sembrar con otra cosa con las env vars **`SUPERADMIN_DNI`**,
+  `SUPERADMIN_PASSWORD`, `SUPERADMIN_NOMBRE`, `SUPERADMIN_APELLIDO`,
+  `SUPERADMIN_EMAIL` (los nombres viejos `SUPERADMIN_USER`/
+  `SUPERADMIN_FIRST_NAME`/`SUPERADMIN_LAST_NAME` **ya no existen**: se
+  renombraron en el ítem 46). Igual que `ADMIN_DNI`/`ADMIN_PASSWORD`/
+  `ADMIN_NOMBRE`/`ADMIN_APELLIDO`/`ADMIN_EMAIL` para la cuenta de la tienda.
+  El seeder de la app las crea al arrancar si no hay un usuario con ese DNI.
 
 Build de producción del frontend: `npm run build` → `dist/ecommerce-ninos/`.
 En prod, poné la URL del backend en `apiBaseUrl` (`site-config.ts`) si va en
@@ -85,22 +105,39 @@ la idea es que armar un sitio nuevo sea **configurar, no programar**.
 1. Cloná los dos repos, cambiá el nombre/branding que sí vive en código
    (`public/logo.jpeg` como fallback, paleta en `src/styles.css`, nombre del
    paquete Java si aplica) — esto es lo único que todavía requiere tocar código.
-2. Base de datos nueva + `application-local.yml` (o env vars en el server)
-   con las credenciales de esa base.
-3. Arrancá el backend una vez para que siembre las tablas y el admin inicial
-   (`ADMIN_USER`/`ADMIN_PASSWORD` — cambialo del default `admin`/`ruth123`) y
-   tu cuenta superadmin (`SUPERADMIN_USER`=tu DNI, `SUPERADMIN_PASSWORD`,
-   `SUPERADMIN_FIRST_NAME`, `SUPERADMIN_LAST_NAME`).
+2. Base de datos nueva. Dos caminos:
+   - **Recomendado:** correr `mysql < database/setup.sql` y arrancar el backend
+     con `SPRING_JPA_HIBERNATE_DDL_AUTO=validate`. El script está verificado
+     contra las entidades (2026-09-20, backend `PROYECTO.md` #36) y `validate`
+     te canta si algo no coincide.
+   - O dejar `ddl-auto=update` y que Hibernate cree el esquema solo.
+3. Arrancá el backend una vez para que siembre las tablas y las cuentas
+   iniciales. Las variables (en `application-local.yml` o env vars del server):
+   - Cuenta de la tienda: **`ADMIN_DNI`**, `ADMIN_PASSWORD`, `ADMIN_NOMBRE`,
+     `ADMIN_APELLIDO`, `ADMIN_EMAIL` — **cambialas del default
+     `11111111`/`ruth123`**.
+   - Cuenta superadmin: **`SUPERADMIN_DNI`**, `SUPERADMIN_PASSWORD`,
+     `SUPERADMIN_NOMBRE`, `SUPERADMIN_APELLIDO`, `SUPERADMIN_EMAIL`.
+   - *(Los nombres viejos `ADMIN_USER`/`SUPERADMIN_USER`/`SUPERADMIN_FIRST_NAME`/
+     `SUPERADMIN_LAST_NAME` ya no existen — se renombraron en el ítem 46.)*
 4. Entrá como superadmin y cargá, **sin tocar código**:
    - `/admin/superadmin/cloudinary` — cuenta de Cloudinary de ESE sitio (ver
      pasos en la sección siguiente). Sin esto, subir fotos queda deshabilitado
      (se puede seguir cargando por URL mientras tanto).
-   - `/admin/superadmin/mail` — SMTP de ESE sitio (Brevo u otro). El envío en
-     sí todavía no está conectado del lado del backend (pendiente, sección 12).
+   - **`/admin/config/servicios`** — SMTP de ESE sitio (Brevo u otro). **Esta es
+     la config que manda mail de verdad** (`PlatformMailSettings`): la usan el
+     reset de contraseña, el comprobante de pedido, las campañas y las alertas
+     de stock.
+     > ⚠️ **Ojo:** existe además `/admin/superadmin/mail`, que guarda otras
+     > credenciales SMTP en `site_settings` — pero **no manda nada**: es un
+     > scaffolding muerto que quedó de un merge (backend `PROYECTO.md` #51).
+     > Cargar el mail ahí no tiene ningún efecto. Usá `/admin/config/servicios`.
 5. Entrá como el admin de la tienda (o creá uno nuevo desde `/admin/usuarios`
    con nombre/apellido/DNI) y cargá desde `/admin/config`: nombre de la
    tienda, WhatsApp, dirección, redes, medios de pago, "sobre nosotros",
    mensaje de WhatsApp, carrusel.
+6. Si querés datos de ejemplo para ver las pantallas con volumen (métricas,
+   balance, campañas), hay un seed de demo: ver `../backend-ecommer-ruth/database/README.md`.
 
 ## 4. Configurar servicios externos (Cloudinary, mail)
 
@@ -162,8 +199,9 @@ el backend no responde: `src/app/core/services/settings.service.ts` →
 
 ## 5. Panel de administración
 
-- URL: `http://localhost:4200/admin`. Login **`admin` / `ruth123`** — valida
-  contra el backend (`POST /api/auth/login`) y guarda el JWT en `localStorage`.
+- URL: `http://localhost:4200/admin`. Login por **DNI** (ej. `11111111` /
+  `ruth123`) — valida contra el backend (`POST /api/auth/login`) y guarda el JWT
+  en `localStorage`.
   Un interceptor lo manda en `/api/admin/**`; si expira o falta, vuelve al login.
 - **Menú lateral agrupado** (sección 9octies): Inicio suelto arriba + tres grupos
   colapsables (Ventas, Catálogo, **Configuración del sitio**) + Mi cuenta y "Ver
@@ -474,6 +512,16 @@ src/app/
   por grupo de parametría).
 
 ## 10. Pendientes / próximos pasos conocidos
+
+> ⚠️ **Esta sección es del 2026-09-08 y está bastante atrasada**: varios de los
+> ítems de abajo se hicieron en las tandas del 2026-09-09 al 2026-09-18 (rate
+> limiting del login, multi-admin con roles, cupones, export CSV, "mis pedidos",
+> imágenes a Cloudinary, cambios de prenda, caja, turnos, POS, métricas por
+> talle y proveedor…). Está sin limpiar a propósito: lo que sigue siendo cierto
+> son los ítems de la lista de arriba sin marcar referidos a **publicar**
+> (WhatsApp real, contraseñas, remitente de Brevo, fotos reales, dominio). Si
+> algo de acá te confunde, mirá el historial (sección 11 y 12) antes que la
+> lista.
 
 - [ ] Cargar el número de WhatsApp real desde `/admin/ajustes` antes de publicar
       (hoy hay un placeholder, `5491122334455`).
@@ -1170,35 +1218,86 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       reflejarse en `schema.sql` (existían así desde antes del merge, ver nota
       de `ddl-auto=update`).
 
-## 12. Backend (`../backend/`) — resumen
+52. **Puesta al día de este documento + arreglo del esquema de deploy
+    (2026-09-20).** No se tocó código del frontend; fue documentación y backend.
+    - **Backend (repo `../backend-ecommer-ruth/`, commit `4f4dadc`):** el
+      esquema de deploy estaba roto — `mysql < database/setup.sql` cortaba a la
+      mitad por un `INSERT` sobre la tabla `discount_config` que ya no existía,
+      faltaban las tablas `marketing_config`/`marketing_send` y 11 columnas, y
+      `exchange.payment_method` no podía guardar `MERCADOPAGO`. Detalle
+      completo en el `PROYECTO.md` del backend, ítem #36.
+    - **Este documento estaba 12 días atrás** (última actualización
+      2026-09-08) y describía un proyecto que ya no era: decía que no había
+      pasarela de pago, que el login era `admin`/`ruth123`, que la recuperación
+      era por frase, y listaba como pendientes cosas hechas. Corregidas las
+      secciones **2** (pasarela de pago: ahora Mercado Pago Checkout Pro),
+      **3** y **5** (login por DNI), **3bis** (la checklist de "sitio nuevo"
+      tenía nombres de variables de entorno que ya no existen —
+      `ADMIN_USER`/`SUPERADMIN_USER`/`SUPERADMIN_FIRST_NAME`/
+      `SUPERADMIN_LAST_NAME` — y mandaba a cargar el SMTP en
+      `/admin/superadmin/mail`, que es la config **muerta**; la real es
+      `/admin/config/servicios`) y **12** (el resumen del backend). Se agregó
+      un aviso en **10** aclarando que esa lista de pendientes es del 2026-09-08.
+      Las secciones 6 a 11 quedaron como estaban.
+    - **`CLAUDE.md`** también decía que el checkout era 100% client-side por
+      WhatsApp; actualizado, y corregida la ruta del backend (decía
+      `../backend/`, la carpeta real es `../backend-ecommer-ruth/`).
+    - **Probado en el navegador** (Playwright, con back y front levantados): la
+      home (hero + carrusel), el catálogo (19 productos, filtros por
+      parametría, badges de "última unidad" y "sin stock"), el login por DNI, el
+      dashboard (KPIs, banner de sesión, badges del menú), **Métricas** completa
+      (totales, online vs local, más/menos vendidos, por tipo/talle/proveedor y
+      comparativas), Pedidos y Balance. **Cero errores de consola.**
+    - **Observado en esa prueba:** las ventas de la base de desarrollo están
+      todas concentradas en septiembre, así que los gráficos de "facturación por
+      mes" y las comparativas se ven casi vacíos (julio y agosto en $0). No es
+      un bug, es falta de datos — motivo por el que se agregó un seed de demo
+      (ver `../backend-ecommer-ruth/database/README.md`).
 
-**Detalle completo en `../backend/PROYECTO.md`.** Resumen:
+## 12. Backend (`../backend-ecommer-ruth/`) — resumen
+
+> **Ruta real:** la carpeta del backend en esta máquina es
+> `../backend-ecommer-ruth/` (este documento la llamaba `../backend/` en varios
+> lados — sea `backend-ecommer-ruth`). **Detalle completo en
+> `../backend-ecommer-ruth/PROYECTO.md`**, que es el documento vivo del backend;
+> lo de acá es un resumen y puede quedar atrás.
 
 - **Qué es:** API REST en Java 21 / Spring Boot 3.3 / MySQL 8. Repo git propio.
   Docs interactivas en `http://localhost:8080/swagger-ui.html`.
-- **Auth:** `POST /api/auth/login` (`admin` / `ruth123`) valida contra la tabla
-  `admin_user` (contraseña **BCrypt**) → **JWT** para `Authorization: Bearer` en
-  `/api/admin/**`. Recuperación por frase (`POST /api/auth/recover`), cambio de
-  clave/frase en `/api/admin/account/**`. Endpoints públicos: catálogo,
-  `GET /api/discounts`, `GET /api/settings`, `POST /api/orders`. Métricas del
-  panel: `GET /api/admin/metrics`.
-- **Entidades:** AdminUser, SiteSettings (fila única), Product (con `params`,
-  `sizeStocks`, `sizeScaleId`, `supplierId`, `costPrice`),
-  ParamGroup/ParamOption, SizeScale, Supplier, Discount + DiscountConfig,
-  Order/OrderLine, HeroSlide.
-- **Estructura del código:** package-by-layer (`model/`, `repository/`,
-  `service/`, `controller/`, `dto/`, + `common/`, `config/`).
+- **Auth:** `POST /api/auth/login` con **DNI + contraseña** (contraseña
+  **BCrypt** contra la tabla `admin_user`) → **JWT** para `Authorization: Bearer`
+  en `/api/admin/**`. **Recuperación por mail con link** (`POST
+  /api/auth/forgot-password` → `/api/auth/reset-password`, token de un solo uso
+  que vence en 1 h). Ya **no** hay frase de recuperación ni `username`.
+- **Roles:** RBAC con `Role` + `Permission` (`@PreAuthorize` por endpoint).
+  Roles: Superadmin (sistema, todos los permisos), Administrador y Vendedor.
+  Hay además un eje aparte `AdminUser.superAdmin` para Cloudinary/mail
+  (backend #26/#51).
+- **Endpoints públicos:** catálogo (`/api/products`, `/best-sellers`),
+  parametrías, escalas de talle, carrusel, descuentos, `GET /api/settings`,
+  `POST /api/orders` (checkout), `GET /api/orders/lookup` (mis pedidos),
+  `GET /api/coupons/{code}`, y el **webhook de Mercado Pago**.
+- **Entidades principales:** AdminUser, Role/Permission, SiteSettings (fila
+  única), PlatformMailSettings, Product (+ `params`, `sizeStocks`, `images`,
+  `barcode`, `videoUrl`, `costPrice`, `supplierId`), ParamGroup/ParamOption,
+  SizeScale, Supplier, Discount, Coupon, Order/OrderLine, Exchange/ExchangeLine,
+  Shift, StockMovement, Expense/ExpenseBudget, MarketingConfig/MarketingSend,
+  HeroSlide.
+- **Módulos:** catálogo, checkout (WhatsApp **y** Mercado Pago Checkout Pro),
+  panel con POS, turnos con cierre de caja, cambios de prenda, cupones,
+  campañas de mail, métricas, gastos/balance con **costeo por promedio
+  ponderado**, movimientos de stock, alertas de stock bajo por mail, export CSV.
 - **Descuentos:** `DiscountService.computeForLines` es el port de
   `discount.service.ts` (`computeCartDiscount`) — se aplica al crear el pedido.
 - **Código de pedido:** `PED-0001`… derivado de un correlativo `number`.
 - **Seed:** al primer arranque carga parametrías, escalas, 2 descuentos y 10
   productos de ejemplo (`DataSeeder`). Se apaga con `SEED_ENABLED=false`.
-- **Correr:** `cd ../backend && ./mvnw spring-boot:run` con `DB_USER`/`DB_PASSWORD`
-  (MySQL) y `JWT_SECRET` en el entorno (o `application-local.yml`). Detalle en
-  `../backend/README.md`.
-- **DB:** `spring.jpa.hibernate.ddl-auto=update` (Hibernate crea/actualiza el
-  esquema). En `backend/database/` hay scripts SQL a mano (`schema.sql`,
-  `seed.sql`, `reset.sql`) para armar la base sin depender de `ddl-auto` (para
-  prod, correr `schema.sql` y usar `ddl-auto=validate`). Flyway queda pendiente.
-- **Pendientes backend:** Flyway, hashear la clave del admin, perfil de
-  producción/deploy, y **conectar el frontend Angular**.
+- **Correr:** `cd ../backend-ecommer-ruth && ./mvnw spring-boot:run` con
+  `DB_USER`/`DB_PASSWORD` (MySQL) y `JWT_SECRET` (o `application-local.yml`).
+- **DB:** en desarrollo `ddl-auto=update` (Hibernate crea/actualiza el esquema).
+  En `database/` hay scripts SQL a mano (`schema.sql`, `seed.sql`, `reset.sql`,
+  `setup.sql`). **Verificado el 2026-09-20** (backend #36): `mysql < setup.sql`
+  + arrancar con `ddl-auto=validate` funciona. Flyway sigue pendiente.
+- **Pendientes backend:** Flyway (migraciones versionadas), perfil `prod` +
+  deploy, proyecciones DTO y desactivar OSIV, subida de imágenes a storage en
+  vez de data-URI, y probar Mercado Pago con credenciales reales.
