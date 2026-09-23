@@ -63,9 +63,9 @@
           <span>SIN DIFERENCIA</span><span>$ 0</span>
         }
       </div>
-      @if (e.difference > 0 && e.paymentMethod) {
+      @if (e.difference !== 0 && e.paymentMethod) {
         <div class="flex justify-between text-stone-600 pt-1">
-          <span>Pago</span><span>{{ paymentLabels[e.paymentMethod] }}</span>
+          <span>{{ e.difference > 0 ? 'Pago' : 'Devuelto por' }}</span><span>{{ paymentLabels[e.paymentMethod] }}</span>
         </div>
       }
       @if (e.note) { <p class="text-xs text-stone-500 pt-1">📝 {{ e.note }}</p> }

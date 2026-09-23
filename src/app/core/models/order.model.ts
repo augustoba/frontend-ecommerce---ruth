@@ -7,18 +7,22 @@ export type OrderStatus = 'PENDIENTE' | 'PROCESADO' | 'CANCELADO';
 export type DeliveryMethod = 'PICKUP' | 'SHIPPING';
 
 /** Medio de pago que elige el cliente (para que el dueño sepa qué mandar). */
-export type PaymentMethod = 'TRANSFER' | 'QR_TRANSFER' | 'QR_CARD' | 'CASH' | 'MERCADOPAGO';
+export type PaymentMethod = 'TRANSFER' | 'QR_TRANSFER' | 'QR_CARD' | 'CASH' | 'MERCADOPAGO' | 'POSNET';
 
 export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   TRANSFER: 'Transferencia (alias/CBU)',
   QR_TRANSFER: 'QR de transferencia',
   QR_CARD: 'Tarjeta (QR o link)',
-  CASH: 'Efectivo al recibir/retirar',
+  CASH: 'Efectivo',
   MERCADOPAGO: 'Mercado Pago',
+  POSNET: 'Posnet',
 };
 
 /** Sólo tiene sentido para `paymentMethod = 'MERCADOPAGO'`; el resto de los medios no tiene estado de pago online. */
 export type PaymentStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+/** Estado de una línea dentro de un pedido con entrega parcial. */
+export type OrderLineStatus = 'PENDIENTE' | 'ENTREGADA' | 'CANCELADA';
 
 export interface OrderLine {
   /** id de la línea (lo asigna el backend) */
@@ -30,8 +34,10 @@ export interface OrderLine {
   quantity: number;
   /** Precio unitario al momento del pedido */
   unitPrice: number;
-  /** El dueño/a lo tilda para confirmar que hay stock y lo va a entregar */
+  /** Legacy — hoy el estado real de la línea es `status`. */
   accepted: boolean;
+  /** PENDIENTE = todavía no se resolvió · ENTREGADA = se descontó stock y se entregó · CANCELADA = no se entrega. */
+  status: OrderLineStatus;
 }
 
 /** Vista pública de un pedido (consulta "mis pedidos" con código + nombre). */

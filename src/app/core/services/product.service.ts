@@ -138,6 +138,38 @@ export class ProductService {
     this.mutate(this.http.post(apiUrl(`/admin/products/${id}/restore`), {}), onSuccess);
   }
 
+  /**
+   * Borra la fila de verdad (+ fotos de Cloudinary si hay credenciales
+   * cargadas) — sólo funciona sobre un producto ya archivado. A diferencia
+   * de `delete` (archivar), esto no se puede deshacer.
+   */
+  permanentlyDelete(id: string, onSuccess?: () => void): void {
+    this.mutate(this.http.delete(apiUrl(`/admin/products/${id}/permanent`)), onSuccess);
+  }
+
+  /**
+   * Ajuste masivo de precio por %. `ids` vacío/undefined = todos los
+   * productos no archivados. Sólo toca `price`, nunca `costPrice`.
+   */
+  bulkAdjustPrice(percent: number, ids?: string[]): Observable<{ updated: number }> {
+    const req = this.http.patch<{ updated: number }>(apiUrl('/admin/products/bulk-price'), {
+      ids: ids?.length ? ids : null,
+      percent,
+    });
+    return new Observable<{ updated: number }>((sub) => {
+      const s = req.subscribe({
+        next: (res) => {
+          this.adminStore.reload();
+          this.publicStore.load();
+          sub.next(res);
+          sub.complete();
+        },
+        error: (err) => sub.error(err),
+      });
+      return () => s.unsubscribe();
+    });
+  }
+
   toggleActive(id: string): void {
     const p = this.getById(id);
     if (!p) return;

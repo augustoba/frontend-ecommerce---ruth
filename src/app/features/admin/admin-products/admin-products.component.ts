@@ -74,6 +74,71 @@ export class AdminProductsComponent {
   readonly archived = signal<Product[]>([]);
   readonly archivedLoading = signal(false);
 
+  // --- ajuste masivo de precio ---
+  readonly selected = signal<Set<string>>(new Set());
+  readonly bulkPercent = signal<number | null>(null);
+  readonly bulkSaving = signal(false);
+
+  readonly allOnPageSelected = computed(() => {
+    const list = this.products();
+    return list.length > 0 && list.every((p) => this.selected().has(p.id));
+  });
+
+  toggleSelect(id: string): void {
+    this.selected.update((set) => {
+      const next = new Set(set);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  toggleSelectAllOnPage(): void {
+    const list = this.products();
+    if (this.allOnPageSelected()) {
+      this.selected.update((set) => {
+        const next = new Set(set);
+        for (const p of list) next.delete(p.id);
+        return next;
+      });
+    } else {
+      this.selected.update((set) => new Set([...set, ...list.map((p) => p.id)]));
+    }
+  }
+
+  clearSelection(): void {
+    this.selected.set(new Set());
+  }
+
+  /** Aplica el % a los seleccionados, o a TODOS los productos no archivados si no hay ninguno tildado. */
+  async applyBulkPrice(): Promise<void> {
+    const percent = this.bulkPercent();
+    if (percent === null || percent === 0 || this.bulkSaving()) return;
+    const ids = [...this.selected()];
+    const direction = percent > 0 ? 'subir' : 'bajar';
+    const target = ids.length ? `${ids.length} producto(s) seleccionado(s)` : 'TODOS los productos no archivados';
+    const ok = await this.confirm.confirm({
+      title: 'Ajuste masivo de precio',
+      message: `Vas a ${direction} el precio ${Math.abs(percent)}% en ${target}. Sólo cambia el precio de venta, nunca el costo.`,
+      confirmLabel: 'Aplicar',
+      danger: !ids.length,
+    });
+    if (!ok) return;
+    this.bulkSaving.set(true);
+    this.productService.bulkAdjustPrice(percent, ids.length ? ids : undefined).subscribe({
+      next: (res) => {
+        this.bulkSaving.set(false);
+        this.bulkPercent.set(null);
+        this.clearSelection();
+        this.toast.success(`Precio ajustado en ${res.updated} producto(s).`);
+      },
+      error: () => {
+        this.bulkSaving.set(false);
+        this.toast.error('No se pudo ajustar el precio.');
+      },
+    });
+  }
+
   constructor() {
     this.productService.ensureAdminLoaded();
     this.paramService.ensureLoaded();
@@ -175,5 +240,20 @@ export class AdminProductsComponent {
       confirmLabel: 'Archivar',
     });
     if (ok) this.productService.delete(id);
+  }
+
+  /** Sólo sobre un producto ya archivado — borra la fila y, si se puede, sus fotos de Cloudinary. No se puede deshacer. */
+  async permanentlyDelete(id: string, name: string): Promise<void> {
+    const ok = await this.confirm.confirm({
+      title: 'Eliminar definitivamente',
+      message: `¿Eliminar "${name}" para siempre? Esto NO se puede deshacer (a diferencia de archivar).`,
+      confirmLabel: 'Eliminar para siempre',
+      danger: true,
+    });
+    if (!ok) return;
+    this.productService.permanentlyDelete(id, () => {
+      this.archived.update((list) => list.filter((p) => p.id !== id));
+      this.toast.success(`"${name}" se eliminó definitivamente.`);
+    });
   }
 }

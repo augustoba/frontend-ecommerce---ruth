@@ -1,8 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { OrderService } from '../../../core/services/order.service';
+import { WhatsappService } from '../../../core/services/whatsapp.service';
 import { PublicOrder } from '../../../core/models/order.model';
 import {
   RememberedOrder,
@@ -18,6 +19,8 @@ import {
 })
 export class MisPedidosPageComponent {
   private readonly orderService = inject(OrderService);
+  private readonly whatsapp = inject(WhatsappService);
+  private readonly route = inject(ActivatedRoute);
 
   readonly code = signal('');
   readonly name = signal('');
@@ -25,11 +28,24 @@ export class MisPedidosPageComponent {
   readonly error = signal<string | null>(null);
   readonly results = signal<PublicOrder[]>([]);
 
+  /** Volvió del checkout de Mercado Pago con el pago aprobado (`?code=...&pago=aprobado`). */
+  readonly justPaid = signal(false);
+
   readonly remembered = signal<RememberedOrder[]>(loadRememberedOrders());
 
   constructor() {
+    const qp = this.route.snapshot.queryParamMap;
+    const qCode = qp.get('code');
+    if (qCode) this.code.set(qCode);
+    if (qp.get('pago') === 'aprobado') this.justPaid.set(true);
+
     // carga automática de los pedidos ya recordados en este navegador
     for (const r of this.remembered()) this.fetch(r.code, r.name, false);
+  }
+
+  /** Abre WhatsApp para coordinar la entrega de un pedido ya pagado por Mercado Pago. */
+  coordinate(order: PublicOrder): void {
+    window.open(this.whatsapp.buildPublicCoordinationLink(order), '_blank', 'noopener');
   }
 
   lookup(): void {

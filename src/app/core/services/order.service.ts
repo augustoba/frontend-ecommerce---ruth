@@ -139,10 +139,38 @@ export class OrderService {
     });
   }
 
-  /** Manda el array completo de aceptaciones y devuelve el pedido actualizado. */
-  setLines(orderId: string, lines: { lineId: string; accepted: boolean }[]): Observable<Order> {
+  /** Entrega parcial: confirma sólo estas líneas (descuenta su stock), deja el resto pendiente. */
+  confirmLines(orderId: string, lineIds: string[]): Observable<Order> {
     return this.http
-      .put<Order>(apiUrl(`/admin/orders/${orderId}/lines`), { lines })
+      .post<Order>(apiUrl(`/admin/orders/${orderId}/confirm-lines`), { lineIds })
+      .pipe(tap(() => this.afterMutation()));
+  }
+
+  /** Cancela sólo estas líneas (no tocan stock), deja el resto pendiente. */
+  cancelLines(orderId: string, lineIds: string[]): Observable<Order> {
+    return this.http
+      .post<Order>(apiUrl(`/admin/orders/${orderId}/cancel-lines`), { lineIds })
+      .pipe(tap(() => this.afterMutation()));
+  }
+
+  /** Agrega un ítem a un pedido todavía pendiente. */
+  addLine(orderId: string, item: { productId: string; size: string; quantity: number }): Observable<Order> {
+    return this.http
+      .post<Order>(apiUrl(`/admin/orders/${orderId}/lines`), item)
+      .pipe(tap(() => this.afterMutation()));
+  }
+
+  /** Cambia la cantidad de una línea todavía pendiente. */
+  updateLineQuantity(orderId: string, lineId: string, quantity: number): Observable<Order> {
+    return this.http
+      .patch<Order>(apiUrl(`/admin/orders/${orderId}/lines/${lineId}`), { quantity })
+      .pipe(tap(() => this.afterMutation()));
+  }
+
+  /** Saca una línea todavía pendiente del pedido. */
+  removeLine(orderId: string, lineId: string): Observable<Order> {
+    return this.http
+      .delete<Order>(apiUrl(`/admin/orders/${orderId}/lines/${lineId}`))
       .pipe(tap(() => this.afterMutation()));
   }
 

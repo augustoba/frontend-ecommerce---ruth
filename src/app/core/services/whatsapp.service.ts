@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
-import { Order } from '../models/order.model';
+import { Order, PublicOrder } from '../models/order.model';
 import {
   SettingsService,
   SiteSettings,
@@ -33,6 +33,17 @@ export class WhatsappService {
   openOrderChat(order: Order): void {
     const url = this.buildOrderLink(order);
     window.open(url, '_blank', 'noopener');
+  }
+
+  /**
+   * Link de WhatsApp para que el cliente coordine la entrega después de pagar
+   * con Mercado Pago (desde "Mis pedidos", vista pública — no tiene acceso a
+   * los datos internos del pedido, sólo lo que ya vio en pantalla).
+   */
+  buildPublicCoordinationLink(order: PublicOrder): string {
+    const settings = this.settingsService.settings();
+    const message = `¡Hola! Ya pagué mi pedido *${order.code}* por Mercado Pago 🙌 ¿Coordinamos la entrega?`;
+    return `https://wa.me/${settings.whatsappNumber}?text=${encodeURIComponent(message)}`;
   }
 
   /**

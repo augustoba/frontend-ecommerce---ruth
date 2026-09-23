@@ -117,8 +117,9 @@ export class AdminExchangeNewComponent {
     sig.update((list) => list.filter((_, i) => i !== index));
   }
 
+  /** Sólo hace falta lo que se devuelve — lo que se lleva es opcional (devolución pura). */
   get canSave(): boolean {
-    return this.returned().length > 0 && this.taken().length > 0 && !this.saving();
+    return this.returned().length > 0 && !this.saving();
   }
 
   register(): void {
@@ -130,7 +131,9 @@ export class AdminExchangeNewComponent {
         customerName: this.customerName().trim() || 'Cambio en el local',
         returned: this.returned().map(toItems),
         taken: this.taken().map(toItems),
-        paymentMethod: this.difference() > 0 ? this.paymentMethod() : null,
+        // Medio de pago si hay plata de por medio, sea a favor del local o del
+        // cliente (devolución pura o cambio por algo más barato).
+        paymentMethod: this.difference() !== 0 ? this.paymentMethod() : null,
         note: this.note().trim() || null,
       })
       .subscribe({

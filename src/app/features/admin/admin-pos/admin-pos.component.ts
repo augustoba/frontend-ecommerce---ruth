@@ -37,7 +37,7 @@ export class AdminPosComponent {
   private readonly router = inject(Router);
 
   readonly paymentLabels = PAYMENT_LABELS;
-  readonly paymentMethods: PaymentMethod[] = ['CASH', 'TRANSFER', 'QR_TRANSFER', 'QR_CARD'];
+  readonly paymentMethods: PaymentMethod[] = ['POSNET', 'CASH', 'TRANSFER'];
 
   readonly catalogStatus = this.productService.catalogStatus;
   readonly reloadCatalog = () => this.productService.reloadCatalog();

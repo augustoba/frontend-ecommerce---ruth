@@ -40,6 +40,12 @@ export interface SiteSettings {
   storePhotoUrl: string | null;
   /** true = existe la página pública "Quiénes somos" (`/nosotros`) y aparece en el footer. */
   aboutPageEnabled: boolean;
+  /** true = se muestra el banner promocional (popup) al entrar al catálogo. */
+  promoBannerEnabled: boolean;
+  /** Imagen del banner (URL o data URI). null = sin banner cargado. */
+  promoBannerImage: string | null;
+  /** A dónde va si lo tocan (opcional). null = no navega a ningún lado. */
+  promoBannerLink: string | null;
   /** Un medio de pago aparece en el checkout si está habilitado Y tiene su dato. */
   paymentTransferEnabled: boolean;
   paymentTransferAlias: string | null;
@@ -105,6 +111,9 @@ const DEFAULTS: SiteSettings = {
   faqText: null,
   storePhotoUrl: null,
   aboutPageEnabled: false,
+  promoBannerEnabled: false,
+  promoBannerImage: null,
+  promoBannerLink: null,
   paymentTransferEnabled: false,
   paymentTransferAlias: null,
   paymentQrTransferEnabled: false,
@@ -202,12 +211,12 @@ export class SettingsService {
     const {
       storeName, whatsappNumber, aboutText, instagram, facebookUrl, logoUrl,
       whatsappIntro, whatsappClosing, storeAddress, helpText, faqText,
-      storePhotoUrl, aboutPageEnabled,
+      storePhotoUrl, aboutPageEnabled, promoBannerEnabled, promoBannerImage, promoBannerLink,
     } = full;
     return this.putMerged('/admin/settings/platform', {
       storeName, whatsappNumber, aboutText, instagram, facebookUrl, logoUrl,
       whatsappIntro, whatsappClosing, storeAddress, helpText, faqText,
-      storePhotoUrl, aboutPageEnabled,
+      storePhotoUrl, aboutPageEnabled, promoBannerEnabled, promoBannerImage, promoBannerLink,
     });
   }
 
@@ -248,36 +257,50 @@ export class SettingsService {
   }
 
   /**
+   * Config de Cloudinary. Sólo la puede leer/editar un superadmin (ver backend).
+   * `apiSecret` nunca viaja del backend — sólo `apiSecretSet` dice si hay uno guardado.
+   */
+  getCloudinaryConfig(): Observable<{ cloudName: string | null; uploadPreset: string | null; apiKey: string | null; apiSecretSet: boolean } | null> {
+    return this.http
+      .get<{ cloudName: string | null; uploadPreset: string | null; apiKey: string | null; apiSecretSet: boolean }>(
+        apiUrl('/admin/settings/cloudinary')
+      )
+      .pipe(catchError(() => of(null)));
+  }
+
+  /**
    * Guarda la cuenta de Cloudinary. Sólo la puede llamar un superadmin — el
    * backend devuelve 403 si no (`/admin/superadmin/cloudinary` ya valida antes
    * de mostrar el form, pero el guard de la ruta es la primera barrera).
+   * `apiSecret` vacío/null = no tocar el que ya está guardado.
    */
-  updateCloudinaryConfig(cloudName: string | null, uploadPreset: string | null): Observable<boolean> {
+  updateCloudinaryConfig(req: {
+    cloudName: string | null;
+    uploadPreset: string | null;
+    apiKey: string | null;
+    apiSecret: string | null;
+  }): Observable<{ cloudName: string | null; uploadPreset: string | null; apiKey: string | null; apiSecretSet: boolean } | null> {
     this.saving.set(true);
-    return new Observable<boolean>((sub) => {
-      this.http
-        .put<{ cloudName: string | null; uploadPreset: string | null }>(apiUrl('/admin/settings/cloudinary'), {
-          cloudName,
-          uploadPreset,
+    return this.http
+      .put<{ cloudName: string | null; uploadPreset: string | null; apiKey: string | null; apiSecretSet: boolean }>(
+        apiUrl('/admin/settings/cloudinary'),
+        req
+      )
+      .pipe(
+        map((res) => {
+          this.settingsSignal.update((s) => ({
+            ...s,
+            cloudinaryCloudName: res.cloudName,
+            cloudinaryUploadPreset: res.uploadPreset,
+          }));
+          this.saving.set(false);
+          return res;
+        }),
+        catchError(() => {
+          this.saving.set(false);
+          return of(null);
         })
-        .subscribe({
-          next: (res) => {
-            this.settingsSignal.update((s) => ({
-              ...s,
-              cloudinaryCloudName: res.cloudName,
-              cloudinaryUploadPreset: res.uploadPreset,
-            }));
-            this.saving.set(false);
-            sub.next(true);
-            sub.complete();
-          },
-          error: () => {
-            this.saving.set(false);
-            sub.next(false);
-            sub.complete();
-          },
-        });
-    });
+      );
   }
 
   /** Config de SMTP. Sólo la puede leer/editar un superadmin (ver backend). */

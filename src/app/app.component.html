@@ -14,5 +14,10 @@
   }
 </div>
 
+@if (!isAdminRoute()) {
+  <app-whatsapp-float />
+  <app-promo-banner />
+}
+
 <app-toast />
 <app-confirm-dialog />

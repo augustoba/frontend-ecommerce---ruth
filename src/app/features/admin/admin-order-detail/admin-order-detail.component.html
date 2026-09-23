@@ -104,22 +104,51 @@
   </div>
 
   <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-hidden">
-    @if (order.status === 'PENDIENTE' && canManage()) {
+    @if (order.status === 'PENDIENTE' && canManage() && pendingLines().length > 0) {
       <div class="flex flex-wrap items-center gap-3 p-4 border-b border-stone-100 bg-stone-50/60">
         <p class="text-sm text-stone-500 mr-auto">
-          Tildá los ítems que vas a entregar. Los que dejes destildados quedan cancelados y no descuentan stock.
+          Tildá los ítems pendientes para entregarlos o cancelarlos por separado — el resto sigue esperando.
         </p>
-        <button type="button" (click)="acceptAll()" class="text-xs font-bold text-mint-600 hover:underline">
-          Tildar todos
+        <button type="button" (click)="selectAllPending()" class="text-xs font-bold text-mint-600 hover:underline">
+          Tildar todos los pendientes
         </button>
-        <button type="button" (click)="rejectAll()" class="text-xs font-bold text-red-500 hover:underline">
+        <button type="button" (click)="deselectAll()" class="text-xs font-bold text-stone-400 hover:underline">
           Destildar todos
         </button>
       </div>
+      @if (selected().size > 0) {
+        <div class="flex flex-wrap items-center gap-3 p-4 border-b border-stone-100 bg-mint-50/60">
+          <p class="text-sm text-stone-600 mr-auto">
+            {{ selected().size }} seleccionado(s):
+            <span class="font-semibold text-stone-800">{{ selectedTotal() | currency: 'ARS' : 'symbol' : '1.0-0' }}</span>
+          </p>
+          <button
+            type="button"
+            (click)="confirmSelected()"
+            [disabled]="saving() || selectedStockIssues().length > 0"
+            class="text-xs font-bold bg-mint-500 hover:bg-mint-600 disabled:bg-stone-300 text-white px-3 py-1.5 rounded-full transition-colors"
+          >
+            ✅ Entregar seleccionados
+          </button>
+          <button
+            type="button"
+            (click)="cancelSelected()"
+            [disabled]="saving()"
+            class="text-xs font-bold bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-full transition-colors"
+          >
+            Cancelar seleccionados
+          </button>
+        </div>
+        @if (selectedStockIssues().length > 0) {
+          <p class="px-4 pt-2 text-xs text-red-500 font-semibold">
+            Falta stock en {{ selectedStockIssues().length }} ítem(s) seleccionados — no se pueden entregar así.
+          </p>
+        }
+      }
     }
 
     <div class="overflow-x-auto">
-      <table class="w-full text-sm min-w-[560px]">
+      <table class="w-full text-sm min-w-[640px]">
         <thead>
           <tr class="text-left text-stone-500 border-b border-stone-100">
             <th class="p-4 font-semibold w-10"></th>
@@ -127,31 +156,74 @@
             <th class="p-4 font-semibold">Talle</th>
             <th class="p-4 font-semibold">Cant.</th>
             <th class="p-4 font-semibold">Subtotal</th>
+            <th class="p-4 font-semibold">Estado</th>
+            <th class="p-4 font-semibold w-10"></th>
           </tr>
         </thead>
         <tbody>
-          @for (line of order.lines; track $index) {
-            <tr class="border-b border-stone-50 last:border-0" [class.opacity-50]="!line.accepted">
+          @for (line of order.lines; track line.id) {
+            <tr class="border-b border-stone-50 last:border-0" [class.opacity-50]="line.status === 'CANCELADA'">
               <td class="p-4">
-                <input
-                  type="checkbox"
-                  [checked]="line.accepted"
-                  [disabled]="order.status !== 'PENDIENTE' || saving() || !canManage()"
-                  (change)="toggleLine($index)"
-                  class="w-4 h-4 accent-mint-500"
-                />
+                @if (line.status === 'PENDIENTE' && order.status === 'PENDIENTE' && canManage()) {
+                  <input
+                    type="checkbox"
+                    [checked]="selected().has(line.id)"
+                    [disabled]="saving()"
+                    (change)="toggleSelect(line.id)"
+                    class="w-4 h-4 accent-mint-500"
+                  />
+                }
               </td>
               <td class="p-4 font-semibold text-stone-800">{{ line.productName }}</td>
               <td class="p-4 text-stone-600">
                 Talle {{ line.size }}
                 @let available = currentStock(line.productId, line.size);
-                @if (available !== null && available < line.quantity) {
+                @if (line.status === 'PENDIENTE' && available !== null && available < line.quantity) {
                   <span class="block text-xs text-red-500 font-semibold">⚠ solo quedan {{ available }}</span>
                 }
               </td>
-              <td class="p-4 text-stone-600">x{{ line.quantity }}</td>
+              <td class="p-4 text-stone-600">
+                @if (line.status === 'PENDIENTE' && order.status === 'PENDIENTE' && canManage()) {
+                  <input
+                    type="number"
+                    min="1"
+                    [ngModel]="line.quantity"
+                    (change)="updateQuantity(line, $any($event.target).valueAsNumber)"
+                    [disabled]="saving()"
+                    class="w-16 rounded-lg border border-stone-200 px-2 py-1 text-sm"
+                  />
+                } @else {
+                  x{{ line.quantity }}
+                }
+              </td>
               <td class="p-4 text-stone-600">
                 {{ line.unitPrice * line.quantity | currency: 'ARS' : 'symbol' : '1.0-0' }}
+              </td>
+              <td class="p-4">
+                <span
+                  [class.bg-amber-100]="line.status === 'PENDIENTE'"
+                  [class.text-amber-700]="line.status === 'PENDIENTE'"
+                  [class.bg-mint-100]="line.status === 'ENTREGADA'"
+                  [class.text-mint-600]="line.status === 'ENTREGADA'"
+                  [class.bg-stone-100]="line.status === 'CANCELADA'"
+                  [class.text-stone-500]="line.status === 'CANCELADA'"
+                  class="text-xs font-bold px-2.5 py-1 rounded-full"
+                >
+                  {{ lineStatusLabel(line.status) }}
+                </span>
+              </td>
+              <td class="p-4">
+                @if (line.status === 'PENDIENTE' && order.status === 'PENDIENTE' && canManage()) {
+                  <button
+                    type="button"
+                    (click)="removeLine(line)"
+                    [disabled]="saving()"
+                    class="text-stone-300 hover:text-red-500 transition-colors"
+                    title="Sacar del pedido"
+                  >
+                    ✕
+                  </button>
+                }
               </td>
             </tr>
           }
@@ -159,14 +231,79 @@
       </table>
     </div>
 
+    @if (order.status === 'PENDIENTE' && canManage()) {
+      <div class="p-4 border-t border-stone-100 bg-stone-50/60">
+        @if (!addProduct()) {
+          <div class="relative">
+            <input
+              type="text"
+              [ngModel]="addSearch()"
+              (ngModelChange)="addSearch.set($event)"
+              placeholder="+ Agregar producto al pedido…"
+              class="w-full rounded-full border border-stone-200 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+            />
+            @if (addMatches().length > 0) {
+              <div class="absolute z-10 mt-1 w-full bg-white rounded-xl ring-1 ring-black/5 shadow-lg overflow-hidden">
+                @for (p of addMatches(); track p.id) {
+                  <button
+                    type="button"
+                    (click)="pickAddProduct(p)"
+                    class="block w-full text-left px-4 py-2 text-sm hover:bg-stone-50"
+                  >
+                    {{ p.name }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="flex flex-wrap items-center gap-3">
+            <p class="text-sm font-semibold text-stone-800">{{ addProduct()!.name }}</p>
+            <div class="flex flex-wrap gap-1.5">
+              @for (ss of addProduct()!.sizeStocks; track ss.size) {
+                <button
+                  type="button"
+                  (click)="addSize.set(ss.size)"
+                  [disabled]="ss.stock <= 0"
+                  [class.bg-brand-500]="addSize() === ss.size"
+                  [class.text-white]="addSize() === ss.size"
+                  class="text-xs font-bold px-2.5 py-1 rounded-full ring-1 ring-stone-200 disabled:opacity-30"
+                >
+                  {{ ss.size }}
+                </button>
+              }
+            </div>
+            <input
+              type="number"
+              min="1"
+              [ngModel]="addQuantity()"
+              (ngModelChange)="addQuantity.set($event)"
+              class="w-16 rounded-lg border border-stone-200 px-2 py-1 text-sm"
+            />
+            <button
+              type="button"
+              (click)="confirmAddLine()"
+              [disabled]="!addSize() || saving()"
+              class="text-sm font-bold bg-mint-500 hover:bg-mint-600 disabled:bg-stone-300 text-white px-4 py-1.5 rounded-full transition-colors"
+            >
+              Agregar
+            </button>
+            <button type="button" (click)="cancelAddLine()" class="text-sm text-stone-400 hover:text-red-500">
+              Cancelar
+            </button>
+          </div>
+        }
+      </div>
+    }
+
     <div class="flex flex-wrap items-center justify-between gap-3 p-4 border-t border-stone-100 bg-stone-50/60">
       <p class="text-stone-600">
         Suma de todos los ítems del pedido (sin descuento):
         <span class="font-semibold">{{ order.subtotal | currency: 'ARS' : 'symbol' : '1.0-0' }}</span>
       </p>
       <p class="text-stone-800 font-semibold">
-        Ítems tildados ({{ acceptedCount() }}):
-        <span class="text-brand-600">{{ acceptedTotal() | currency: 'ARS' : 'symbol' : '1.0-0' }}</span>
+        Pendientes ({{ pendingLines().length }}):
+        <span class="text-brand-600">{{ pendingTotal() | currency: 'ARS' : 'symbol' : '1.0-0' }}</span>
       </p>
     </div>
   </div>
@@ -176,7 +313,7 @@
   } @else if (order.status === 'PENDIENTE') {
     @if (stockIssues().length > 0) {
       <div class="mt-6 rounded-2xl bg-red-50 ring-1 ring-red-200 p-4 text-sm text-red-700">
-        <p class="font-bold mb-1">No podés confirmar: falta stock en {{ stockIssues().length }} ítem(s).</p>
+        <p class="font-bold mb-1">Falta stock en {{ stockIssues().length }} ítem(s) pendiente(s).</p>
         <ul class="list-disc pl-5 space-y-0.5">
           @for (issue of stockIssues(); track issue.line.id) {
             <li>
@@ -185,7 +322,7 @@
             </li>
           }
         </ul>
-        <p class="mt-1.5 text-red-600">Ajustá el stock del producto o destildá esos ítems.</p>
+        <p class="mt-1.5 text-red-600">Ajustá el stock del producto, cancelá esos ítems solos o cambiales la cantidad.</p>
       </div>
     }
     @if (confirmError()) {
@@ -195,23 +332,23 @@
       <button
         type="button"
         (click)="confirmOrder()"
-        [disabled]="acceptedCount() === 0 || saving() || stockIssues().length > 0"
+        [disabled]="pendingLines().length === 0 || saving() || stockIssues().length > 0"
         class="bg-mint-500 hover:bg-mint-600 disabled:bg-stone-300 disabled:cursor-not-allowed text-white font-bold py-2.5 px-6 rounded-full transition-colors"
       >
-        ✅ Confirmar y descontar stock
+        ✅ Confirmar todo lo pendiente
       </button>
       <button
         type="button"
         (click)="cancelOrder()"
         class="text-stone-400 hover:text-red-500 font-semibold py-2.5 px-6"
       >
-        Cancelar pedido completo
+        Cancelar todo lo pendiente
       </button>
     </div>
   } @else if (order.status === 'PROCESADO') {
     <p class="text-sm text-stone-500 mt-4">
-      ✅ Pedido procesado el {{ order.processedAt | date: 'dd/MM/yyyy HH:mm' }} — el stock de los ítems tildados ya
-      fue descontado.
+      ✅ Pedido procesado el {{ order.processedAt | date: 'dd/MM/yyyy HH:mm' }} — el stock de los ítems entregados
+      ya fue descontado.
     </p>
   } @else {
     <p class="text-sm text-stone-500 mt-4">

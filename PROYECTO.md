@@ -1290,6 +1290,61 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       Vale la pena un chequeo tipo "toda clase `*-<color>-<n>` usada en los
       templates existe en `@theme`" — habría cazado esto y los 16 usos.
 
+54. **Entrega/cancelación parcial de pedidos + devolución pura en Cambios +
+    banner promocional + WhatsApp flotante + "Coordinar por WhatsApp" +
+    ajuste masivo de precio + POSNET (2026-09-23).** Contraparte frontend del
+    backend #38 (ver ese documento para el detalle del lado servidor).
+    - **`admin-order-detail`, rediseñado:** las checkboxes de "tildar/destildar"
+      (todo-o-nada) se reemplazan por selección de líneas **pendientes** con
+      botones "Entregar seleccionados"/"Cancelar seleccionados"
+      (`confirmLines`/`cancelLines`), badge de estado por línea
+      (Pendiente/Entregada/Cancelada), input de cantidad editable y botón "✕"
+      por línea pendiente, y un buscador inline para agregar un ítem nuevo al
+      pedido (`addLine`) mientras siga pendiente. "Confirmar/Cancelar todo lo
+      pendiente" quedan como atajos sobre el resto de líneas sin resolver.
+    - **`order.model.ts`:** `OrderLine.status` nuevo (`PENDIENTE`/`ENTREGADA`/
+      `CANCELADA`); `PaymentMethod` suma `POSNET`; `PAYMENT_LABELS.CASH` se
+      simplifica de "Efectivo al recibir/retirar" a **"Efectivo"**.
+    - **`admin-pos`:** medios de pago en la venta local pasan de
+      `CASH/TRANSFER/QR_TRANSFER/QR_CARD` a **`POSNET/CASH/TRANSFER`** (pedido
+      explícito: sin Mercado Pago ni QRs en el local).
+    - **Cambios (`admin-exchange-new`):** "Se lleva" pasa a ser opcional —
+      `canSave` ya no exige `taken().length > 0` (devolución pura). El bloque
+      de medio de pago se muestra con `difference() !== 0` (antes sólo `> 0`)
+      y cambia la etiqueta a "Cómo se le devuelve la plata" cuando la
+      diferencia es a favor del cliente. Mismo ajuste en el recibo
+      (`admin-exchange-receipt`).
+    - **"Coordinar por WhatsApp" post-pago:** `mis-pedidos-page` ahora lee
+      `?code=...&pago=aprobado` de la URL de vuelta de Mercado Pago (Ver
+      `OrderService.startMercadoPagoCheckout` en el backend), precarga el
+      código y muestra un banner "pago aprobado, buscá tu pedido". Cada pedido
+      con `paymentStatus === 'APPROVED'` en los resultados tiene un botón
+      "💬 Coordinar entrega por WhatsApp" (`WhatsappService.buildPublicCoordinationLink`,
+      mensaje simple con el código — no expone datos internos del pedido).
+    - **Banner promocional:** `PromoBannerComponent` (popup, `app.component`,
+      sólo páginas públicas) — se muestra una vez por pestaña
+      (`sessionStorage`) si `promoBannerEnabled` y hay `promoBannerImage`
+      cargados; se edita en "Configuración → Sobre nosotros" (mismo patrón que
+      la foto del local: subida a Cloudinary + link opcional al tocarlo).
+    - **WhatsApp flotante:** `WhatsappFloatComponent`, botón circular fijo
+      abajo a la derecha en toda página pública, va al chat general de la
+      tienda (sin mensaje precargado).
+    - **Ajuste masivo de precio + "Eliminar definitivamente" (`admin-products`):**
+      checkboxes por fila + toolbar "Ajuste masivo de precio: [%] Aplicar" (a
+      los seleccionados, o a todos si no se tildó ninguno —
+      `ProductService.bulkAdjustPrice`). En "Productos archivados", botón
+      "Eliminar definitivamente" junto a "Restaurar" (irreversible, confirm
+      con `danger: true`).
+    - **Cloudinary API Key/Secret:** nuevos campos en
+      `/admin/superadmin/cloudinary` (API Secret nunca se muestra una vez
+      guardado, mismo patrón que la config de mail) — hacen falta para que
+      "Eliminar definitivamente" borre también las fotos en Cloudinary (ver
+      backend #38; **todavía no están cargados**).
+    - **Verificación:** `ng build` sin errores nuevos (sólo quedaron los 3
+      warnings preexistentes de módulos CommonJS: `qrcode`, `jsbarcode`,
+      `leaflet`). **No se probó en el navegador** — falta antes de dar la
+      tanda por cerrada (mismo pendiente que el backend #38).
+
 ## 12. Backend (`../backend-ecommer-ruth/`) — resumen
 
 > **Ruta real:** la carpeta del backend en esta máquina es

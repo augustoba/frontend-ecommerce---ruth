@@ -24,10 +24,19 @@ export class AdminSuperadminCloudinaryComponent {
 
   readonly cloudName = signal(this.settingsService.settings().cloudinaryCloudName ?? '');
   readonly uploadPreset = signal(this.settingsService.settings().cloudinaryUploadPreset ?? '');
+  readonly apiKey = signal('');
+  readonly apiSecret = signal('');
+  /** true si ya hay un API Secret guardado en el backend (nunca viaja el valor real). */
+  readonly apiSecretSet = signal(false);
 
   readonly dirty = computed(() => {
     const s = this.settingsService.settings();
-    return this.cloudName() !== (s.cloudinaryCloudName ?? '') || this.uploadPreset() !== (s.cloudinaryUploadPreset ?? '');
+    return (
+      this.cloudName() !== (s.cloudinaryCloudName ?? '') ||
+      this.uploadPreset() !== (s.cloudinaryUploadPreset ?? '') ||
+      !!this.apiKey() ||
+      !!this.apiSecret()
+    );
   });
 
   constructor() {
@@ -37,6 +46,12 @@ export class AdminSuperadminCloudinaryComponent {
       if (!this.touched) {
         this.cloudName.set(s.cloudinaryCloudName ?? '');
         this.uploadPreset.set(s.cloudinaryUploadPreset ?? '');
+      }
+    });
+    this.settingsService.getCloudinaryConfig().subscribe((cfg) => {
+      if (cfg) {
+        this.apiKey.set(cfg.apiKey ?? '');
+        this.apiSecretSet.set(cfg.apiSecretSet);
       }
     });
   }
@@ -53,14 +68,33 @@ export class AdminSuperadminCloudinaryComponent {
     this.uploadPreset.set(v);
   }
 
+  patchApiKey(v: string): void {
+    this.touched = true;
+    this.error.set(null);
+    this.apiKey.set(v);
+  }
+
+  patchApiSecret(v: string): void {
+    this.touched = true;
+    this.error.set(null);
+    this.apiSecret.set(v);
+  }
+
   save(): void {
     if (this.saving()) return;
     this.error.set(null);
     this.settingsService
-      .updateCloudinaryConfig(this.cloudName().trim() || null, this.uploadPreset().trim() || null)
-      .subscribe((ok) => {
-        if (ok) {
+      .updateCloudinaryConfig({
+        cloudName: this.cloudName().trim() || null,
+        uploadPreset: this.uploadPreset().trim() || null,
+        apiKey: this.apiKey().trim() || null,
+        apiSecret: this.apiSecret().trim() || null,
+      })
+      .subscribe((res) => {
+        if (res) {
           this.touched = false;
+          this.apiSecret.set('');
+          this.apiSecretSet.set(res.apiSecretSet);
           this.toast.success('Cambios guardados.');
         } else {
           this.error.set('No se pudo guardar. Probá de nuevo.');

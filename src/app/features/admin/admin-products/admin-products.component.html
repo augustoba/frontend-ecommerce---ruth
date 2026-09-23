@@ -68,6 +68,29 @@
   }
 </div>
 
+@if (canManage() && products().length && status() !== 'loading') {
+  <div class="bg-white rounded-2xl ring-1 ring-black/5 p-4 mb-3 flex flex-wrap items-center gap-3">
+    <span class="text-sm font-semibold text-stone-600">
+      Ajuste masivo de precio{{ selected().size ? ' (' + selected().size + ' seleccionado(s))' : ' (todos si no tildás nada)' }}:
+    </span>
+    <div class="flex items-center gap-1">
+      <input type="number" step="1" [ngModel]="bulkPercent()" (ngModelChange)="bulkPercent.set($event)"
+        placeholder="ej: 10 o -15" class="w-24 rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm" />
+      <span class="text-sm text-stone-500">%</span>
+    </div>
+    <button type="button" (click)="applyBulkPrice()" [disabled]="bulkPercent() === null || bulkSaving()"
+      class="text-sm font-bold bg-brand-500 hover:bg-brand-600 disabled:bg-stone-300 text-white px-4 py-1.5 rounded-full transition-colors">
+      {{ bulkSaving() ? 'Aplicando…' : 'Aplicar' }}
+    </button>
+    @if (selected().size > 0) {
+      <button type="button" (click)="clearSelection()" class="text-xs font-semibold text-stone-400 hover:text-red-500">
+        Deseleccionar todo
+      </button>
+    }
+    <p class="text-xs text-stone-400 w-full">Sólo cambia el precio de venta — nunca el costo.</p>
+  </div>
+}
+
 @if (status() === 'loading' && !products().length) {
   <app-skeleton variant="row" [count]="8" />
 } @else if (status() === 'error' && !products().length) {
@@ -80,6 +103,12 @@
     <table class="w-full text-sm min-w-[900px]">
       <thead>
         <tr class="text-left text-stone-500 border-b border-stone-100">
+          @if (canManage()) {
+            <th class="p-4 w-10">
+              <input type="checkbox" [checked]="allOnPageSelected()" (change)="toggleSelectAllOnPage()"
+                class="w-4 h-4 accent-brand-500" />
+            </th>
+          }
           <th class="p-4 font-semibold">Producto</th>
           <th class="p-4 font-semibold">Parametrías</th>
           <th class="p-4 font-semibold">Precio</th>
@@ -92,6 +121,12 @@
       <tbody>
         @for (product of products(); track product.id) {
           <tr class="border-b border-stone-50 last:border-0 hover:bg-stone-50/60">
+            @if (canManage()) {
+              <td class="p-4">
+                <input type="checkbox" [checked]="selected().has(product.id)" (change)="toggleSelect(product.id)"
+                  class="w-4 h-4 accent-brand-500" />
+              </td>
+            }
             <td class="p-4">
               <div class="flex items-center gap-3">
                 <img [src]="product.imageUrl | cldImg: 96" [alt]="product.name" class="w-11 h-13 rounded-lg object-cover bg-brand-100" />
@@ -232,9 +267,11 @@
                   </div>
                 </td>
                 <td class="p-4 text-stone-400">{{ product.price | currency: 'ARS' : 'symbol' : '1.0-0' }}</td>
-                <td class="p-4 text-right">
+                <td class="p-4 text-right whitespace-nowrap">
                   <button type="button" (click)="restore(product.id)"
-                    class="text-brand-600 hover:underline font-semibold">Restaurar</button>
+                    class="text-brand-600 hover:underline font-semibold mr-4">Restaurar</button>
+                  <button type="button" (click)="permanentlyDelete(product.id, product.name)"
+                    class="text-stone-400 hover:text-red-500 font-semibold">Eliminar definitivamente</button>
                 </td>
               </tr>
             }

@@ -13,7 +13,7 @@ import { AdminMercadoPagoSettingsComponent } from './admin-mercadopago-settings.
 type Section = 'identity' | 'social' | 'about' | 'whatsapp' | 'pagos';
 
 /** Campos de `SiteSettings` que guardan la URL de una imagen (Cloudinary). */
-type ImageField = 'logoUrl' | 'storePhotoUrl' | 'paymentQrTransferImage' | 'paymentQrCardImage';
+type ImageField = 'logoUrl' | 'storePhotoUrl' | 'paymentQrTransferImage' | 'paymentQrCardImage' | 'promoBannerImage';
 
 /** Carpeta y nombre en Cloudinary para cada campo de imagen. */
 const IMAGE_UPLOAD: Record<ImageField, { folder: string; publicId: string }> = {
@@ -21,6 +21,7 @@ const IMAGE_UPLOAD: Record<ImageField, { folder: string; publicId: string }> = {
   storePhotoUrl: { folder: 'estilos-pequenos/local', publicId: 'foto-local' },
   paymentQrTransferImage: { folder: 'estilos-pequenos/pagos', publicId: 'qr-transferencia' },
   paymentQrCardImage: { folder: 'estilos-pequenos/pagos', publicId: 'qr-tarjeta' },
+  promoBannerImage: { folder: 'estilos-pequenos/marketing', publicId: 'banner-promocional' },
 };
 
 const META: Record<Section, { title: string; blurb: string; focus: PreviewFocus[] }> = {
@@ -200,6 +201,9 @@ export class AdminConfigSectionComponent {
             storeAddress: d.storeAddress?.trim() || null,
             storePhotoUrl: d.storePhotoUrl || null,
             aboutPageEnabled: d.aboutPageEnabled,
+            promoBannerEnabled: d.promoBannerEnabled,
+            promoBannerImage: d.promoBannerImage || null,
+            promoBannerLink: d.promoBannerLink?.trim() || null,
           });
 
     save$.subscribe((ok) => {
