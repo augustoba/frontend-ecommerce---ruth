@@ -5,7 +5,8 @@
 > `../backend-ecommer-ruth/PROYECTO.md` (esa es la carpeta real; este documento
 > la llamaba `../backend/`).
 >
-> **Última actualización: 2026-09-20** — en esa fecha se puso al día este
+> **Última actualización: 2026-09-28** (prueba en navegador, historial #55).
+> El 2026-09-20 se puso al día este
 > documento, que había quedado del **2026-09-08** y describía un proyecto de 12
 > días antes: decía que no había pasarela de pago (Mercado Pago Checkout Pro
 > está implementado desde el 2026-09-17), que el login era `admin`/`ruth123`
@@ -543,6 +544,14 @@ src/app/
 - [ ] (Backend) Flyway, perfil `prod`, proyecciones DTO — ver `../backend/PROYECTO.md` §11.
 
 ### Roadmap de mejoras (análisis 2026-09-08 — 5 puntos hechos, resto pendiente)
+
+> **2026-09-28:** esta lista tiene muchas cosas ya hechas sin tildar
+> (duplicar, archivar, cupones, editar pedido pendiente, ajuste masivo,
+> "mis pedidos", "cómo comprar" + FAQ, CSV, compras a proveedor, "lo más
+> vendido", modal propio, rate-limiting, multi-admin, métricas por
+> talle/proveedor, devoluciones/cambios). La lista **al día** de lo que falta,
+> verificada contra el código, está en `../backend-ecommer-ruth/PROYECTO.md`
+> §11bis.
 
 Hechos: galería de fotos por producto · dashboard `/admin` + stock bajo ·
 paginación del panel · orden del catálogo por precio · filtros de pedidos ·
@@ -1344,6 +1353,39 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       warnings preexistentes de módulos CommonJS: `qrcode`, `jsbarcode`,
       `leaflet`). **No se probó en el navegador** — falta antes de dar la
       tanda por cerrada (mismo pendiente que el backend #38).
+
+55. **Prueba en el navegador de la tanda #54 + Gastos/Balance/Stock
+    (2026-09-28).** Hecha con el plugin de Playwright (la extensión de Chrome
+    es inestable). Sin cambios de código en el frontend; los arreglos fueron
+    en el backend (ver backend §12 #39).
+    - **Funciona:** entrega/cancelación parcial en `admin-order-detail`
+      (editar cantidad recalcula, tildar → "Entregar seleccionados" → modal →
+      línea "Entregada", el resto sigue pendiente; cancelar la última →
+      pedido "procesado") · devolución pura en `/admin/cambios/nuevo` ("A
+      favor del cliente" + "Cómo se le devuelve la plata" + recibo) · ajuste
+      masivo (pide confirmación con la cantidad de productos) · archivar →
+      eliminar definitivamente · banner promocional (aparece, se cierra con la
+      X, no vuelve en la pestaña) · WhatsApp flotante · `/admin/gastos`
+      (listado), `/admin/balance` (las cuentas cierran) y
+      `/admin/movimientos-stock` (historial con motivo y quién).
+    - **Bugs encontrados (arreglados en el backend):** "Total a cobrar" y la
+      Caja seguían sumando las líneas canceladas de un pedido parcial; y la
+      Caja no restaba la plata devuelta en una devolución pura. La pantalla
+      de Caja ya los muestra bien (la devolución sale en negativo en la
+      columna "Cambios").
+    - **Sin probar:** "💬 Coordinar entrega por WhatsApp" en `/mis-pedidos`
+      (necesita un pedido con `paymentStatus=APPROVED`) · alta de un gasto ·
+      registrar compra a proveedor.
+    - **Hallazgos sin tocar:** el filtro "Parametría" de `/admin/productos`
+      lista también las categorías de Gastos (Alquiler, Sueldos…) · el
+      checkbox del encabezado del ajuste masivo tilda sólo la página actual
+      (para "por categoría" hay que filtrar y tildar página por página —
+      evaluar "aplicar a todos los filtrados") · `/api/settings` tiene
+      `Cache-Control: max-age=300`, así que los cambios de configuración
+      tardan hasta 5 min en verse · el recibo de una devolución pura muestra
+      "SE LLEVA" vacío · `app-confirm-dialog` sin `role="dialog"`.
+    - Las sugerencias del roadmap (§10) que siguen sin tomar quedaron
+      listadas, chequeadas contra el código, en backend `PROYECTO.md` §11bis.
 
 ## 12. Backend (`../backend-ecommer-ruth/`) — resumen
 
