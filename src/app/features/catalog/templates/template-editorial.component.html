@@ -1,0 +1,291 @@
+@if (vm(); as v) {
+  <!-- ===== HERO partido: tipografía gigante a la izquierda, foto a sangre ===== -->
+  <section class="border-b border-stone-200">
+    <div class="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-14">
+      <div class="grid lg:grid-cols-[1.05fr_0.95fr]">
+        <div class="flex flex-col justify-center py-14 lg:py-20 lg:pr-16">
+          <p class="anim-fade-up ed-label">Indumentaria infantil · Nueva temporada</p>
+
+          <h1
+            appReveal
+            variant="mask"
+            class="mt-6 font-display text-[15vw] leading-[0.86] font-black text-stone-900 sm:text-7xl lg:text-[5.5rem]"
+          >
+            <span class="block">{{ v.storeName() }}</span>
+          </h1>
+
+          <p appReveal [delay]="140" class="mt-8 max-w-md text-[15px] leading-relaxed text-stone-500">
+            Prendas elegidas una por una: cómodas para ellos, tranquilas para vos.
+            Comprás online y coordinamos la entrega por WhatsApp.
+          </p>
+
+          <div appReveal [delay]="240" class="mt-10 flex flex-wrap items-center gap-x-10 gap-y-5">
+            <button
+              type="button"
+              (click)="v.scrollToCatalog()"
+              class="sheen group inline-flex items-center gap-3 bg-stone-900 px-8 py-4 ed-label text-brand-50 transition-colors hover:bg-stone-700"
+            >
+              Ver la colección
+              <span class="text-base transition-transform duration-300 group-hover:translate-y-1">↓</span>
+            </button>
+            <a
+              routerLink="/como-comprar"
+              class="ed-link border-b border-stone-300 pb-1 transition-colors hover:border-stone-900 hover:text-stone-900"
+            >
+              Cómo comprar
+            </a>
+          </div>
+
+          <div appReveal [delay]="340" class="mt-14 flex items-center gap-4 border-t border-stone-200 pt-6">
+            <img
+              [src]="v.logoSrc() | cldImg: 120"
+              [alt]="v.storeName()"
+              class="h-12 w-12 object-cover grayscale transition-[filter] duration-500 hover:grayscale-0"
+            />
+            <p class="ed-label text-stone-400">{{ v.filteredProducts().length }} prendas en catálogo</p>
+          </div>
+        </div>
+
+        <div class="relative min-h-[48vh] overflow-hidden bg-stone-200 lg:min-h-[80vh]">
+          <img
+            [src]="heroImage() | cldImg: 1200"
+            alt=""
+            class="anim-ken-burns absolute inset-0 h-full w-full object-cover"
+          />
+          <span class="absolute bottom-6 left-6 bg-brand-50/92 px-4 py-2.5 ed-label text-stone-700">
+            Estilos pequeños
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Carrusel administrable, a sangre y con filete ===== -->
+  @if (v.heroSlides().length) {
+    <section class="mx-auto max-w-[1440px] px-5 py-14 sm:px-8 lg:px-14">
+      <div class="ed-rule mb-5">
+        <h2 class="ed-label text-stone-500">Campaña</h2>
+        <span class="ed-label text-stone-300">{{ v.heroSlides().length }} fotos</span>
+      </div>
+      <div class="relative aspect-[16/9] w-full overflow-hidden bg-stone-100 sm:aspect-[21/9]">
+        <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+      </div>
+    </section>
+  }
+
+  <!-- ===== Lo más vendido: índice numerado, no tarjetas ===== -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section class="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-14">
+      <div class="ed-rule mb-2">
+        <h2 class="font-display text-3xl font-bold text-stone-900 sm:text-4xl">Lo más vendido</h2>
+        <span class="ed-label text-stone-400">Top {{ v.bestSellers().length }}</span>
+      </div>
+
+      <ol class="ed-list">
+        @for (product of v.bestSellers(); track product.id; let i = $index) {
+          <li appReveal [delay]="i * 70">
+            <a
+              [routerLink]="['/producto', product.id]"
+              class="group flex items-center gap-5 py-4 transition-colors hover:bg-stone-100/70 sm:gap-8 sm:py-5"
+            >
+              <span class="w-7 shrink-0 font-display text-sm tabular-nums text-stone-300 sm:w-10 sm:text-base">
+                {{ pad(i + 1) }}
+              </span>
+              <span class="h-16 w-12 shrink-0 overflow-hidden bg-stone-100 sm:h-20 sm:w-16">
+                <img
+                  [src]="product.imageUrl | cldImg: 160"
+                  [alt]="product.name"
+                  loading="lazy"
+                  class="h-full w-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-110"
+                />
+              </span>
+              <span class="min-w-0 flex-1">
+                <span
+                  class="block truncate font-display text-lg font-semibold text-stone-900 transition-colors group-hover:text-brand-600 sm:text-xl"
+                >
+                  {{ product.name }}
+                </span>
+                <span class="mt-1 block ed-label text-stone-400">{{ product.ageRange }}</span>
+              </span>
+              <span class="shrink-0 text-sm font-semibold tabular-nums text-stone-900 sm:text-base">
+                {{ product.price | currency: 'ARS' : 'symbol' : '1.0-0' }}
+              </span>
+              <span
+                class="hidden shrink-0 text-stone-300 transition-all duration-300 group-hover:translate-x-1.5 group-hover:text-stone-900 sm:block"
+              >
+                →
+              </span>
+            </a>
+          </li>
+        }
+      </ol>
+    </section>
+  }
+
+  <!-- ===== Catálogo ===== -->
+  <section id="catalogo" class="mx-auto max-w-[1440px] scroll-mt-24 px-5 py-14 sm:px-8 lg:px-14">
+    <!-- Filtros: campos subrayados, sin píldoras ni cajas -->
+    <div class="border-y border-stone-200 py-6">
+      <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div class="flex flex-col gap-6 sm:flex-row sm:flex-wrap sm:items-end sm:gap-x-9">
+          <label class="flex flex-col gap-2 sm:w-56">
+            <span class="ed-label">Buscar</span>
+            <input
+              type="search"
+              [ngModel]="v.searchTerm()"
+              (ngModelChange)="v.searchTerm.set($event)"
+              placeholder="Nombre del producto"
+              class="ed-field"
+            />
+          </label>
+
+          <label class="flex flex-col gap-2">
+            <span class="ed-label">Talle</span>
+            <select [ngModel]="v.selectedSize()" (ngModelChange)="v.selectedSize.set($event)" class="ed-field">
+              <option value="todos">Todos</option>
+              @for (size of v.availableSizes(); track size) {
+                <option [value]="size">{{ size }}</option>
+              }
+            </select>
+          </label>
+
+          @for (group of v.selectGroups(); track group.id) {
+            <label class="flex flex-col gap-2">
+              <span class="ed-label">{{ group.name }}</span>
+              <select
+                [ngModel]="v.paramValue(group.id)"
+                (ngModelChange)="v.setParam(group.id, $event)"
+                class="ed-field"
+              >
+                <option value="">Todas</option>
+                @for (opt of group.options; track opt.id) {
+                  <option [value]="opt.id">{{ opt.label }}</option>
+                }
+              </select>
+            </label>
+          }
+
+          <div class="flex flex-col gap-2">
+            <span class="ed-label">Precio</span>
+            <div class="flex items-center gap-2">
+              <input
+                type="number"
+                inputmode="numeric"
+                min="0"
+                placeholder="mín"
+                aria-label="Precio mínimo"
+                [ngModel]="v.minPrice()"
+                (ngModelChange)="v.setMinPrice($event)"
+                class="ed-field w-20"
+              />
+              <span class="text-stone-300">—</span>
+              <input
+                type="number"
+                inputmode="numeric"
+                min="0"
+                placeholder="máx"
+                aria-label="Precio máximo"
+                [ngModel]="v.maxPrice()"
+                (ngModelChange)="v.setMaxPrice($event)"
+                class="ed-field w-20"
+              />
+            </div>
+          </div>
+
+          <label class="flex flex-col gap-2">
+            <span class="ed-label">Ordenar</span>
+            <select [ngModel]="v.sortBy()" (ngModelChange)="v.sortBy.set($event)" class="ed-field">
+              <option value="novedades">Novedades</option>
+              <option value="precio-asc">Precio ↑</option>
+              <option value="precio-desc">Precio ↓</option>
+            </select>
+          </label>
+        </div>
+
+        @if (v.hasActiveFilters()) {
+          <button
+            type="button"
+            (click)="v.clearFilters()"
+            class="ed-link self-start border-b border-stone-300 pb-0.5 transition-colors hover:border-stone-900 hover:text-stone-900 lg:self-auto"
+          >
+            Limpiar filtros
+          </button>
+        }
+      </div>
+
+      @if (v.publicoGroup(); as grupo) {
+        <div class="mt-7 flex flex-wrap items-baseline gap-x-7 gap-y-3 border-t border-stone-200 pt-6">
+          <span class="ed-label text-stone-400">{{ grupo.name }}</span>
+          <button
+            type="button"
+            (click)="v.setParam(grupo.id, '')"
+            class="ed-link"
+            [class.ed-link-on]="!v.paramValue(grupo.id)"
+          >
+            Todas
+          </button>
+          @for (opt of grupo.options; track opt.id) {
+            <button
+              type="button"
+              (click)="v.setParam(grupo.id, opt.id)"
+              class="ed-link"
+              [class.ed-link-on]="v.paramValue(grupo.id) === opt.id"
+            >
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Grilla asimétrica: las dos primeras prendas van a doble ancho -->
+    @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+      <div class="pt-12">
+        <app-skeleton variant="card" [count]="6" />
+      </div>
+    } @else if (v.catalogStatus() === 'error') {
+      <div class="py-24 text-center">
+        <p class="font-display text-3xl font-bold text-stone-900">No pudimos cargar el catálogo</p>
+        <button type="button" (click)="v.reloadCatalog()" class="ed-link mt-6 border-b border-stone-900 pb-1">
+          Reintentar
+        </button>
+      </div>
+    } @else if (v.filteredProducts().length) {
+      <div class="ed-rule mt-8">
+        <span class="ed-label text-stone-500">Colección</span>
+        <span class="ed-label text-stone-300">{{ v.filteredProducts().length }} prendas</span>
+      </div>
+
+      <div class="mt-10 grid grid-cols-2 gap-x-6 gap-y-14 sm:gap-x-8 lg:grid-cols-12 lg:gap-y-20">
+        @for (product of v.visibleProducts(); track product.id; let i = $index) {
+          <div appReveal [delay]="(i % 6) * 80" [class]="spanClass(i)">
+            <app-product-card [product]="product" variant="editorial" />
+          </div>
+        }
+      </div>
+
+      @if (v.hasMore()) {
+        <div class="mt-16 border-t border-stone-200 pt-10 text-center">
+          <button
+            type="button"
+            (click)="v.showMore()"
+            class="ed-link group inline-flex items-center gap-3 border-b border-stone-900 pb-1.5 text-stone-900"
+          >
+            Ver más prendas
+            <span class="ed-label text-stone-400 group-hover:text-stone-900">
+              +{{ v.filteredProducts().length - v.visibleProducts().length }}
+            </span>
+          </button>
+        </div>
+      }
+    } @else {
+      <div class="py-24 text-center">
+        <p class="font-display text-3xl font-bold text-stone-900">Sin resultados</p>
+        <p class="mt-3 text-sm text-stone-500">Probá con otros filtros o mirá el catálogo completo.</p>
+        <button type="button" (click)="v.clearFilters()" class="ed-link mt-6 border-b border-stone-900 pb-1">
+          Ver todo
+        </button>
+      </div>
+    }
+  </section>
+}

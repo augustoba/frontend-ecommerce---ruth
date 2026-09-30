@@ -55,6 +55,17 @@ si conviene tocar también este archivo o el `README.md`).
 
 ## Detalles que no están en el código y conviene recordar
 
+- **La home tiene 3 diseños intercambiables** (Ruth / Editorial / Pop, desde
+  2026-09-30): `CatalogPageComponent` es un **contenedor** que carga los datos
+  y los pasa como un único `CatalogView` (`features/catalog/catalog-view.ts`) a
+  la plantilla elegida (`@switch (layout())` sobre
+  `features/catalog/templates/`). **Cada plantilla es dueña de TODO su markup**
+  (hero, filtros, grilla, vacíos) a propósito: en el intento anterior del SaaS
+  las plantillas salían todas iguales porque compartían grilla/header/footer y
+  sólo variaba el hero. No "unificar" ese markup. Registro en
+  `core/layouts.ts`, tokens por diseño en `styles.css`
+  (`[data-layout="x"], .tpl-x`), elección desde `/admin/config/diseno` y
+  guardado en `site_settings.layout`. Ver PROYECTO.md §7bis y #56.
 - El logo real del comercio (sombrilla + corazones, paleta pastel
   rosa/celeste/durazno) está en `public/logo.jpeg` — lo pasó el cliente,
   coincide con su marca real de WhatsApp/redes. Es el **fallback**: desde

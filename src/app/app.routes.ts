@@ -363,6 +363,16 @@ export const routes: Routes = [
         title: 'Configuración del sitio | Admin',
       },
       {
+        path: 'config/diseno',
+        canActivate: [permissionGuard],
+        data: { permission: 'PLATFORM_SETTINGS_MANAGE' },
+        loadComponent: () =>
+          import('./features/admin/admin-config/admin-design.component').then(
+            (m) => m.AdminDesignComponent
+          ),
+        title: 'Diseño de la tienda | Admin',
+      },
+      {
         path: 'config/identidad',
         canActivate: [permissionGuard],
         data: { section: 'identity', permission: 'PLATFORM_SETTINGS_MANAGE' },

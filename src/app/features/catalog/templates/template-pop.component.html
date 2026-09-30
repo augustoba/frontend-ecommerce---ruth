@@ -1,0 +1,286 @@
+@if (vm(); as v) {
+  <!-- ===== Marquesina: gira sola, se pausa al pasar el mouse ===== -->
+  <div class="overflow-hidden border-b-[3px] border-stone-900 bg-stone-900 py-2.5">
+    <div class="anim-marquee">
+      @for (copy of [0, 1]; track copy) {
+        <span
+          [attr.aria-hidden]="copy === 1 ? true : null"
+          class="flex shrink-0 items-center gap-7 pr-7 font-display text-xs uppercase tracking-[0.18em] text-brand-300"
+        >
+          <span>🚚 Envíos a todo el país</span>
+          <span class="text-fuchsia-400">✷</span>
+          <span>💬 Coordinamos por WhatsApp</span>
+          <span class="text-lime-300">✷</span>
+          <span>🧸 {{ v.storeName() }}</span>
+          <span class="text-fuchsia-400">✷</span>
+          <span>⭐ Nueva temporada</span>
+          <span class="text-lime-300">✷</span>
+        </span>
+      }
+    </div>
+  </div>
+
+  <!-- ===== Hero: bloques de color, stickers rotados y título con sombra dura ===== -->
+  <section class="relative overflow-hidden border-b-[3px] border-stone-900 bg-brand-300">
+    <div class="pointer-events-none absolute -left-16 top-8 h-52 w-52 -rotate-12 border-[3px] border-stone-900 bg-fuchsia-400"></div>
+    <div class="pointer-events-none absolute -bottom-16 -right-12 h-64 w-64 rotate-12 border-[3px] border-stone-900 bg-lime-300"></div>
+
+    <div class="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+      <div class="grid items-center gap-12 lg:grid-cols-2">
+        <div>
+          <span
+            class="anim-pop-in inline-block border-[3px] border-stone-900 bg-white px-3 py-1 font-display text-xs uppercase tracking-[0.16em] shadow-[4px_4px_0_0_#1c1917]"
+            style="rotate: -3deg"
+          >
+            🧸 Ropa con onda
+          </span>
+
+          <h1
+            class="mt-5 font-display text-5xl uppercase leading-[0.88] text-stone-900 sm:text-7xl [text-shadow:6px_6px_0_#fff]"
+          >
+            {{ v.storeName() }}
+          </h1>
+
+          <p
+            class="mt-6 max-w-md border-l-[6px] border-stone-900 bg-white/85 py-3 pl-4 pr-3 font-bold text-stone-800"
+          >
+            Indumentaria infantil para jugar, correr y ensuciarse. Elegí, agregá al
+            carrito y coordinamos la compra por WhatsApp.
+          </p>
+
+          <div class="mt-8 flex flex-wrap gap-4">
+            <button
+              type="button"
+              (click)="v.scrollToCatalog()"
+              class="wobble-on-hover border-[3px] border-stone-900 bg-brand-500 px-7 py-3.5 font-display text-lg uppercase text-white shadow-[6px_6px_0_0_#1c1917] transition-all duration-150 hover:-translate-y-1 hover:shadow-[10px_10px_0_0_#1c1917] active:translate-y-0 active:shadow-[3px_3px_0_0_#1c1917]"
+            >
+              Ver catálogo 👇
+            </button>
+            <a
+              routerLink="/como-comprar"
+              class="border-[3px] border-stone-900 bg-white px-7 py-3.5 font-display text-lg uppercase text-stone-900 shadow-[6px_6px_0_0_#1c1917] transition-all duration-150 hover:-translate-y-1 hover:bg-brand-100"
+            >
+              Cómo comprar
+            </a>
+          </div>
+        </div>
+
+        <div class="relative mx-auto w-52 sm:w-72">
+          <div class="anim-float" style="--tilt: 5deg">
+            <img
+              [src]="v.logoSrc() | cldImg: 400"
+              [alt]="v.storeName()"
+              class="aspect-square w-full border-[4px] border-stone-900 bg-white object-cover shadow-[12px_12px_0_0_#1c1917]"
+            />
+          </div>
+          <span
+            class="anim-float absolute -right-4 -top-6 border-[3px] border-stone-900 bg-lime-300 px-3 py-1.5 font-display text-sm uppercase shadow-[4px_4px_0_0_#1c1917]"
+            style="--tilt: -12deg; animation-delay: -2.4s"
+          >
+            ¡Nuevo!
+          </span>
+          <span
+            class="anim-float absolute -bottom-5 -left-5 border-[3px] border-stone-900 bg-fuchsia-400 px-3 py-1.5 font-display text-sm uppercase text-white shadow-[4px_4px_0_0_#1c1917]"
+            style="--tilt: 8deg; animation-delay: -1.1s"
+          >
+            {{ v.filteredProducts().length }} prendas
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Carrusel enmarcado y apenas torcido ===== -->
+  <section class="mx-auto max-w-6xl px-4 pt-12 sm:px-6">
+    <div class="relative border-[4px] border-stone-900 bg-white p-2 shadow-[10px_10px_0_0_#1c1917] sm:-rotate-1">
+      <div class="relative aspect-[16/10] w-full overflow-hidden border-[3px] border-stone-900 bg-brand-100 sm:aspect-[21/9]">
+        <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+      </div>
+      <span
+        class="absolute -top-5 left-6 border-[3px] border-stone-900 bg-brand-300 px-3 py-1 font-display text-xs uppercase shadow-[3px_3px_0_0_#1c1917]"
+        style="rotate: -4deg"
+      >
+        📸 Mirá todo
+      </span>
+    </div>
+  </section>
+
+  <!-- ===== Lo más vendido: scroller con tarjetas torcidas ===== -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section class="mx-auto max-w-6xl px-4 pt-14 sm:px-6">
+      <div class="mb-6 flex items-center gap-4">
+        <h2 class="font-display text-3xl uppercase sm:text-4xl">🔥 Lo más vendido</h2>
+        <span class="h-[3px] flex-1 bg-stone-900"></span>
+      </div>
+      <div class="-mx-4 flex gap-6 overflow-x-auto px-4 pb-5 sm:mx-0 sm:px-0">
+        @for (product of v.bestSellers(); track product.id; let i = $index) {
+          <div class="w-44 shrink-0 sm:w-52" [class]="tilt(i)">
+            <app-product-card [product]="product" variant="pop" />
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== Catálogo ===== -->
+  <section id="catalogo" class="mx-auto max-w-6xl scroll-mt-24 px-4 py-12 sm:px-6">
+    <!-- Filtros en una caja con borde grueso -->
+    <div class="border-[3px] border-stone-900 bg-white p-4 shadow-[8px_8px_0_0_#1c1917] sm:p-6">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <input
+          type="search"
+          [ngModel]="v.searchTerm()"
+          (ngModelChange)="v.searchTerm.set($event)"
+          placeholder="🔎 Buscar producto..."
+          aria-label="Buscar producto"
+          class="pop-field sm:w-64"
+        />
+
+        <select
+          [ngModel]="v.selectedSize()"
+          (ngModelChange)="v.selectedSize.set($event)"
+          aria-label="Talle"
+          class="pop-field sm:w-auto"
+        >
+          <option value="todos">Talle: todos</option>
+          @for (size of v.availableSizes(); track size) {
+            <option [value]="size">{{ size }}</option>
+          }
+        </select>
+
+        @for (group of v.selectGroups(); track group.id) {
+          <select
+            [ngModel]="v.paramValue(group.id)"
+            (ngModelChange)="v.setParam(group.id, $event)"
+            [attr.aria-label]="group.name"
+            class="pop-field sm:w-auto"
+          >
+            <option value="">{{ group.name }}: todas</option>
+            @for (opt of group.options; track opt.id) {
+              <option [value]="opt.id">{{ opt.label }}</option>
+            }
+          </select>
+        }
+
+        <div class="flex items-center gap-2">
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            placeholder="$ mín"
+            aria-label="Precio mínimo"
+            [ngModel]="v.minPrice()"
+            (ngModelChange)="v.setMinPrice($event)"
+            class="pop-field w-24"
+          />
+          <span class="font-display text-stone-900">—</span>
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            placeholder="$ máx"
+            aria-label="Precio máximo"
+            [ngModel]="v.maxPrice()"
+            (ngModelChange)="v.setMaxPrice($event)"
+            class="pop-field w-24"
+          />
+        </div>
+
+        <select
+          [ngModel]="v.sortBy()"
+          (ngModelChange)="v.sortBy.set($event)"
+          aria-label="Ordenar"
+          class="pop-field sm:ml-auto sm:w-auto"
+        >
+          <option value="novedades">Orden: novedades</option>
+          <option value="precio-asc">Precio ↑</option>
+          <option value="precio-desc">Precio ↓</option>
+        </select>
+      </div>
+
+      @if (v.publicoGroup(); as grupo) {
+        <div class="mt-5 flex flex-wrap gap-3 border-t-[3px] border-stone-900 pt-5">
+          <button
+            type="button"
+            (click)="v.setParam(grupo.id, '')"
+            class="pop-chip"
+            [class.pop-chip-on]="!v.paramValue(grupo.id)"
+          >
+            Todas
+          </button>
+          @for (opt of grupo.options; track opt.id) {
+            <button
+              type="button"
+              (click)="v.setParam(grupo.id, opt.id)"
+              class="pop-chip"
+              [class.pop-chip-on]="v.paramValue(grupo.id) === opt.id"
+            >
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+      }
+
+      @if (v.hasActiveFilters()) {
+        <button
+          type="button"
+          (click)="v.clearFilters()"
+          class="mt-4 font-display text-sm uppercase underline decoration-[3px] decoration-brand-500 underline-offset-4 transition-colors hover:text-brand-600"
+        >
+          Limpiar filtros ✕
+        </button>
+      }
+    </div>
+
+    <!-- Grilla -->
+    @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+      <div class="pt-10">
+        <app-skeleton variant="card" [count]="8" />
+      </div>
+    } @else if (v.catalogStatus() === 'error') {
+      <div class="mt-10 border-[3px] border-stone-900 bg-brand-100 p-10 text-center shadow-[8px_8px_0_0_#1c1917]">
+        <p class="font-display text-3xl uppercase">😵 ¡Uy!</p>
+        <p class="mt-2 font-bold">No se pudo cargar el catálogo.</p>
+        <button
+          type="button"
+          (click)="v.reloadCatalog()"
+          class="mt-5 border-[3px] border-stone-900 bg-white px-6 py-2.5 font-display uppercase shadow-[4px_4px_0_0_#1c1917] transition-all hover:-translate-y-0.5"
+        >
+          Reintentar
+        </button>
+      </div>
+    } @else if (v.filteredProducts().length) {
+      <div class="mt-10 grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-7 lg:grid-cols-4">
+        @for (product of v.visibleProducts(); track product.id; let i = $index) {
+          <div appReveal variant="bounce" [delay]="(i % 8) * 55">
+            <app-product-card [product]="product" variant="pop" />
+          </div>
+        }
+      </div>
+
+      @if (v.hasMore()) {
+        <div class="mt-12 text-center">
+          <button
+            type="button"
+            (click)="v.showMore()"
+            class="wobble-on-hover border-[3px] border-stone-900 bg-brand-300 px-8 py-3.5 font-display text-lg uppercase shadow-[6px_6px_0_0_#1c1917] transition-all duration-150 hover:-translate-y-1 hover:shadow-[10px_10px_0_0_#1c1917] active:translate-y-0 active:shadow-[3px_3px_0_0_#1c1917]"
+          >
+            Ver más (+{{ v.filteredProducts().length - v.visibleProducts().length }}) 🎈
+          </button>
+        </div>
+      }
+    } @else {
+      <div class="mt-10 border-[3px] border-stone-900 bg-white p-10 text-center shadow-[8px_8px_0_0_#1c1917]">
+        <p class="font-display text-3xl uppercase">🔍 Nada por acá</p>
+        <p class="mt-2 font-bold text-stone-600">No encontramos productos con esos filtros.</p>
+        <button
+          type="button"
+          (click)="v.clearFilters()"
+          class="mt-5 border-[3px] border-stone-900 bg-brand-500 px-6 py-2.5 font-display uppercase text-white shadow-[4px_4px_0_0_#1c1917] transition-all hover:-translate-y-0.5"
+        >
+          Ver todo el catálogo
+        </button>
+      </div>
+    }
+  </section>
+}

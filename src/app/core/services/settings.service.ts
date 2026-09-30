@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, map, of } from 'rxjs';
 import { apiUrl } from '../config/site-config';
+import { DEFAULT_LAYOUT, isKnownLayout } from '../layouts';
 import { LoadStatus } from '../state/collection-store';
 import { PaymentMethod } from '../models/order.model';
 
@@ -70,6 +71,12 @@ export interface SiteSettings {
    * online (ver `availablePaymentMethods`) — no aplica a la venta local.
    */
   mercadoPagoAvailable: boolean;
+  /**
+   * id del diseño de la tienda elegido desde `/admin/config/diseno`
+   * ("ruth", "editorial", "pop"). Se escribe como `data-layout` en <html> y
+   * decide qué componente de plantilla renderiza la home. Ver `core/layouts.ts`.
+   */
+  layout: string;
 }
 
 /** Credenciales de Mercado Pago. `accessToken` nunca viaja del backend — sólo `accessTokenSet`. */
@@ -127,6 +134,7 @@ const DEFAULTS: SiteSettings = {
   cloudinaryCloudName: 'jitutkbc',
   cloudinaryUploadPreset: 'estilospequenos',
   mercadoPagoAvailable: false,
+  layout: DEFAULT_LAYOUT,
 };
 
 /**
@@ -202,6 +210,19 @@ export class SettingsService {
   }
 
   /**
+   * Diseño efectivo: el guardado, o el default si el backend devuelve un id que
+   * este frontend no conoce (pasa si se despliega el backend antes que el front).
+   *
+   * El que lo escribe como `data-layout` en <html> es `AppComponent`, que además
+   * sabe si la ruta actual es del panel de admin (ahí no se aplica, para que el
+   * backoffice no herede las fuentes ni el aire del diseño de la tienda).
+   */
+  readonly layout = computed(() => {
+    const id = this.settingsSignal().layout;
+    return isKnownLayout(id) ? id : DEFAULT_LAYOUT;
+  });
+
+  /**
    * Identidad, logo, WhatsApp, redes, textos. Sólo superadmin
    * (`PLATFORM_SETTINGS_MANAGE`). Acepta un objeto parcial: se mezcla con los
    * settings actuales antes de mandar sólo los campos de plataforma al backend.
@@ -254,6 +275,15 @@ export class SettingsService {
         },
       });
     });
+  }
+
+  /**
+   * Cambia el diseño de la tienda. Lo puede hacer el dueño (backend:
+   * PLATFORM_SETTINGS_MANAGE o CAROUSEL_MANAGE). Al volver la respuesta se
+   * actualiza `settingsSignal`, y de ahí el `data-layout` y las fuentes.
+   */
+  updateAppearance(layout: string): Observable<boolean> {
+    return this.putMerged('/admin/settings/apariencia', { layout });
   }
 
   /**

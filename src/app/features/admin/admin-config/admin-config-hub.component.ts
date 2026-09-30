@@ -19,6 +19,13 @@ interface ConfigCard {
 export class AdminConfigHubComponent {
   readonly cards: ConfigCard[] = [
     {
+      path: '/admin/config/diseno',
+      icon: '🎨',
+      title: 'Diseño de la tienda',
+      desc: 'Elegí entre los diseños disponibles, con una vista previa real de cada uno.',
+      where: 'Toda la tienda: home, encabezado, pie de página y el resto de las páginas.',
+    },
+    {
       path: '/admin/config/identidad',
       icon: '🏬',
       title: 'Identidad y contacto',

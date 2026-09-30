@@ -5,7 +5,8 @@
 > `../backend-ecommer-ruth/PROYECTO.md` (esa es la carpeta real; este documento
 > la llamaba `../backend/`).
 >
-> **Última actualización: 2026-09-28** (prueba en navegador, historial #55).
+> **Última actualización: 2026-09-30** (plantillas de tienda intercambiables,
+> historial #56).
 > El 2026-09-20 se puso al día este
 > documento, que había quedado del **2026-09-08** y describía un proyecto de 12
 > días antes: decía que no había pasarela de pago (Mercado Pago Checkout Pro
@@ -15,6 +16,8 @@
 > (6 a 11) siguen con la redacción del 2026-09-08** y pueden tener detalles
 > atrasados — para lo del backend, la fuente de verdad es
 > `../backend-ecommer-ruth/PROYECTO.md`.
+> El 2026-09-30 se aggiornaron 2, 5, 6, 7, 8, 9sexies y 12 por las **plantillas
+> de diseño intercambiables** (nueva sección 7bis, historial #56).
 
 ## 1. Qué es esto
 
@@ -43,6 +46,7 @@ Mercado Pago para coordinar el pago manualmente.
 | Backend | Java 21 + Spring Boot 3.3 + MySQL 8 + JWT (Maven) | Node/Nest, Quarkus, Gradle, Postgres/H2 |
 | Alcance v1 | Catálogo+filtros, carrito+checkout WhatsApp, panel admin, API backend | — |
 | Pasarela de pago | **Mercado Pago Checkout Pro** (desde 2026-09-17), además del checkout por WhatsApp con alias/link manual | — |
+| Diseño de la tienda | **3 plantillas intercambiables** — Ruth / Editorial / Pop — elegibles desde el panel (2026-09-30, sección 7bis) | Un solo diseño fijo en código; temas sólo de colores |
 
 **Ojo:** la pasarela de pago **sí** existe. El sitio arrancó sin ninguna (checkout
 por WhatsApp + alias manual), pero desde el 2026-09-17 tiene **Mercado Pago
@@ -212,7 +216,9 @@ el backend no responde: `src/app/core/services/settings.service.ts` →
   si existe, le llega un mail con una contraseña nueva (desde 2026-09-11, ver
   PROYECTO.md #46 — antes era con una "frase de recuperación", se sacó).
 - `/admin/cuenta` — cambiar la contraseña (pide la actual).
-- `/admin/config` ("🎨 Configuración del sitio") — hub con sub-páginas: identidad
+- `/admin/config` ("🎨 Configuración del sitio") — hub con sub-páginas:
+  **diseño de la tienda** (`/config/diseno`: elegir entre Ruth, Editorial y Pop
+  con miniaturas vivas, secciones 7bis y 9sexies), identidad
   y contacto (nombre + WhatsApp), redes sociales, "sobre nosotros" y carrusel.
   Cada una con **previsualización en vivo** de cómo queda en la tienda. Sin
   redesplegar nada (sección 9sexies). `/admin/ajustes` redirige acá.
@@ -235,9 +241,19 @@ el backend no responde: `src/app/core/services/settings.service.ts` →
   naranja, `accent-*` celeste, `mint-*` verde) — **pendiente evaluar si
   se ajusta** a los tonos pastel reales del logo (rosa/celeste/durazno),
   quedó abierto como posible ajuste futuro.
-- Fuentes: Baloo 2 (títulos) + Nunito (texto), vía Google Fonts.
+- Fuentes: **dependen del diseño elegido** (sección 7bis). Las de `index.html`
+  son Baloo 2 (títulos) + Nunito (texto) — las del diseño original "Ruth".
+  Editorial y Pop cargan las suyas por JS cuando se activan
+  (`ensureLayoutFonts`), así la tienda no baja tipografías que no usa.
 
 ## 7. Página de inicio (`/`, `CatalogPageComponent`)
+
+**Desde el 2026-09-30 la home es un contenedor**: `CatalogPageComponent` carga
+los datos (productos, carrusel, parametrías, talles, filtros, orden, paginado)
+y se los pasa a **una plantilla de diseño**, que es dueña de TODO el markup
+(sección 7bis). Lo de acá abajo describe el diseño **Ruth** — el default, el
+que la tienda tuvo siempre; las otras plantillas muestran los mismos datos con
+otra estructura visual.
 
 - Hero grande arriba: carrusel automático de imágenes (cada 4.5s, con
   flechas y puntos de navegación) + logo grande superpuesto + nombre +
@@ -258,12 +274,83 @@ el backend no responde: `src/app/core/services/settings.service.ts` →
   selectores) + filtro por talle + **orden** (novedades / precio ascendente /
   precio descendente), y la grilla de productos.
 
+## 7bis. Diseños de tienda intercambiables (plantillas)
+
+- **Qué es:** el dueño puede elegir el **diseño de la tienda** desde
+  `/admin/config/diseno` (sección 9sexies), sin tocar código ni redesplegar.
+  Hoy hay tres: **Ruth** (el original), **Editorial** y **Pop**. La elección
+  queda guardada en `site_settings.layout` y la tienda la levanta al cargar.
+- **Por qué esta arquitectura:** en el intento anterior (el SaaS) todas las
+  plantillas salían iguales porque sólo variaba el hero y el resto —grilla,
+  header, footer, fichas— era compartido. Acá **cada plantilla es dueña de su
+  markup completo** (hero, filtros, grilla y estados vacíos) y sólo comparte
+  los datos. No hay componentes de diseño intermedios que las igualen.
+- **Cómo está armado:**
+  - `core/layouts.ts` — el registro: `LAYOUTS` (id, nombre, descripción, color
+    de la miniatura y `fontsHref` de Google Fonts), `DEFAULT_LAYOUT = 'ruth'`,
+    `isKnownLayout`/`layoutById` y `ensureLayoutFonts(id)` (inyecta el `<link>`
+    de fuentes una sola vez por id; la pantalla de Diseño lo llama con los tres,
+    porque en `/admin` el `data-layout` global está sacado a propósito).
+  - `features/catalog/catalog-view.ts` — el **contrato** `CatalogView`: todo lo
+    que una plantilla puede pedirle al contenedor (productos, filtros, orden,
+    paginado, estado de carga/error, carrito, `settings`…). Cada plantilla
+    recibe un único `view = input.required<CatalogView>()`.
+  - `features/catalog/catalog-page/` — el contenedor: carga los datos, expone
+    `vm: CatalogView = this` y hace `@switch (layout())` sobre las tres
+    plantillas. Acepta `layoutOverride` (forzar un diseño ignorando el elegido)
+    y `preview` (4 productos, sin "más vendidos" ni "ver más") — los usa la
+    pantalla de Diseño para las miniaturas vivas.
+  - `features/catalog/templates/template-{ruth,editorial,pop}.component.*` — las
+    tres plantillas. La de Ruth es el markup viejo **portado literal**, así el
+    diseño original quedó píxel por píxel igual al de siempre.
+  - `shared/components/product-card` — variantes `classic | editorial | pop`
+    (un `Record<ProductCardVariant, CardClasses>` con las clases de cada parte
+    de la tarjeta). Es lo único que se comparte: la tarjeta, no la página.
+  - `styles.css` — tokens por diseño (`[data-layout="editorial"], .tpl-editorial
+    {…}`, y lo mismo para `pop`) + helpers `.ed-*` / `.pop-*`. Va en el CSS
+    global porque el presupuesto de `anyComponentStyle` es 4 kB por componente.
+    Los selectores van **dobles** (atributo en `<html>` y clase en el host de la
+    plantilla) para que una miniatura del admin se vea correcta aunque el diseño
+    activo de la tienda sea otro.
+  - `AppComponent` — es el único que escribe `data-layout` en `<html>`, y lo
+    **quita** en las rutas `/admin` (para que el panel no herede las fuentes ni
+    el aire de la tienda); también llama a `ensureLayoutFonts`.
+- **Los tres diseños:**
+  - **Ruth** (default): cálido y centrado — carrusel arriba, logo redondo
+    superpuesto, grilla pareja de tarjetas con marco suave. Baloo 2 + Nunito.
+  - **Editorial**: tipo revista de moda. Papel hueso, hero con título enorme
+    **a la izquierda** (serif) + foto a sangre, CTA negro, grilla **asimétrica
+    sin marcos**, mucho aire. Playfair Display + Inter.
+  - **Pop**: neo-brutalista y bien infantil. Fondo amarillo, **marquesina** negra
+    en movimiento, bordes gruesos con sombras duras, calcomanías rotadas en
+    magenta, filtros tipo chip. Archivo Black + Space Grotesk.
+- **Movimiento** (sin dependencias nuevas: CSS + un directive):
+  - `shared/directives/reveal.directive.ts` (`appReveal`): IntersectionObserver
+    que agrega la clase de entrada cuando el elemento aparece en pantalla;
+    variantes `up` / `mask` / `bounce` y delay escalonado (`transition-delay`)
+    para que la grilla entre en cascada. Corre dentro de `zone.run()` porque la
+    app usa zone.js (no es zoneless).
+  - Keyframes en `styles.css`: `fade-up`, `marquee`, `wobble`, `pop-in`,
+    `ken-burns`, `float-y` y `sheen`, más utilidades `.anim-*` y
+    `.wobble-on-hover`.
+  - **`prefers-reduced-motion`** apaga todas las animaciones y deja los
+    elementos visibles (sin el estado inicial oculto del reveal).
+- **Para agregar un diseño nuevo:** (1) entrada en `LAYOUTS`, (2) componente de
+  plantilla + su `@case` en `catalog-page.component.html`, (3) bloque de tokens
+  en `styles.css` si hace falta, y (4) **sumar el id al `@Pattern` de
+  `AppearanceRequest`** en el backend — si no está ahí, el `PUT` devuelve 400
+  aunque el frontend lo ofrezca.
+- **Verificado en navegador (2026-09-30):** ciclo completo
+  ruth → editorial → pop → ruth; cada cambio persiste y se ve en la tienda con
+  sólo recargar, consola limpia. La tienda quedó en **Ruth** (el del cliente).
+
 ## 8. Estructura del código
 
 ```
 src/app/
   core/
     config/site-config.ts       # storeName, apiBaseUrl, WhatsApp, redes + helper apiUrl()
+    layouts.ts                  # registro de diseños de tienda (LAYOUTS) + ensureLayoutFonts()
     http/                       # auth.interceptor (Bearer en /api/admin/**), error.interceptor (401→login, toasts)
     state/collection-store.ts   # store genérico: items + status(loading/error) + saving + reload; lo componen los services
     utils/image-resize.ts       # redimensiona fotos del carrusel antes de subirlas
@@ -281,12 +368,15 @@ src/app/
       auth.service.ts           # POST /api/auth/login → JWT en localStorage; isAuthenticated()
       toast.service.ts          # cola de toasts (éxito/error)
     guards/admin.guard.ts       # protege /admin/* (isAuthenticated)
-  shared/components/            # header, footer, product-card, quantity-stepper, hero-carousel, toast, skeleton, site-preview
+  shared/components/            # header, footer, product-card (variantes classic/editorial/pop), quantity-stepper, hero-carousel, toast, skeleton, site-preview
+  shared/directives/            # appReveal — animación de entrada con IntersectionObserver (sección 7bis)
   features/
-    catalog/catalog-page/       # home: hero + carrusel + filtros + grilla
+    catalog/catalog-page/       # home = CONTENEDOR: carga los datos y elige plantilla (@switch sobre layout)
+    catalog/catalog-view.ts     # contrato CatalogView: lo que el contenedor le pasa a cada plantilla
+    catalog/templates/          # template-ruth / template-editorial / template-pop — markup completo de cada diseño
     product-detail/             # ficha de producto (talle con stock, cantidad, agregar al carrito)
     cart/cart-page/             # carrito + entrega (retiro/envío) + pago + "Comprar por WhatsApp"
-    admin/                      # login, layout, productos, pedidos, carrusel (ver sección 9bis)
+    admin/                      # login, layout, productos, pedidos, carrusel, admin-config/ (hub + secciones + Diseño) — ver 9bis y 9sexies
   core/services/geocoding.service.ts     # autocompletado de direcciones (Nominatim/OSM), sesgado a Tucumán
   shared/components/address-picker/      # busca dirección + mapa Leaflet con pin arrastrable
 ```
@@ -440,6 +530,19 @@ src/app/
   nosotros** (`/config/nosotros`) y **carrusel** (`/admin/carrusel`).
   Los cambios se aplican al instante para todos, sin redesplegar. `/admin/ajustes`
   redirige a `/admin/config`.
+- **Diseño de la tienda (`/admin/config/diseno`, desde 2026-09-30):** es la
+  primera tarjeta del hub. Va en un componente aparte (`AdminDesignComponent`),
+  no como `data.section` de `AdminConfigSectionComponent`, porque no edita
+  campos: muestra las tres plantillas (sección 7bis) como **miniaturas vivas** —
+  la home real renderizada a `w-[1440px]` y escalada a 0.32, con
+  `pointer-events-none` y `[preview]="true"`. O sea: los productos, las fotos y
+  los textos **de ese sitio** dibujados por cada diseño, no una ilustración.
+  "Usar este diseño" → `SettingsService.updateAppearance(id)` →
+  `PUT /api/admin/settings/apariencia`; la tarjeta activa queda marcada con un
+  anillo y la leyenda "EN USO", y el cambio se ve en la tienda con sólo
+  recargar. Ruta con `permissionGuard` + `PLATFORM_SETTINGS_MANAGE`.
+  **Pendiente:** sumarla al menú lateral (grupo "Configuración del sitio"); hoy
+  se entra por el hub.
 - **Previsualización en vivo:** cada sub-página muestra al costado un
   `<app-site-preview>` (`shared/components/site-preview/`) — una maqueta del
   encabezado + pie + mensaje de WhatsApp que se actualiza mientras se tipea
@@ -461,9 +564,12 @@ src/app/
   `applyWhatsappTokens` en `whatsapp.service.ts`). El detalle del pedido y los
   totales quedan fijos. null = usar `WHATSAPP_INTRO_DEFAULT` / `WHATSAPP_CLOSING_DEFAULT`.
 - **Backend:** tabla `site_settings` (una sola fila, id fijo `config`) — sumó
-  `logo_url`, `whatsapp_intro`, `whatsapp_closing`. `GET /api/settings` (público),
-  `GET`/`PUT /api/admin/settings` (con token). El mensaje de pedido se arma en el
-  frontend (`WhatsappService`), el backend sólo guarda los textos.
+  `logo_url`, `whatsapp_intro`, `whatsapp_closing` y (2026-09-30) **`layout`**
+  con el id del diseño de la tienda. `GET /api/settings` (público),
+  `GET`/`PUT /api/admin/settings` (con token) y
+  `PUT /api/admin/settings/apariencia` (sólo el diseño, para no mandar el
+  objeto completo). El mensaje de pedido se arma en el frontend
+  (`WhatsappService`), el backend sólo guarda los textos.
 - **Frontend:** `SettingsService` (signal-based, `providedIn: 'root'`) carga
   `/api/settings` al arrancar la app y expone `settings()`, `logoSrc()`,
   `whatsappUrl()`, `instagramUrl()`. Si el backend no responde, usa `DEFAULTS`.
@@ -1387,6 +1493,72 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
     - Las sugerencias del roadmap (§10) que siguen sin tomar quedaron
       listadas, chequeadas contra el código, en backend `PROYECTO.md` §11bis.
 
+56. **Diseños de tienda intercambiables: Ruth + Editorial + Pop (2026-09-30).**
+    Pedido: que el ecommerce tenga **más de un frontend para elegir** — diseños
+    "totalmente diferentes visualmente" (no un cambio de paleta), compatibles
+    con la lógica y los datos que ya hay, y con movimiento/transiciones. El
+    motivo: en el intento anterior (el SaaS, pausado en la rama
+    `backup-sesion-2026-09-22-vieja-base`) todas las plantillas generadas
+    salían iguales, porque sólo variaba el hero y la grilla/header/footer eran
+    compartidos. La idea es migrar después estas vistas al SaaS.
+    - **Arquitectura** (detalle en la sección 7bis): `CatalogPageComponent`
+      pasó a ser un **contenedor** — carga productos, carrusel, parametrías,
+      talles, filtros, orden y paginado — que se expone como `CatalogView`
+      (`features/catalog/catalog-view.ts`) y hace `@switch (layout())` sobre
+      tres plantillas dueñas de **todo** el markup
+      (`features/catalog/templates/`). Registro de diseños en
+      `core/layouts.ts` (`LAYOUTS`, `DEFAULT_LAYOUT`, `ensureLayoutFonts`);
+      `AppComponent` escribe `data-layout` en `<html>` (y lo saca en `/admin`).
+      Los tokens y helpers por diseño viven en `styles.css` (CSS global, por el
+      presupuesto de 4 kB de `anyComponentStyle`), con los selectores duplicados
+      atributo+clase para que las miniaturas del panel se vean bien con
+      cualquier diseño activo. `ProductCard` sumó variantes
+      `classic | editorial | pop`.
+    - **Ruth quedó intacta:** su plantilla es el markup anterior portado
+      literal, así el diseño que ya usa el cliente no cambió en nada.
+    - **Movimiento** sin dependencias nuevas: directive `appReveal`
+      (`shared/directives/`, IntersectionObserver, variantes up/mask/bounce,
+      delay escalonado, corre con `zone.run()`) + keyframes `fade-up`,
+      `marquee`, `wobble`, `pop-in`, `ken-burns`, `float-y` y `sheen`, todo
+      apagado con `prefers-reduced-motion`.
+    - **Backend:** `SiteSettings.layout` + `AppearanceRequest` (validado con
+      `@Pattern` `ruth|editorial|pop`) + `PUT /api/admin/settings/apariencia`
+      (`PLATFORM_SETTINGS_MANAGE` **o** `CAROUSEL_MANAGE`, para que lo pueda
+      cambiar el dueño) + `layout` en `SettingsResponse`. La columna la creó
+      solo `ddl-auto=update`. En el frontend, `SettingsService` sumó `layout()`
+      (con fallback al default si el backend devuelve un id desconocido) y
+      `updateAppearance()`.
+    - **Bug arreglado de raíz — era el hallazgo de #55:** `GET /api/settings`
+      respondía `Cache-Control: max-age=300, public`, así que después de guardar
+      un diseño la tienda seguía mostrando el viejo hasta 5 minutos. Se comprobó
+      comparando un `fetch('/api/settings', {cache:'no-store'})` (daba
+      `editorial`) contra el `data-layout="ruth"` del `<html>`. Ahora ese
+      endpoint manda **`CacheControl.noStore()`**: el dueño cambia diseño,
+      nombre, logo o WhatsApp y se ve al recargar. (`/api/param-groups` y
+      `/api/size-scales` siguen con `max-age=300` de antes — se dejaron a
+      propósito, cambian mucho menos.)
+    - **Panel:** nueva pantalla `/admin/config/diseno` (`AdminDesignComponent`,
+      ruta lazy + `permissionGuard` con `PLATFORM_SETTINGS_MANAGE`) con
+      miniaturas **vivas**: la home real renderizada a 1440 px y escalada a
+      0.32, `pointer-events-none` y `[preview]="true"` (4 productos, sin "más
+      vendidos"). Tarjeta nueva primera en el hub de `/admin/config`. Como en
+      `/admin` el `data-layout` global está sacado, la pantalla llama a
+      `ensureLayoutFonts` con los tres ids para que cada miniatura use su
+      tipografía real.
+    - **Verificación:** `ng build` de producción sin errores nuevos (initial
+      487.92 kB, bajo el warn de 500 kB; sólo los 3 warnings CommonJS de
+      siempre: qrcode, jsbarcode, leaflet). En navegador, logueado como
+      superadmin: ciclo completo **ruth → editorial → pop → ruth** — cada cambio
+      persiste en la base, el anillo "EN USO" se mueve, y la tienda renderiza el
+      diseño correcto al recargar, con consola limpia. La tienda quedó en
+      **Ruth**.
+    - **Pendientes de esta tanda:** sumar "Diseño de la tienda" al menú lateral
+      (hoy sólo se entra por el hub) · la ficha de producto, el carrito, el
+      header y el footer siguen siendo únicos (sólo la home tiene plantillas) ·
+      `database/setup.sql` no incluye la columna `layout` de `site_settings`
+      (con `ddl-auto=update` se crea sola, pero para el camino `validate` de la
+      sección 3bis hay que agregarla).
+
 ## 12. Backend (`../backend-ecommer-ruth/`) — resumen
 
 > **Ruta real:** la carpeta del backend en esta máquina es
@@ -1407,9 +1579,16 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
   Hay además un eje aparte `AdminUser.superAdmin` para Cloudinary/mail
   (backend #26/#51).
 - **Endpoints públicos:** catálogo (`/api/products`, `/best-sellers`),
-  parametrías, escalas de talle, carrusel, descuentos, `GET /api/settings`,
+  parametrías, escalas de talle, carrusel, descuentos, `GET /api/settings`
+  (**sin caché de navegador** desde 2026-09-30, historial #56),
   `POST /api/orders` (checkout), `GET /api/orders/lookup` (mis pedidos),
   `GET /api/coupons/{code}`, y el **webhook de Mercado Pago**.
+- **Diseño de la tienda (2026-09-30):** `SiteSettings.layout` (`ruth` |
+  `editorial` | `pop`, validado con `@Pattern` en `AppearanceRequest`) +
+  `PUT /api/admin/settings/apariencia` con
+  `@PreAuthorize("hasAnyAuthority('PLATFORM_SETTINGS_MANAGE',
+  'CAROUSEL_MANAGE')")` — lo puede cambiar el dueño de la tienda, no sólo el
+  superadmin. `ddl-auto=update` creó la columna sola. Ver sección 7bis.
 - **Entidades principales:** AdminUser, Role/Permission, SiteSettings (fila
   única), PlatformMailSettings, Product (+ `params`, `sizeStocks`, `images`,
   `barcode`, `videoUrl`, `costPrice`, `supplierId`), ParamGroup/ParamOption,
