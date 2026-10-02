@@ -50,7 +50,9 @@
         >
           Ver el catálogo
         </button>
-        <a href="#promos" class="neon-chip">Ver promos</a>
+        <!-- Al catálogo se baja en la misma página; "Ver promos" es otra vista
+             (la de prendas destacadas/en descuento), por eso navega. -->
+        <a routerLink="/promos" class="neon-chip">Ver promos</a>
       </div>
     </div>
   </section>
@@ -104,6 +106,9 @@
       <header class="mb-8 text-center">
         <p class="font-display text-[11px] uppercase tracking-[0.4em] text-brand-400">Promos vigentes</p>
         <h2 class="mt-3 font-display text-3xl font-black uppercase text-white neon-glow sm:text-4xl">Ofertas encendidas</h2>
+        <a routerLink="/promos" class="mt-4 inline-block font-display text-[11px] font-bold uppercase tracking-[0.18em] text-brand-400 hover:text-brand-300">
+          Ver las prendas en promo →
+        </a>
       </header>
 
       <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

@@ -1,0 +1,65 @@
+<section class="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+  <a routerLink="/" class="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700 hover:underline">
+    ← Volver al catálogo
+  </a>
+
+  <!-- El color del título y del subtítulo se heredan del body (que cada diseño
+       tiñe según su fondo): así la página se lee bien también en los oscuros
+       (Neón, Cohete, Cine) sin hardcodear un color por diseño. -->
+  <header class="mt-6 mb-8 text-center">
+    <p class="font-display text-xs font-bold uppercase tracking-[0.3em] text-brand-500">{{ storeName() }}</p>
+    <h1 class="mt-2 font-display text-3xl font-extrabold sm:text-4xl">Promociones</h1>
+    @if (usingManual()) {
+      <p class="mt-2 text-sm opacity-70">Las prendas que el local eligió destacar.</p>
+    } @else {
+      <p class="mt-2 text-sm opacity-70">
+        Prendas con descuento vigente — el % se aplica solo en el carrito.
+      </p>
+    }
+  </header>
+
+  @if (loading()) {
+    <app-skeleton variant="card" [count]="8" />
+  } @else if (errored()) {
+    <div class="mx-auto max-w-md rounded-2xl bg-white p-8 text-center ring-1 ring-black/5">
+      <p class="font-display text-lg font-bold text-stone-800">No se pudieron cargar las promos</p>
+      <p class="mt-1 text-sm text-stone-500">Probá de nuevo en un momento.</p>
+      <button
+        type="button"
+        (click)="reload()"
+        class="mt-4 rounded-full bg-brand-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+      >
+        Reintentar
+      </button>
+    </div>
+  } @else if (list().length === 0) {
+    <div class="mx-auto max-w-md rounded-2xl bg-white p-8 text-center ring-1 ring-black/5">
+      <p class="font-display text-lg font-bold text-stone-800">Todavía no hay promos cargadas</p>
+      <p class="mt-1 text-sm text-stone-500">
+        Cuando el local marque prendas en promos o cargue un descuento, van a aparecer acá.
+      </p>
+      <a
+        routerLink="/"
+        class="mt-4 inline-block rounded-full bg-brand-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+      >
+        Ver el catálogo
+      </a>
+    </div>
+  } @else {
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
+      @for (product of list(); track product.id) {
+        <div class="relative">
+          <app-product-card class="block h-full" [product]="product" [variant]="cardVariant()" />
+
+          <!-- Chip con el % real vigente. Fondo blanco a propósito: se lee
+               sobre cualquier tarjeta, incluso en los diseños oscuros. -->
+          @if (discountFor(product); as percent) {
+            <span class="pointer-events-none absolute right-2 top-2 z-10 rounded-full bg-white/95 px-2.5 py-1 font-display text-xs font-bold text-brand-700 shadow-sm ring-1 ring-black/5">
+              -{{ percent }}%
+            </span>
+          }
+        </div>
+      }
+    </div>
+  }
+</section>

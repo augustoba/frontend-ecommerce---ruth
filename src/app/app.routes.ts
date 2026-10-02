@@ -41,6 +41,14 @@ export const routes: Routes = [
     title: 'Quiénes somos | Estilos Pequeños',
   },
   {
+    path: 'promos',
+    loadComponent: () =>
+      import('./features/promos/promos-page/promos-page.component').then(
+        (m) => m.PromosPageComponent
+      ),
+    title: 'Promociones | Estilos Pequeños',
+  },
+  {
     path: 'mis-pedidos',
     loadComponent: () =>
       import('./features/orders/mis-pedidos-page/mis-pedidos-page.component').then(

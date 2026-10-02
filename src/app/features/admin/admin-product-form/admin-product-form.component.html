@@ -308,6 +308,17 @@
         </p>
       </div>
 
+      <div class="sm:col-span-2">
+        <div class="flex items-center gap-2">
+          <input id="featuredInPromos" type="checkbox" formControlName="featuredInPromos" class="w-4 h-4 accent-brand-500" />
+          <label for="featuredInPromos" class="text-sm font-semibold text-stone-700">Mostrar en promos</label>
+        </div>
+        <p class="text-xs text-stone-400 mt-1">
+          Lo destaca en la vista "Promociones" de la tienda (a la que puede apuntar el link del banner).
+          Si no hay ninguno marcado, esa vista muestra sola las prendas con descuento vigente.
+        </p>
+      </div>
+
       <!-- Código de barras: opcional, alternativa/complemento al QR (que siempre existe) -->
       <div class="sm:col-span-2 rounded-xl bg-stone-50 ring-1 ring-black/5 p-4 mt-2">
         <p class="text-sm font-semibold text-stone-700">Código de barras</p>

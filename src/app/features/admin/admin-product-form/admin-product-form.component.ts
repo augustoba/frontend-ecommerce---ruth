@@ -89,6 +89,7 @@ export class AdminProductFormComponent {
     videoUrl: [this.editingProduct?.videoUrl ?? ''],
     active: [this.editingProduct?.active ?? true],
     discontinued: [this.editingProduct?.discontinued ?? false],
+    featuredInPromos: [this.editingProduct?.featuredInPromos ?? false],
     sizeScaleId: [this.editingProduct?.sizeScaleId ?? ''],
     supplierId: [this.editingProduct?.supplierId ?? ''],
     costPrice: [this.editingProduct?.costPrice ?? 0, [Validators.min(0)]],

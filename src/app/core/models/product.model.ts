@@ -42,6 +42,12 @@ export interface Product {
    * alertas de "por reponer" del panel.
    */
   discontinued: boolean;
+  /**
+   * true = elegido a mano para la vista pública `/promos` (la que puede abrir
+   * el banner de promoción). Si no hay ninguno marcado, esa vista cae a las
+   * prendas con descuento vigente. No cambia nada del catálogo normal.
+   */
+  featuredInPromos: boolean;
   /** true = producto archivado (soft-delete). No aparece en catálogo ni en los listados del panel. */
   deleted: boolean;
   createdAt: string;

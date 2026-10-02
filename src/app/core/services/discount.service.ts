@@ -130,6 +130,24 @@ export class DiscountService {
     )
   );
 
+  /** Descuentos por parametría vigentes: los únicos que le dan un % a una prenda puntual. */
+  private readonly activeParamDiscounts = computed(() =>
+    this.paramDiscounts().filter(
+      (d) => this.isActive(d) && !!d.groupId && !!d.optionId && d.discountPercent > 0
+    )
+  );
+
+  /** El % de descuento por parametría vigente que le corresponde a una prenda (0 = ninguno). */
+  percentForProduct(product: Product): number {
+    let best = 0;
+    for (const d of this.activeParamDiscounts()) {
+      if (productHasParam(product, d.groupId!, d.optionId!) && d.discountPercent > best) {
+        best = d.discountPercent;
+      }
+    }
+    return best;
+  }
+
   // --- Cálculo central ---
 
   computeCartDiscount(items: DiscountCartItem[], ctx: DiscountContext = {}): CartDiscountResult {
@@ -142,15 +160,12 @@ export class DiscountService {
     }
 
     // --- Descuento por parámetro: por ítem, el % más alto que aplica ---
-    const activeParamDiscounts = this.paramDiscounts().filter(
-      (d) => this.isActive(d) && d.groupId && d.optionId
-    );
     const paramByDiscountId = new Map<string, number>();
     for (const item of items) {
       const lineTotal = item.product.price * item.quantity;
       let bestPct = 0;
       let bestId: string | null = null;
-      for (const d of activeParamDiscounts) {
+      for (const d of this.activeParamDiscounts()) {
         if (productHasParam(item.product, d.groupId!, d.optionId!) && d.discountPercent > bestPct) {
           bestPct = d.discountPercent;
           bestId = d.id;

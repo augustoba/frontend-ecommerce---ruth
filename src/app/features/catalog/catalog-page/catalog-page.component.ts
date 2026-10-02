@@ -163,28 +163,8 @@ export class CatalogPageComponent implements CatalogView {
     }
   }
 
-  /** Descuentos por parametría vigentes: son los únicos que marcan el precio de una prenda. */
-  private readonly activeParamDiscounts = computed(() =>
-    this.discountService
-      .discounts()
-      .filter(
-        (d) =>
-          d.kind === 'PARAMETRO' &&
-          !!d.groupId &&
-          !!d.optionId &&
-          d.discountPercent > 0 &&
-          (d.status ? d.status === 'ACTIVO' : d.enabled)
-      )
-  );
-
   discountPercentFor(product: Product): number {
-    let best = 0;
-    for (const d of this.activeParamDiscounts()) {
-      if (productHasParam(product, d.groupId!, d.optionId!) && d.discountPercent > best) {
-        best = d.discountPercent;
-      }
-    }
-    return best;
+    return this.discountService.percentForProduct(product);
   }
 
   /** Grupos de parametrías que se muestran como filtro */
