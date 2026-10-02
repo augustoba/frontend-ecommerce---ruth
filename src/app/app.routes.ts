@@ -3,6 +3,9 @@ import { adminGuard, permissionGuard, superAdminGuard } from './core/guards/admi
 import { productResolver } from './features/admin/admin-product-form/product.resolver';
 import { orderResolver } from './features/admin/admin-order-detail/order.resolver';
 
+// Los títulos públicos son sólo la etiqueta de la página: `StoreTitleStrategy`
+// les agrega "| <nombre de la tienda>" (sale de /api/settings). Los del panel
+// se muestran tal cual, con sufijo "| Admin".
 export const routes: Routes = [
   {
     path: '',
@@ -10,7 +13,7 @@ export const routes: Routes = [
       import('./features/catalog/catalog-page/catalog-page.component').then(
         (m) => m.CatalogPageComponent
       ),
-    title: 'Estilos Pequeños | Ropa para niños',
+    title: 'Ropa para niños',
   },
   {
     path: 'producto/:id',
@@ -18,13 +21,13 @@ export const routes: Routes = [
       import('./features/product-detail/product-detail-page/product-detail-page.component').then(
         (m) => m.ProductDetailPageComponent
       ),
-    title: 'Producto | Estilos Pequeños',
+    title: 'Producto',
   },
   {
     path: 'carrito',
     loadComponent: () =>
       import('./features/cart/cart-page/cart-page.component').then((m) => m.CartPageComponent),
-    title: 'Carrito | Estilos Pequeños',
+    title: 'Carrito',
   },
   {
     path: 'como-comprar',
@@ -32,13 +35,13 @@ export const routes: Routes = [
       import('./features/help/como-comprar-page/como-comprar-page.component').then(
         (m) => m.ComoComprarPageComponent
       ),
-    title: 'Cómo comprar | Estilos Pequeños',
+    title: 'Cómo comprar',
   },
   {
     path: 'nosotros',
     loadComponent: () =>
       import('./features/about/about-page/about-page.component').then((m) => m.AboutPageComponent),
-    title: 'Quiénes somos | Estilos Pequeños',
+    title: 'Quiénes somos',
   },
   {
     path: 'promos',
@@ -46,7 +49,7 @@ export const routes: Routes = [
       import('./features/promos/promos-page/promos-page.component').then(
         (m) => m.PromosPageComponent
       ),
-    title: 'Promociones | Estilos Pequeños',
+    title: 'Promociones',
   },
   {
     path: 'mis-pedidos',
@@ -54,7 +57,7 @@ export const routes: Routes = [
       import('./features/orders/mis-pedidos-page/mis-pedidos-page.component').then(
         (m) => m.MisPedidosPageComponent
       ),
-    title: 'Mis pedidos | Estilos Pequeños',
+    title: 'Mis pedidos',
   },
   {
     path: 'admin/login',
