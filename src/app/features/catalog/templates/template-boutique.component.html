@@ -62,13 +62,13 @@
     </section>
   }
 
-  <!-- ===== 01 — Selección de la casa: los más vendidos, en tres columnas con
-       numeración de editorial de moda. Se saltea con filtros puestos: la lista
-       viene sin filtrar y al lado de la grilla sería lo único que los ignora. ===== -->
+  <!-- ===== 01 — Lo más vendido: en tres columnas con numeración de editorial
+       de moda. Se saltea con filtros puestos: la lista viene sin filtrar y al
+       lado de la grilla sería lo único que los ignora. ===== -->
   @if (v.bestSellers().length && !v.hasActiveFilters()) {
     <section class="mx-auto mt-20 max-w-6xl px-6">
       <div class="bou-rule">
-        <h2 class="font-display text-3xl font-medium text-stone-900">Selección de la casa</h2>
+        <h2 class="font-display text-3xl font-medium text-stone-900">Lo más vendido</h2>
         <span class="bou-label text-stone-400">01</span>
       </div>
 

@@ -20,7 +20,7 @@
       <!-- Tablero: el único número real que hay para mostrar (prendas en
            catálogo), en tipografía de marcador. -->
       <div class="cancha-board sm:ml-auto">
-        <span class="cancha-board-label">En juego</span>
+        <span class="cancha-board-label">En catálogo</span>
         <span class="cancha-board-num">{{ v.filteredProducts().length }}</span>
         <span class="cancha-board-label">prendas</span>
       </div>
@@ -91,13 +91,13 @@
     </section>
   }
 
-  <!-- ===== La figura de la semana: los más vendidos, jugados adentro de la
-       cancha (fondo verde con las líneas del campo). Tarjetas en grilla. ===== -->
+  <!-- ===== Lo más vendido, jugado adentro de la cancha (fondo verde con las
+       líneas del campo). Tarjetas en grilla. ===== -->
   @if (v.bestSellers().length && !v.hasActiveFilters()) {
     <section class="mx-auto mt-12 max-w-6xl px-4 sm:px-6">
       <div class="cancha-pitch px-4 py-8 sm:px-8">
         <div class="mb-7 flex flex-wrap items-center gap-3">
-          <h2 class="cancha-pitch-title font-display text-3xl uppercase sm:text-4xl">La figura</h2>
+          <h2 class="cancha-pitch-title font-display text-3xl uppercase sm:text-4xl">Lo más vendido</h2>
           <span class="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white">
             Lo más pedido
           </span>
@@ -114,11 +114,11 @@
     </section>
   }
 
-  <!-- ===== Catálogo completo: el plantel entero, con los mismos estados que
-       el resto de las plantillas. ===== -->
+  <!-- ===== Catálogo completo, con los mismos estados que el resto de las
+       plantillas. ===== -->
   <section id="catalogo" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-14 sm:px-6">
     <div class="mb-7 flex flex-wrap items-center gap-3">
-      <h2 class="font-display text-3xl uppercase tracking-wide text-brand-700 sm:text-4xl">Plantel completo</h2>
+      <h2 class="font-display text-3xl uppercase tracking-wide text-brand-700 sm:text-4xl">El catálogo</h2>
       <span class="rounded-full bg-brand-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-700">
         {{ v.filteredProducts().length }} prendas
       </span>
@@ -128,7 +128,7 @@
       <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <input
           type="search"
-          placeholder="Buscar jugador… digo, prenda"
+          placeholder="Buscar producto..."
           aria-label="Buscar producto"
           [ngModel]="v.searchTerm()"
           (ngModelChange)="v.searchTerm.set($event)"
@@ -262,10 +262,10 @@
       }
     } @else {
       <div class="mt-10 rounded-2xl border-2 border-brand-200 bg-white py-20 text-center">
-        <p class="font-display text-3xl uppercase text-brand-700">Sin jugadores</p>
+        <p class="font-display text-3xl uppercase text-brand-700">Sin resultados</p>
         <p class="mt-2 text-sm text-stone-500">Ninguna prenda entra con esos filtros.</p>
         <button type="button" (click)="v.clearFilters()" class="cancha-chip cancha-chip-on mt-4">
-          Ver el plantel completo
+          Ver todo el catálogo
         </button>
       </div>
     }

@@ -52,12 +52,12 @@
     </section>
   }
 
-  <!-- ===== Lo más leído: la lista de "notas más leídas" del diario, con foto
+  <!-- ===== Lo más vendido: la lista de "notas más leídas" del diario, con foto
        chica, número grande y precio. Es una fila de texto, no una tarjeta:
        la diferencia estructural con el resto de los diseños. ===== -->
   @if (v.bestSellers().length && !v.hasActiveFilters()) {
     <section class="mx-auto mt-10 max-w-5xl px-4 sm:px-6">
-      <h2 class="per-section-title">Lo más leído</h2>
+      <h2 class="per-section-title">Lo más vendido</h2>
       <ol class="mt-2 grid gap-x-10 sm:grid-cols-2">
         @for (product of v.bestSellers(); track product.id; let i = $index) {
           <li>
@@ -85,16 +85,16 @@
     </section>
   }
 
-  <!-- ===== Clasificados: el catálogo completo, con los avisos en grilla y los
-       mismos estados que el resto de las plantillas. ===== -->
+  <!-- ===== El catálogo: los avisos clasificados en grilla y los mismos
+       estados que el resto de las plantillas. ===== -->
   <section id="catalogo" class="mx-auto mt-12 max-w-5xl scroll-mt-20 px-4 pb-16 sm:px-6">
-    <h2 class="per-section-title">Clasificados</h2>
+    <h2 class="per-section-title">El catálogo</h2>
 
     <div class="mt-4 border border-brand-300 bg-white/60 p-4 sm:p-5">
       <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <input
           type="search"
-          placeholder="Buscar en el archivo…"
+          placeholder="Buscar producto..."
           aria-label="Buscar producto"
           [ngModel]="v.searchTerm()"
           (ngModelChange)="v.searchTerm.set($event)"
@@ -221,13 +221,13 @@
       @if (v.hasMore()) {
         <div class="mt-10 text-center">
           <button type="button" (click)="v.showMore()" class="per-chip per-chip-on">
-            Ver más avisos ({{ v.filteredProducts().length - v.visibleProducts().length }} más)
+            Ver más productos ({{ v.filteredProducts().length - v.visibleProducts().length }} más)
           </button>
         </div>
       }
     } @else {
       <div class="mt-8 border border-brand-300 bg-white/60 py-20 text-center">
-        <p class="font-display text-2xl font-semibold text-stone-800">Sin avisos para esos filtros</p>
+        <p class="font-display text-2xl font-semibold text-stone-800">Sin resultados</p>
         <p class="mt-2 text-sm text-stone-500">Ninguna prenda coincide con lo que buscás.</p>
         <button type="button" (click)="v.clearFilters()" class="per-chip per-chip-on mt-4">
           Ver todo el catálogo

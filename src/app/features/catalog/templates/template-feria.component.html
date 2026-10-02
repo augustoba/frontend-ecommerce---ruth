@@ -82,13 +82,13 @@
     </section>
   }
 
-  <!-- ===== Lo que más se lleva: riel con las tarjetas apenas inclinadas,
+  <!-- ===== Lo más vendido: riel con las tarjetas apenas inclinadas,
        alternando para acá y para allá, como colgadas del alambre. ===== -->
   @if (v.bestSellers().length && !v.hasActiveFilters()) {
     <section class="mx-auto mt-12 max-w-6xl px-4 sm:px-6">
       <div class="feria-rule">
-        <h2 class="font-display text-2xl text-brand-700 sm:text-3xl">Lo que más se lleva</h2>
-        <span class="feria-kicker">Recién traído</span>
+        <h2 class="font-display text-2xl text-brand-700 sm:text-3xl">Lo más vendido</h2>
+        <span class="feria-kicker">Lo más pedido</span>
       </div>
 
       <div class="feria-rail -mx-4 mt-8 px-4 sm:mx-0 sm:px-0">
@@ -101,10 +101,10 @@
     </section>
   }
 
-  <!-- ===== Catálogo completo del puesto: mismos estados que el resto. ===== -->
+  <!-- ===== Catálogo completo: mismos estados que el resto. ===== -->
   <section id="catalogo" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-14 sm:px-6">
     <div class="feria-rule mb-7">
-      <h2 class="font-display text-2xl text-brand-700 sm:text-3xl">Todo el puesto</h2>
+      <h2 class="font-display text-2xl text-brand-700 sm:text-3xl">El catálogo</h2>
       <span class="feria-kicker">{{ v.filteredProducts().length }} prendas</span>
     </div>
 
@@ -112,7 +112,7 @@
       <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <input
           type="search"
-          placeholder="Buscar en el puesto…"
+          placeholder="Buscar producto..."
           aria-label="Buscar producto"
           [ngModel]="v.searchTerm()"
           (ngModelChange)="v.searchTerm.set($event)"
@@ -245,10 +245,10 @@
       }
     } @else {
       <div class="mt-10 rounded-2xl bg-white py-20 text-center ring-1 ring-brand-200">
-        <p class="font-display text-3xl text-brand-700">No hay nada con eso</p>
-        <p class="mt-2 text-sm text-stone-500">Probá aflojando los filtros.</p>
+        <p class="font-display text-3xl text-brand-700">Sin resultados</p>
+        <p class="mt-2 text-sm text-stone-500">Probá con otros filtros.</p>
         <button type="button" (click)="v.clearFilters()" class="feria-chip feria-chip-on mt-4">
-          Ver todo el puesto
+          Ver todo el catálogo
         </button>
       </div>
     }

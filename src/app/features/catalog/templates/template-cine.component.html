@@ -25,10 +25,10 @@
             </p>
           </div>
 
-          <!-- El número real de la sala: prendas en cartel. -->
+          <!-- El número real de la sala: prendas publicadas. -->
           <div class="cine-count sm:ml-auto">
             <span class="cine-count-num">{{ v.filteredProducts().length }}</span>
-            <span class="cine-count-label">prendas<br />en cartel</span>
+            <span class="cine-count-label">prendas</span>
           </div>
         </div>
 
@@ -39,13 +39,13 @@
     </div>
   </header>
 
-  <!-- ===== 2. Promos: "En cartelera" =====
+  <!-- ===== 2. Promos: "Promos vigentes" =====
        Las promos vigentes de verdad, separadas por estrellas doradas. Si no
        hay ninguna cargada, la banda no existe. ===== -->
   @if (v.promos().length) {
     <section class="cine-band">
       <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-6 gap-y-1.5 px-4 py-3 sm:px-6">
-        <span class="cine-band-tag">En cartelera</span>
+        <span class="cine-band-tag">Promos vigentes</span>
         @for (promo of v.promos(); track promo.id; let last = $last) {
           <p class="text-sm">
             <span class="font-display uppercase tracking-wide text-brand-400">{{ promo.text }}</span>
@@ -80,7 +80,7 @@
   @if (v.publicoGroup(); as grupo) {
     <section class="mx-auto mt-9 max-w-6xl px-4 sm:px-6">
       <div class="flex flex-wrap items-center gap-2">
-        <span class="cine-kicker mr-1">Elegí la función:</span>
+        <span class="cine-kicker mr-1">Elegí tu categoría:</span>
         <button
           type="button"
           (click)="v.setParam(grupo.id, '')"
@@ -103,12 +103,12 @@
     </section>
   }
 
-  <!-- ===== 5. Taquilla: los más vendidos como afiches de estreno. ===== -->
+  <!-- ===== 5. Lo más vendido, como afiches de estreno. ===== -->
   @if (v.bestSellers().length && !v.hasActiveFilters()) {
     <section class="mx-auto mt-12 max-w-6xl px-4 sm:px-6">
       <div class="cine-section-head">
-        <h2 class="cine-title-lg">Taquilla</h2>
-        <span class="cine-pill">Las más pedidas de la semana</span>
+        <h2 class="cine-title-lg">Lo más vendido</h2>
+        <span class="cine-pill">Las más pedidas</span>
       </div>
 
       <div class="grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
@@ -121,19 +121,19 @@
     </section>
   }
 
-  <!-- ===== 6. Función continuada: el catálogo completo, con los mismos
-       estados que el resto de las plantillas. ===== -->
+  <!-- ===== 6. El catálogo, con los mismos estados que el resto de las
+       plantillas. ===== -->
   <section id="catalogo" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-14 sm:px-6">
     <div class="cine-section-head">
-      <h2 class="cine-title-lg">Función continuada</h2>
-      <span class="cine-pill">{{ v.filteredProducts().length }} prendas en cartel</span>
+      <h2 class="cine-title-lg">El catálogo</h2>
+      <span class="cine-pill">{{ v.filteredProducts().length }} prendas</span>
     </div>
 
     <div class="cine-panel">
       <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <input
           type="search"
-          placeholder="Buscar en la cartelera…"
+          placeholder="Buscar producto..."
           aria-label="Buscar producto"
           [ngModel]="v.searchTerm()"
           (ngModelChange)="v.searchTerm.set($event)"
@@ -266,10 +266,10 @@
       }
     } @else {
       <div class="cine-state mt-10">
-        <p class="cine-title-lg">Sin función</p>
-        <p class="mt-2 text-sm text-white/50">No hay afiches con esos filtros.</p>
+        <p class="cine-title-lg">Sin resultados</p>
+        <p class="mt-2 text-sm text-white/50">No encontramos productos con esos filtros.</p>
         <button type="button" (click)="v.clearFilters()" class="cine-chip cine-chip-on mt-5">
-          Ver toda la cartelera
+          Ver todo el catálogo
         </button>
       </div>
     }

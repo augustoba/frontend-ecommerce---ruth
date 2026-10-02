@@ -53,7 +53,7 @@
         (click)="v.scrollToCatalog()"
         class="sway-hover mt-8 rounded-[24px_8px_24px_8px] bg-brand-500 px-8 py-4 font-display text-white uppercase shadow-[0_10px_0_-2px_rgba(42,97,27,.35)] transition-colors hover:bg-brand-600"
       >
-        A la selva
+        Ver catálogo
       </button>
     </div>
   </section>
@@ -71,7 +71,7 @@
   @if (promos.length) {
     <section class="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <h2 class="text-center font-display text-3xl uppercase text-brand-700 sm:text-4xl">
-        Promos de la selva
+        Promos
       </h2>
 
       <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -106,7 +106,7 @@
     </section>
   }
 
-  <!-- ===== 4. "Los más elegidos del campamento" =====
+  <!-- ===== 4. "Los más elegidos" =====
        Carril con snap y sin barra de scroll (en mobile entra una tarjeta y
        media, y eso invita a arrastrar). `destacados()` ya resuelve el fallback
        (más vendidos reales o, si todavía no hay ventas, las primeras del
@@ -114,7 +114,7 @@
   @if (carril.length) {
     <section class="mx-auto max-w-6xl px-3 py-10 sm:px-6">
       <h2 class="px-1 font-display text-2xl uppercase text-brand-700 sm:text-3xl">
-        Los más elegidos del campamento
+        Los más elegidos
       </h2>
 
       <div class="mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

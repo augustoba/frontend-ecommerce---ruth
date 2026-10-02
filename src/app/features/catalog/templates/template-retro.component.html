@@ -94,12 +94,12 @@
     </section>
   }
 
-  <!-- ===== Top de la semana: grilla de stickers con las tarjetas inclinadas
+  <!-- ===== Lo más vendido: grilla de stickers con las tarjetas inclinadas
        para acá y para allá, alternando. ===== -->
   @if (v.bestSellers().length && !v.hasActiveFilters()) {
     <section class="mx-auto mt-12 max-w-6xl px-4 sm:px-6">
       <div class="mb-7 flex items-center gap-4">
-        <h2 class="mel-title font-display text-3xl uppercase sm:text-4xl">Top de la semana</h2>
+        <h2 class="mel-title font-display text-3xl uppercase sm:text-4xl">Lo más vendido</h2>
         <span class="mel-rule" aria-hidden="true"></span>
       </div>
 
@@ -264,10 +264,10 @@
       }
     } @else {
       <div class="mt-10 rounded-3xl border-[3px] border-brand-300 bg-white py-20 text-center">
-        <p class="font-display text-3xl uppercase text-brand-700">No quedó nada</p>
+        <p class="font-display text-3xl uppercase text-brand-700">Sin resultados</p>
         <p class="mt-2 text-sm text-stone-500">Con esos filtros no hay prendas.</p>
         <button type="button" (click)="v.clearFilters()" class="mel-chip mel-chip-on mt-4">
-          Ver todo
+          Ver todo el catálogo
         </button>
       </div>
     }

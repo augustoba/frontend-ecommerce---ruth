@@ -89,12 +89,12 @@
     </section>
   }
 
-  <!-- ===== 5. Lo más pedido del verano ===== -->
+  <!-- ===== 5. Lo más vendido ===== -->
   @if (v.bestSellers().length && !v.hasActiveFilters()) {
     <section class="mx-auto mt-12 max-w-6xl px-4 sm:px-6">
       <div class="mb-7 flex flex-wrap items-center gap-3">
-        <h2 class="playa-title-lg">Lo más pedido del verano</h2>
-        <span class="playa-pill">Los favoritos de la temporada</span>
+        <h2 class="playa-title-lg">Lo más vendido</h2>
+        <span class="playa-pill">Los favoritos</span>
       </div>
 
       <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
@@ -263,10 +263,10 @@
         }
       } @else {
         <div class="mt-10 rounded-3xl bg-white py-20 text-center">
-          <p class="playa-title-lg">No hay nada con esos filtros</p>
-          <p class="mt-2 text-sm text-stone-500">Probá aflojar la red.</p>
+          <p class="playa-title-lg">Sin resultados</p>
+          <p class="mt-2 text-sm text-stone-500">Probá con otros filtros.</p>
           <button type="button" (click)="v.clearFilters()" class="playa-chip playa-chip-on mt-5">
-            Ver toda la colección
+            Ver todo el catálogo
           </button>
         </div>
       }
