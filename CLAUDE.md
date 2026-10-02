@@ -55,8 +55,10 @@ si conviene tocar también este archivo o el `README.md`).
 
 ## Detalles que no están en el código y conviene recordar
 
-- **La home tiene 3 diseños intercambiables** (Ruth / Editorial / Pop, desde
-  2026-09-30): `CatalogPageComponent` es un **contenedor** que carga los datos
+- **La home tiene 13 diseños intercambiables** (Ruth / Editorial / Pop desde
+  2026-09-30; + Vidriera / Ofertas / Fichero / Mosaico / Nova / Neón / Caramelo /
+  Cohete / Jungla / Crayón desde 2026-10-01):
+  `CatalogPageComponent` es un **contenedor** que carga los datos
   y los pasa como un único `CatalogView` (`features/catalog/catalog-view.ts`) a
   la plantilla elegida (`@switch (layout())` sobre
   `features/catalog/templates/`). **Cada plantilla es dueña de TODO su markup**
@@ -65,7 +67,19 @@ si conviene tocar también este archivo o el `README.md`).
   sólo variaba el hero. No "unificar" ese markup. Registro en
   `core/layouts.ts`, tokens por diseño en `styles.css`
   (`[data-layout="x"], .tpl-x`), elección desde `/admin/config/diseno` y
-  guardado en `site_settings.layout`. Ver PROYECTO.md §7bis y #56.
+  guardado en `site_settings.layout`. Al agregar uno hay que tocar también la
+  variante de `ProductCard` y el `@Pattern` de `AppearanceRequest` en el backend.
+  El movimiento vive en cuatro directivas compartidas (`appReveal` con las
+  variantes up/mask/bounce/blur/left/right/zoom, `appTilt`, `appScrollProgress` y
+  `appAutoMore`) + keyframes en `styles.css`; **Nova** es la que más las usa.
+  **Neón** (arcade) y **Cohete** (espacial) son los dos diseños oscuros: la
+  oscuridad sale de invertir la rampa `brand-*` (el `body` usa `brand-50` como
+  fondo) más reglas acotadas en `styles.css` para el header y el footer
+  compartidos (`[data-layout="neon"] app-header header {…}` y lo mismo para
+  Cohete), que es lo único que ningún otro diseño toca. Los últimos cuatro
+  (Caramelo, Cohete, Jungla y Crayón) son los "para chicos", con movimiento
+  propio cada uno.
+  Ver PROYECTO.md §7bis, #56, #57, #58, #59 y #60.
 - El logo real del comercio (sombrilla + corazones, paleta pastel
   rosa/celeste/durazno) está en `public/logo.jpeg` — lo pasó el cliente,
   coincide con su marca real de WhatsApp/redes. Es el **fallback**: desde

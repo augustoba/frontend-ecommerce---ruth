@@ -7,10 +7,31 @@ import { CldImagePipe } from '../../pipes/cld-image.pipe';
 
 /**
  * Cómo se ve la tarjeta según el diseño de la tienda. No son sólo colores:
- * `editorial` no tiene marco ni sombra (foto + epígrape con filete) y `pop` es
- * neo-brutalista (borde grueso, sombra dura desplazada, sticker rotado).
+ * `editorial` no tiene marco ni sombra (foto + epígrafe con filete) y `pop` es
+ * neo-brutalista (borde grueso, sombra dura desplazada, sticker rotado),
+ * `vidriera` es una tarjeta cálida con borde que se despega al pasar el mouse,
+ * `oferta` es de góndola (sin radio, precio enorme, nombre en mayúscula) y
+ * `mosaico` llena la pieza que le toque del tablero (`h-full`: la foto se
+ * estira a lo alto que tenga la celda), `nova` es la tarjeta moderna (esquinas
+ * muy redondeadas, sombra larga, se levanta al pasar el mouse) y `neon` es la
+ * del diseño oscuro: superficie casi negra, anillo cian y brillo al pasar.
+ * Las de la tanda para chicos son `caramelo` (pastel y se aplasta como un
+ * caramelo), `cohete` (noche espacial), `jungla` (borde de hoja y se balancea)
+ * y `crayon` (borde tembleque dibujado a mano).
  */
-export type ProductCardVariant = 'classic' | 'editorial' | 'pop';
+export type ProductCardVariant =
+  | 'classic'
+  | 'editorial'
+  | 'pop'
+  | 'vidriera'
+  | 'oferta'
+  | 'mosaico'
+  | 'nova'
+  | 'neon'
+  | 'caramelo'
+  | 'cohete'
+  | 'jungla'
+  | 'crayon';
 
 /**
  * Interfaz y no `Record<string, string>`: con un índice el compilador obliga a
@@ -57,6 +78,99 @@ const CLASSES: Record<ProductCardVariant, CardClasses> = {
     name: 'font-black uppercase text-sm text-stone-900 line-clamp-2 leading-tight tracking-tight',
     age: 'text-[11px] font-bold uppercase text-stone-500',
     price: 'mt-auto pt-2 self-start bg-stone-900 text-brand-300 text-sm font-black px-2 py-1 tabular-nums',
+  },
+  vidriera: {
+    root: 'group flex flex-col overflow-hidden rounded-2xl border border-brand-200 bg-white shadow-[0_2px_10px_-6px_rgba(120,80,20,.4)] transition-transform duration-200 hover:-translate-y-1',
+    media: 'relative aspect-[4/5] overflow-hidden bg-brand-100',
+    img: 'w-full h-full object-cover transition-transform duration-500 group-hover:scale-105',
+    badge: 'absolute top-3 left-3 rounded-full bg-brand-400 px-2.5 py-1 text-[11px] font-semibold text-white',
+    body: 'flex flex-1 flex-col gap-1 p-4',
+    name: 'font-display text-base font-semibold leading-snug text-stone-800 line-clamp-2',
+    age: 'text-xs text-stone-500',
+    price: 'mt-auto pt-2 font-display text-lg font-bold text-brand-700',
+  },
+  oferta: {
+    root: 'group flex h-full flex-col overflow-hidden border border-stone-200 bg-white transition-shadow duration-200 hover:shadow-[0_14px_28px_-16px_rgba(0,0,0,.45)]',
+    media: 'relative aspect-square overflow-hidden bg-stone-50',
+    img: 'h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]',
+    badge: 'absolute top-0 left-0 bg-stone-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white',
+    body: 'flex flex-1 flex-col gap-1 p-3',
+    name: 'text-[13px] font-semibold uppercase leading-tight text-stone-800 line-clamp-2',
+    age: 'text-[11px] uppercase tracking-wide text-stone-400',
+    price: 'mt-auto pt-2 font-display text-2xl font-extrabold leading-none text-brand-600 tabular-nums',
+  },
+  mosaico: {
+    root: 'group flex h-full flex-col overflow-hidden rounded-3xl bg-white ring-1 ring-stone-900/5 transition-shadow duration-300 hover:shadow-xl',
+    media: 'relative min-h-0 flex-1 overflow-hidden bg-stone-100',
+    img: 'h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.06]',
+    badge: 'absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-stone-700 backdrop-blur',
+    body: 'flex shrink-0 flex-col gap-0.5 p-4',
+    name: 'font-display text-sm font-semibold leading-snug text-stone-900 line-clamp-2',
+    age: 'text-[11px] text-stone-400',
+    price: 'mt-1 text-base font-bold text-brand-600 tabular-nums',
+  },
+  nova: {
+    root: 'group relative flex h-full flex-col overflow-hidden rounded-[26px] bg-white ring-1 ring-black/5 shadow-[0_26px_60px_-42px_rgba(12,10,25,.6)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_36px_70px_-40px_rgba(12,10,25,.5)]',
+    media: 'relative aspect-[4/5] overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.08]',
+    badge: 'absolute left-3 top-3 rounded-full bg-white/85 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-stone-700 backdrop-blur',
+    body: 'flex flex-1 flex-col gap-1 p-4',
+    name: 'font-display text-[15px] font-semibold leading-snug text-stone-900 line-clamp-2',
+    age: 'text-[11px] uppercase tracking-[0.16em] text-stone-400',
+    price: 'mt-auto pt-2 font-display text-lg font-bold text-brand-600 tabular-nums',
+  },
+  // Ojo: usa las variables `brand-*`, así que sólo se ve como corresponde dentro
+  // del diseño Neón (superficie oscura + anillo cian). Ningún otro diseño la usa.
+  neon: {
+    root: 'group relative flex h-full flex-col overflow-hidden rounded-xl bg-brand-100 ring-1 ring-brand-300 transition-all duration-300 hover:ring-brand-400 hover:shadow-[0_0_30px_-8px_rgba(34,211,238,.75)]',
+    media: 'relative aspect-[4/5] overflow-hidden bg-brand-200',
+    img: 'h-full w-full object-cover transition-transform duration-500 group-hover:scale-105',
+    badge: 'absolute left-2 top-2 rounded bg-black/65 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-brand-400 backdrop-blur',
+    body: 'flex flex-1 flex-col gap-1 p-3',
+    name: 'font-display text-[13px] font-semibold uppercase leading-snug tracking-wide text-white line-clamp-2',
+    age: 'text-[10px] uppercase tracking-[0.2em] text-zinc-400',
+    price: 'mt-auto pt-2 font-display text-lg font-bold text-brand-400 tabular-nums',
+  },
+  // --- Tanda para chicos: cada variante usa los tokens de su diseño ---
+  caramelo: {
+    root: 'group flex h-full flex-col overflow-hidden rounded-[30px] bg-white shadow-[0_16px_34px_-20px_rgba(18,127,104,.55)] ring-2 ring-brand-100 hover:animate-[jelly_.6s_ease]',
+    media: 'relative aspect-[4/5] overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover transition-transform duration-500 group-hover:scale-105',
+    badge: 'absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold text-brand-600 shadow-sm',
+    body: 'flex flex-1 flex-col gap-1 p-4',
+    name: 'font-display text-base font-bold leading-snug text-stone-800 line-clamp-2',
+    age: 'text-xs text-stone-500',
+    price: 'mt-auto pt-2 font-display text-xl font-extrabold text-brand-600 tabular-nums',
+  },
+  cohete: {
+    root: 'group relative flex h-full flex-col overflow-hidden rounded-2xl bg-brand-100 ring-1 ring-white/15 transition-all duration-300 hover:ring-brand-400 hover:shadow-[0_0_34px_-10px_rgba(165,180,252,.9)]',
+    media: 'relative aspect-square overflow-hidden bg-brand-50',
+    img: 'h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]',
+    badge: 'absolute left-2 top-2 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur',
+    body: 'flex flex-1 flex-col gap-1 p-4',
+    name: 'font-display text-[15px] leading-snug text-white line-clamp-2',
+    age: 'text-[11px] uppercase tracking-[0.18em] text-brand-300',
+    price: 'mt-auto pt-3 font-display text-lg text-brand-400 tabular-nums',
+  },
+  jungla: {
+    root: 'group relative flex h-full flex-col overflow-hidden rounded-[30px_10px_30px_10px] bg-white ring-2 ring-brand-300 hover:animate-[sway_1.1s_ease-in-out_infinite]',
+    media: 'relative aspect-[4/5] overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]',
+    badge: 'absolute left-3 top-3 rounded-full bg-brand-600 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white',
+    body: 'flex flex-1 flex-col gap-1 p-4',
+    name: 'font-display text-lg leading-tight text-brand-800 line-clamp-2',
+    age: 'text-xs text-stone-500',
+    price: 'mt-auto pt-2 font-display text-xl text-brand-700 tabular-nums',
+  },
+  crayon: {
+    root: 'crayon-border group relative flex h-full flex-col overflow-hidden transition-transform duration-200 hover:-rotate-1',
+    media: 'relative aspect-[4/5] overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover',
+    badge: 'absolute left-3 top-3 bg-white px-2 py-1 font-display text-[11px] text-brand-700',
+    body: 'flex flex-1 flex-col gap-1 p-4',
+    name: 'font-display text-lg leading-tight text-stone-800 line-clamp-2',
+    age: 'text-xs text-stone-500',
+    price: 'mt-auto pt-2 font-display text-2xl text-brand-600 tabular-nums',
   },
 };
 

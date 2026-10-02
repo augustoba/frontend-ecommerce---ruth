@@ -73,8 +73,9 @@ export interface SiteSettings {
   mercadoPagoAvailable: boolean;
   /**
    * id del diseño de la tienda elegido desde `/admin/config/diseno`
-   * ("ruth", "editorial", "pop"). Se escribe como `data-layout` en <html> y
-   * decide qué componente de plantilla renderiza la home. Ver `core/layouts.ts`.
+   * ("ruth", "editorial", "pop", "vidriera", "ofertas", "fichero", "mosaico").
+   * Se escribe como `data-layout` en <html> y decide qué componente de plantilla
+   * renderiza la home. Ver `core/layouts.ts`.
    */
   layout: string;
 }

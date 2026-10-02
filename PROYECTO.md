@@ -46,7 +46,7 @@ Mercado Pago para coordinar el pago manualmente.
 | Backend | Java 21 + Spring Boot 3.3 + MySQL 8 + JWT (Maven) | Node/Nest, Quarkus, Gradle, Postgres/H2 |
 | Alcance v1 | Catálogo+filtros, carrito+checkout WhatsApp, panel admin, API backend | — |
 | Pasarela de pago | **Mercado Pago Checkout Pro** (desde 2026-09-17), además del checkout por WhatsApp con alias/link manual | — |
-| Diseño de la tienda | **3 plantillas intercambiables** — Ruth / Editorial / Pop — elegibles desde el panel (2026-09-30, sección 7bis) | Un solo diseño fijo en código; temas sólo de colores |
+| Diseño de la tienda | **13 plantillas intercambiables** — Ruth / Editorial / Pop (2026-09-30) + Vidriera / Ofertas / Fichero / Mosaico / Nova / Neón (2026-10-01) + Caramelo / Cohete / Jungla / Crayón (2026-10-01) — elegibles desde el panel (sección 7bis) | Un solo diseño fijo en código; temas sólo de colores |
 
 **Ojo:** la pasarela de pago **sí** existe. El sitio arrancó sin ninguna (checkout
 por WhatsApp + alias manual), pero desde el 2026-09-17 tiene **Mercado Pago
@@ -217,7 +217,9 @@ el backend no responde: `src/app/core/services/settings.service.ts` →
   PROYECTO.md #46 — antes era con una "frase de recuperación", se sacó).
 - `/admin/cuenta` — cambiar la contraseña (pide la actual).
 - `/admin/config` ("🎨 Configuración del sitio") — hub con sub-páginas:
-  **diseño de la tienda** (`/config/diseno`: elegir entre Ruth, Editorial y Pop
+  **diseño de la tienda** (`/config/diseno`: elegir entre Ruth, Editorial, Pop,
+  Vidriera, Ofertas, Fichero, Mosaico, Nova, Neón, Caramelo, Cohete, Jungla y
+  Crayón
   con miniaturas vivas, secciones 7bis y 9sexies), identidad
   y contacto (nombre + WhatsApp), redes sociales, "sobre nosotros" y carrusel.
   Cada una con **previsualización en vivo** de cómo queda en la tienda. Sin
@@ -243,8 +245,14 @@ el backend no responde: `src/app/core/services/settings.service.ts` →
   quedó abierto como posible ajuste futuro.
 - Fuentes: **dependen del diseño elegido** (sección 7bis). Las de `index.html`
   son Baloo 2 (títulos) + Nunito (texto) — las del diseño original "Ruth".
-  Editorial y Pop cargan las suyas por JS cuando se activan
-  (`ensureLayoutFonts`), así la tienda no baja tipografías que no usa.
+  Cada otro diseño carga las suyas por JS cuando se activan
+  (`ensureLayoutFonts`), así la tienda no baja tipografías que no usa:
+  Editorial (Playfair Display + Inter), Pop (Archivo Black + Space Grotesk),
+  Vidriera (Fredoka + Karla), Ofertas (Barlow Condensed + Barlow),
+  Fichero (IBM Plex Mono + IBM Plex Sans), Mosaico (Sora + Manrope),
+  Nova (Bricolage Grotesque + Plus Jakarta Sans), Neón (Orbitron + Rubik),
+  Caramelo (Grandstander + Quicksand), Cohete (Bungee + Varela Round),
+  Jungla (Luckiest Guy + Comic Neue) y Crayón (Patrick Hand + Comfortaa).
 
 ## 7. Página de inicio (`/`, `CatalogPageComponent`)
 
@@ -278,7 +286,9 @@ otra estructura visual.
 
 - **Qué es:** el dueño puede elegir el **diseño de la tienda** desde
   `/admin/config/diseno` (sección 9sexies), sin tocar código ni redesplegar.
-  Hoy hay tres: **Ruth** (el original), **Editorial** y **Pop**. La elección
+  Hoy hay trece: **Ruth** (el original), **Editorial**, **Pop**, **Vidriera**,
+  **Ofertas**, **Fichero**, **Mosaico**, **Nova**, **Neón**, **Caramelo**,
+  **Cohete**, **Jungla** y **Crayón**. La elección
   queda guardada en `site_settings.layout` y la tienda la levanta al cargar.
 - **Por qué esta arquitectura:** en el intento anterior (el SaaS) todas las
   plantillas salían iguales porque sólo variaba el hero y el resto —grilla,
@@ -292,9 +302,10 @@ otra estructura visual.
     de fuentes una sola vez por id; la pantalla de Diseño lo llama con los tres,
     porque en `/admin` el `data-layout` global está sacado a propósito).
   - `features/catalog/catalog-view.ts` — el **contrato** `CatalogView`: todo lo
-    que una plantilla puede pedirle al contenedor (productos, filtros, orden,
-    paginado, estado de carga/error, carrito, `settings`…). Cada plantilla
-    recibe un único `view = input.required<CatalogView>()`.
+    que una plantilla puede pedirle al contenedor (productos y filtros, orden,
+    paginado, estado de carga/error, los datos del local en `settings`, las
+    promos vigentes en `promos` y el `discountPercentFor` de cada prenda). Cada
+    plantilla recibe un único `view = input.required<CatalogView>()`.
   - `features/catalog/catalog-page/` — el contenedor: carga los datos, expone
     `vm: CatalogView = this` y hace `@switch (layout())` sobre las tres
     plantillas. Acepta `layoutOverride` (forzar un diseño ignorando el elegido)
@@ -303,7 +314,8 @@ otra estructura visual.
   - `features/catalog/templates/template-{ruth,editorial,pop}.component.*` — las
     tres plantillas. La de Ruth es el markup viejo **portado literal**, así el
     diseño original quedó píxel por píxel igual al de siempre.
-  - `shared/components/product-card` — variantes `classic | editorial | pop`
+  - `shared/components/product-card` — variantes `classic | editorial | pop |
+    vidriera | oferta | mosaico`
     (un `Record<ProductCardVariant, CardClasses>` con las clases de cada parte
     de la tarjeta). Es lo único que se comparte: la tarjeta, no la página.
   - `styles.css` — tokens por diseño (`[data-layout="editorial"], .tpl-editorial
@@ -315,7 +327,7 @@ otra estructura visual.
   - `AppComponent` — es el único que escribe `data-layout` en `<html>`, y lo
     **quita** en las rutas `/admin` (para que el panel no herede las fuentes ni
     el aire de la tienda); también llama a `ensureLayoutFonts`.
-- **Los tres diseños:**
+- **Los diseños:**
   - **Ruth** (default): cálido y centrado — carrusel arriba, logo redondo
     superpuesto, grilla pareja de tarjetas con marco suave. Baloo 2 + Nunito.
   - **Editorial**: tipo revista de moda. Papel hueso, hero con título enorme
@@ -324,22 +336,122 @@ otra estructura visual.
   - **Pop**: neo-brutalista y bien infantil. Fondo amarillo, **marquesina** negra
     en movimiento, bordes gruesos con sombras duras, calcomanías rotadas en
     magenta, filtros tipo chip. Archivo Black + Space Grotesk.
-- **Movimiento** (sin dependencias nuevas: CSS + un directive):
+  - **Vidriera** (2026-10-01): la home como **catálogo por categorías** — un riel
+    horizontal que se desliza por cada opción real del grupo "Público" (bebé,
+    nena, nene), y el catálogo completo con sus filtros al final. Es la única que
+    ordena por categoría en vez de por una grilla única. Fredoka + Karla.
+  - **Ofertas** (2026-10-01): la única **comercial**. Sin hero: arriba la barra
+    con los descuentos vigentes que devuelve `/api/discounts` (endpoint público,
+    lo mismo que calcula el carrito), filtros en columna al costado y grilla
+    apretada de 4 con el precio grande y el `-X%` real en las prendas alcanzadas
+    por un descuento por parametría. Barlow Condensed + Barlow.
+  - **Fichero** (2026-10-01): **ficha técnica**. Una prenda destacada en grande
+    (la primera de "más vendidos") con su descripción y sus talles con stock, y
+    el catálogo como **lista de filas** en vez de grilla. Es la única que muestra
+    la descripción y los talles en la home. IBM Plex Mono + IBM Plex Sans.
+  - **Mosaico** (2026-10-01): un **tablero tipo bento** de piezas de distinto
+    tamaño — carrusel, foto del local (`storePhotoUrl`), un recorte del "sobre
+    nosotros", una categoría real que filtra al tocarla y dos prendas — con la
+    grilla del catálogo abajo. Es lo único que usa la foto del local y el "sobre
+    nosotros" fuera del footer. Sora + Manrope.
+  - **Nova** (2026-10-01): la más "de ahora" y la que más se mueve. **Hero
+    cinematográfico** a pantalla completa (carrusel administrable de fondo con
+    Ken Burns lento + gradiente vivo animado + oscurecido), **banda kinética**
+    con las promos o las categorías reales, **categorías en piezas que se
+    inclinan con el mouse** (tilt 3D + brillo que sigue al puntero), **barra de
+    progreso** de lectura bajo el header, tarjetas `variant="nova"` y catálogo
+    que **sigue cargando solo** al bajar (scroll infinito de verdad con
+    `showMore()`, con "Ver más" de respaldo). Cierra con una franja oscura con
+    los datos reales del local y el botón de WhatsApp. Bricolage Grotesque +
+    Plus Jakarta Sans.
+  - **Neón** (2026-10-01): el disruptivo, y uno de los **dos diseños oscuros**
+    (el otro es Cohete). Fondo casi negro con una **grilla luminosa que se mueve
+    sola**,
+    tipografía arcade (Orbitron) y cian eléctrico + amarillo ácido. El nombre del
+    hero entra **letra por letra**, hay **doble marquesina** cruzando en
+    direcciones opuestas, **banners de promoción animados** (anillo de luz que
+    gira alrededor de cada banner, reflejo que lo cruza, disco con el % real y
+    "hasta el DD/MM"), una **cinta diagonal** con las promos pasando, una sección
+    de **"se están agotando"** armada con el stock bajo real, y el catálogo con
+    **prendas que se dan vuelta** (flip 3D): del otro lado muestran la
+    descripción y los talles con stock. En táctil —o con `prefers-reduced-motion`
+    — el flip no gira y esa misma info se ve abajo, siempre visible.
+    - **Cómo se logra el fondo oscuro sin tocar los componentes compartidos:** el
+      `body` usa `--color-brand-50` como color de página, así que la rampa
+      `brand-*` de Neón está **invertida** (50 = casi negro, 500 = cian) y con
+      eso se oscurece toda la tienda. El header y el footer sí tienen superficies
+      claras escritas a mano, así que llevan reglas acotadas en `styles.css`
+      (`[data-layout="neon"] app-header header {…}` y lo mismo para `app-footer`)
+      que le ganan en especificidad a las utilidades de Tailwind. **Es el único
+      diseño que toca el chrome compartido**, y está aislado por el atributo del
+      diseño: ningún otro lo hereda.
+  - **Caramelo** (2026-10-01): pastel y para los más chicos. **Rayos que giran**
+    detrás del logo (`.candy-sun`), **manchas que flotan** con delays distintos
+    (`.candy-blob`), ondas de nube que corren como separador (`.candy-scallop`) y
+    piezas que **se aplastan como un caramelo** al pasar el mouse (`.jelly-hover`).
+    Suma una sección de **"recién llegados"** ordenada por `createdAt`, que ningún
+    otro diseño usa. Grandstander + Quicksand.
+  - **Cohete** (2026-10-01): viaje espacial, el otro diseño oscuro. **Cielo
+    estrellado que titila**, **órbitas punteadas que giran**, una **nave que cruza
+    la pantalla** y **estrellas fugaces**. Comparte con Neón las reglas acotadas
+    del chrome compartido. Bungee + Varela Round.
+  - **Jungla** (2026-10-01): aventura en la selva. **Arboleda que se mece** arriba
+    y abajo (`.jungla-top` / `.jungla-bottom`), **huellas que marchan solas** como
+    separador, **hojas** hechas sólo con `border-radius` y piezas que **se
+    balancean** al pasar el mouse. Luckiest Guy + Comic Neue.
+  - **Crayón** (2026-10-01): cuaderno dibujado a mano. Es el único con **bordes
+    tembleques** (`border-radius` irregular), **cintas adhesivas**, y sobre todo
+    **garabatos SVG que se dibujan solos** al entrar en pantalla
+    (`stroke-dashoffset` animado: cada forma lleva `pathLength="1"`). Patrick Hand
+    + Comfortaa.
+  - **Los diez últimos no inventan datos:** cada bloque sale de algo que el
+    backend ya tenía (parametrías del grupo "Público", `/api/discounts`,
+    `storePhotoUrl`, `aboutText`, `sizeStocks`, `description`, `bestSellers`).
+    Por eso quedaron afuera testimonios, reseñas, cuotas sin interés, favoritos,
+    newsletter y "cupones" anunciados: no hay tabla ni endpoint que los respalde
+    —de los cupones sólo existe la validación por código que tipea el cliente—.
+- **Movimiento** (sin dependencias nuevas: CSS + cuatro directivas):
   - `shared/directives/reveal.directive.ts` (`appReveal`): IntersectionObserver
     que agrega la clase de entrada cuando el elemento aparece en pantalla;
-    variantes `up` / `mask` / `bounce` y delay escalonado (`transition-delay`)
-    para que la grilla entre en cascada. Corre dentro de `zone.run()` porque la
-    app usa zone.js (no es zoneless).
-  - Keyframes en `styles.css`: `fade-up`, `marquee`, `wobble`, `pop-in`,
-    `ken-burns`, `float-y` y `sheen`, más utilidades `.anim-*` y
-    `.wobble-on-hover`.
-  - **`prefers-reduced-motion`** apaga todas las animaciones y deja los
-    elementos visibles (sin el estado inicial oculto del reveal).
+    variantes `up` / `mask` / `bounce` / `blur` / `left` / `right` / `zoom` y
+    delay escalonado (`transition-delay`) para que la grilla entre en cascada.
+    Corre dentro de `zone.run()` porque la app usa zone.js (no es zoneless).
+  - `shared/directives/tilt.directive.ts` (`appTilt`): inclinación 3D que sigue
+    al puntero, con el brillo que la recorre (`.tilt-3d`, `.tilt-shine`). Escribe
+    `--rx`/`--ry`/`--mx`/`--my` en el host: sin bindings ni change detection. Se
+    apaga solo en pantallas táctiles y con `prefers-reduced-motion`.
+  - `shared/directives/scroll-progress.directive.ts` (`appScrollProgress`):
+    escribe `--p` (0 a 1) en el host según el scroll de la página, agrupado en un
+    `requestAnimationFrame` y fuera de Angular; la barra la dibuja el CSS
+    (`transform: scaleX(var(--p))`).
+  - `shared/directives/auto-more.directive.ts` (`appAutoMore`): centinela de
+    scroll infinito — emite cuando entra en pantalla y la plantilla llama a
+    `showMore()`. El centinela sólo existe mientras `hasMore()`, así que el ciclo
+    se corta solo.
+  - Keyframes en `styles.css`: `fade-up`, `marquee`, `marquee-reverse`, `wobble`,
+    `pop-in`, `ken-burns`, `float-y`, `sheen`, `blur-in`, `aurora-drift`,
+    `glow-pulse`, `grid-slide`, `neon-ring-spin`, `neon-pulse` y `shimmer-x`,
+    más utilidades `.anim-*` y `.wobble-on-hover`.
+  - El anillo que gira de Neón usa `@property --neon-angle` (propiedad tipada
+    registrada) para poder interpolar el ángulo del `conic-gradient`; donde el
+    navegador no la soporte, el degradado queda quieto pero se ve igual. El flip
+    de las prendas (`.flip`, `.flip-inner`, `.flip-face`, `.flip-back`,
+    `.flip-extra`) es CSS puro: `preserve-3d` + `rotateY`, con respaldo para
+    táctil y para `prefers-reduced-motion`.
+  - **`prefers-reduced-motion`** apaga todas las animaciones, el tilt y el
+    gradiente vivo, y deja los elementos visibles (sin el estado inicial oculto
+    del reveal).
 - **Para agregar un diseño nuevo:** (1) entrada en `LAYOUTS`, (2) componente de
   plantilla + su `@case` en `catalog-page.component.html`, (3) bloque de tokens
-  en `styles.css` si hace falta, y (4) **sumar el id al `@Pattern` de
+  en `styles.css` si hace falta, (4) una variante nueva en `ProductCardVariant`
+  (`shared/components/product-card`) si la tarjeta tiene que verse distinto —casi
+  todos los diseños la necesitan— y (5) **sumar el id al `@Pattern` de
   `AppearanceRequest`** en el backend — si no está ahí, el `PUT` devuelve 400
   aunque el frontend lo ofrezca.
+  Si el diseño necesita un dato que el contenedor todavía no expone, se agrega al
+  contrato `CatalogView` (así se sumaron `settings`, `promos` y
+  `discountPercentFor` en la tanda de octubre): la plantilla nunca busca datos
+  por su cuenta ni inyecta servicios.
 - **Verificado en navegador (2026-09-30):** ciclo completo
   ruth → editorial → pop → ruth; cada cambio persiste y se ve en la tienda con
   sólo recargar, consola limpia. La tienda quedó en **Ruth** (el del cliente).
@@ -368,12 +480,12 @@ src/app/
       auth.service.ts           # POST /api/auth/login → JWT en localStorage; isAuthenticated()
       toast.service.ts          # cola de toasts (éxito/error)
     guards/admin.guard.ts       # protege /admin/* (isAuthenticated)
-  shared/components/            # header, footer, product-card (variantes classic/editorial/pop), quantity-stepper, hero-carousel, toast, skeleton, site-preview
-  shared/directives/            # appReveal — animación de entrada con IntersectionObserver (sección 7bis)
+  shared/components/            # header, footer, product-card (variantes classic/editorial/pop/vidriera/oferta/mosaico/nova), quantity-stepper, hero-carousel, toast, skeleton, site-preview
+  shared/directives/            # appReveal / appTilt / appScrollProgress / appAutoMore — el movimiento (sección 7bis)
   features/
     catalog/catalog-page/       # home = CONTENEDOR: carga los datos y elige plantilla (@switch sobre layout)
     catalog/catalog-view.ts     # contrato CatalogView: lo que el contenedor le pasa a cada plantilla
-    catalog/templates/          # template-ruth / template-editorial / template-pop — markup completo de cada diseño
+    catalog/templates/          # template-ruth / editorial / pop / vidriera / ofertas / fichero / mosaico / nova — markup completo de cada diseño
     product-detail/             # ficha de producto (talle con stock, cantidad, agregar al carrito)
     cart/cart-page/             # carrito + entrega (retiro/envío) + pago + "Comprar por WhatsApp"
     admin/                      # login, layout, productos, pedidos, carrusel, admin-config/ (hub + secciones + Diseño) — ver 9bis y 9sexies
@@ -1559,6 +1671,232 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       (con `ddl-auto=update` se crea sola, pero para el camino `validate` de la
       sección 3bis hay que agregarla).
 
+57. **Cuatro diseños más: Vidriera, Ofertas, Fichero y Mosaico (2026-10-01).**
+    Pedido: más opciones para elegir cómo se ve el front (hasta acá había tres),
+    con dos condiciones explícitas — que las vistas nuevas sean **muy diferentes
+    entre sí** y que estén **acordes al backend**, porque "de nada sirve un front
+    con mil cosas que no tenemos". Antes de escribir una línea se hizo el
+    inventario de lo que el backend realmente devuelve y se descartó todo lo que
+    no tiene respaldo (el detalle quedó en la sección 7bis).
+    - **Las cuatro vistas:** **Vidriera** (un riel horizontal por cada opción real
+      del grupo "Público" + el catálogo completo con filtros al final),
+      **Ofertas** (sin hero: barra con los descuentos vigentes de
+      `/api/discounts`, filtros en columna y grilla densa de 4 con el `-X%` real
+      en las prendas alcanzadas), **Fichero** (una prenda destacada en grande con
+      su descripción y sus talles con stock, y el catálogo en **filas** en vez de
+      grilla) y **Mosaico** (tablero tipo bento con carrusel, foto del local,
+      "sobre nosotros", categorías que filtran al tocarlas y la grilla abajo).
+    - **Datos: cero invención.** `CatalogView` sumó `settings` (foto del local y
+      "sobre nosotros" para el Mosaico), `promos` (descuentos vigentes con el
+      texto ya armado en el contenedor, usando los labels de parametrías y
+      `PAYMENT_LABELS`) y `discountPercentFor(product)` (el mayor % por
+      parametría que le toca a una prenda). El contenedor inyecta `DiscountService`
+      para esto: `/api/discounts` es público y es el mismo cálculo que usa el
+      carrito, así que la barra de promos no inventa descuentos.
+    - **Ojo con los precios:** el único precio que existe es `product.price` (no
+      hay "precio de lista" en el backend), así que la grilla de Ofertas muestra
+      el precio real y el chip sólo comunica el % que se aplica en el carrito.
+      **Nada de precios tachados ni "precio antes".**
+    - **`ProductCard`** sumó las variantes `vidriera`, `oferta` y `mosaico`
+      (Fichero no la usa: dibuja sus propias filas porque necesita la
+      descripción y los talles, que la tarjeta no muestra).
+    - **Backend:** una línea — el `@Pattern` de `AppearanceRequest` pasó a
+      `ruth|editorial|pop|vidriera|ofertas|fichero|mosaico`. Sin eso el `PUT` de
+      apariencia devolvía 400 con los ids nuevos. No hubo cambio de esquema ni
+      de endpoint. Compilado con `./mvnw -o -q compile` (exit 0).
+    - **CSS:** los tokens de los cuatro (`[data-layout="x"], .tpl-x`) y sus
+      piezas (`.vid-*`, `.oft-*`, `.fic-*`, `.mos-*`) fueron al `styles.css`
+      global, como los de Editorial y Pop, por el presupuesto de 4 kB por
+      componente. **No se agregó ninguna dependencia nueva** y todas las fuentes
+      siguen saliendo de Google Fonts vía `ensureLayoutFonts`.
+    - **Verificación:** `ng build` de producción **OK y sin warnings nuevos**
+      (initial 500,79 kB / 129,96 kB de transferencia; quedan sólo los 3 warnings
+      CommonJS de siempre: qrcode, jsbarcode y leaflet). Las plantillas nuevas
+      dejaron 6 warnings NG8107/NG8102 por un `?.`/`??` de más sobre `sizeStocks`
+      y sobre `promos()[0]`: se corrigieron antes de cerrar. Por eso el umbral de
+      aviso del bundle `initial` subió de 500 kB a **550 kB** en `angular.json`:
+      el CSS global —que es donde viven los tokens y las piezas de **todos** los
+      diseños— creció ~13 kB con las utilidades que usan las cuatro plantillas
+      nuevas. El error sigue en 1 MB.
+    - **Coherencia con los otros tres:** "lo más vendido" (Vidriera) y la prenda
+      destacada (Fichero, Mosaico) no se muestran sin filtrar cuando hay filtros
+      puestos —Ruth/Editorial/Pop ya escondían ese bloque—: con filtros, el
+      destacado sale del catálogo filtrado.
+    - **Pendientes:** la ficha de producto, el carrito, `/nosotros` y
+      `/como-comprar` siguen siendo únicos para los siete diseños (sólo la home
+      tiene plantilla; lo que cambia en toda la tienda son las fuentes y la
+      paleta) · `/admin/config/diseno` ahora renderiza **7 miniaturas vivas**, o
+      sea 7 instancias de la home con sus carruseles: si la pantalla se pone
+      pesada, conviene renderizar cada miniatura sólo cuando entra en pantalla ·
+      los cuatro diseños nuevos no se probaron todavía en el navegador con datos
+      reales (la verificación fue de compilación).
+
+58. **Octavo diseño: Nova — el moderno, con mucho movimiento (2026-10-01).**
+    Pedido: "una plantilla más, distinta a las cuatro nuevas, como las que se usan
+    en los ecommerce de ahora, con más movimiento y transiciones, que llame la
+    atención". Se hizo con las mismas reglas que la tanda anterior: **todo con
+    datos que ya existían** y sin agregar ninguna dependencia (ni GSAP, ni AOS,
+    ni nada: CSS + directivas propias).
+    - **Qué tiene Nova:** hero cinematográfico a pantalla completa (carrusel
+      administrable de fondo con Ken Burns lento + gradiente vivo animado +
+      oscurecido), banda kinética (marquesina) con las promos o las categorías
+      reales, piezas de categoría que se **inclinan con el mouse** (tilt 3D con
+      brillo que sigue al puntero), **barra de progreso** de lectura, tarjetas
+      `variant="nova"` y catálogo con **scroll infinito de verdad** (un centinela
+      llama a `showMore()`, con "Ver más" de respaldo). Cierra con una franja
+      oscura con los datos reales del local y el botón de WhatsApp.
+    - **Tres directivas nuevas** en `shared/directives/`, todas sin bindings ni
+      change detection (escriben variables CSS y listo):
+      `tilt.directive.ts` (`appTilt` → `--rx`/`--ry`/`--mx`/`--my`),
+      `scroll-progress.directive.ts` (`appScrollProgress` → `--p` de 0 a 1, con
+      listener pasivo y `requestAnimationFrame` fuera de Angular) y
+      `auto-more.directive.ts` (`appAutoMore`: IntersectionObserver con
+      `rootMargin` de 400 px; el centinela sólo existe mientras `hasMore()`, así
+      que el ciclo se corta solo). `appReveal` sumó las variantes `blur`, `left`,
+      `right` y `zoom` (las anteriores quedaron igual).
+    - **Backend:** otra vez una línea — `nova` sumado al `@Pattern` de
+      `AppearanceRequest`. Compilado con `./mvnw -o -q compile` (exit 0).
+    - **Bug real que apareció y conviene no repetir:** el template traía
+      `[class.text-white/75]="..."` y **Angular no compila eso**: el parser HTML
+      lee la barra del modificador de Tailwind como cierre de tag y tira
+      `NG5002 Opening tag "p" not terminated`. Se resolvió con un `[class]` y el
+      modificador adentro del string (`[class]="foto ? 'text-white/75' :
+      'text-brand-800/70'"`), que Tailwind igual detecta al escanear el archivo.
+      **Regla para el próximo diseño: nunca usar `/` dentro de un `[class.x]`.**
+    - **Verificación:** `ng build` de producción **OK y sin warnings nuevos**
+      (initial 510,73 kB / 131,28 kB de transferencia; los mismos 3 warnings
+      CommonJS de siempre). El CSS global pasó de 89,14 kB a 98,71 kB: es el
+      precio de la arquitectura —las utilidades que usan las 8 plantillas viven
+      en el `styles.css` compartido— y sigue debajo del umbral de aviso de
+      550 kB. El backend compila. **No se probó en el navegador con datos
+      reales.**
+    - **Pendientes:** los mismos de #57 (la ficha del producto, el carrito,
+      `/nosotros` y `/como-comprar` siguen siendo únicos para los 8 diseños) ·
+      `/admin/config/diseno` ahora renderiza **8 miniaturas vivas**, o sea 8
+      instancias de la home con sus carruseles y su Ken Burns: si la pantalla se
+      pone pesada, hay que pasar a renderizarlas sólo cuando entran en pantalla ·
+      el hero de Nova usa `86vh`, así que su miniatura en el panel queda dominada
+      por el hero (es su identidad, pero se puede acortar si molesta).
+
+59. **Noveno diseño: Neón — el disruptivo, oscuro y con banners animados
+    (2026-10-01).** Pedido: "otro diseño, disruptivo, con cosas más animadas, con
+    movimientos, con los banners de promoción con movimiento, más llamativo y que
+    no tenga absolutamente nada que ver con los diseños que ya están".
+    - **Lo que lo hace distinto de verdad: es uno de los dos diseños oscuros**
+      (el otro es Cohete, ver #60) de la
+      tienda. Y no se logra componente por componente: el `body` usa
+      `--color-brand-50` como color de página, así que la rampa `brand-*` de Neón
+      está **invertida** (50 = casi negro, 500 = cian) y con eso se da vuelta toda
+      la tienda. El header y el footer compartidos sí tenían superficies claras
+      escritas a mano (`bg-white/90`, `text-stone-600`), así que sumó **reglas
+      acotadas** (`[data-layout="neon"] app-header header {…}` y lo mismo para
+      `app-footer`) que ganan por una razón que conviene recordar: `styles.css` es
+      *unlayered* y las utilidades de Tailwind v4 viven en `@layer utilities`, y
+      lo que está fuera de capa le gana a lo que está en capa **sin importar la
+      especificidad**. Junto con Cohete, son los únicos diseños que tocan el
+      chrome compartido.
+    - **Movimiento (lo que pidió el cliente):** el nombre de la tienda entra
+      **letra por letra** (`appReveal variant="bounce"` con delay escalonado),
+      **doble marquesina** cruzando en direcciones opuestas (`.anim-marquee` +
+      `.anim-marquee-reverse`, la única utilidad de marquesina nueva),
+      **banners de promoción animados** —anillo de luz que gira alrededor de cada
+      banner (`@property --neon-angle` + `conic-gradient`), reflejo que lo cruza
+      (`shimmer-x`), disco con el **% real** que viene de `/api/discounts` y la
+      fecha de fin cuando la promo la tiene—, **cinta diagonal** con las promos
+      pasando, grilla luminosa que se desplaza sola (`grid-slide`) y **prendas que
+      se dan vuelta** (flip 3D en CSS puro: `preserve-3d` + `rotateY`) que del
+      otro lado muestran la descripción y los talles con stock.
+    - **Dato nuevo en el contrato:** `PromoLine` sumó `endsLabel` ("Hasta el
+      15/10"), armado en el contenedor cortando el string `YYYY-MM-DD` a mano y
+      **no** con el `DatePipe`: `new Date('2026-10-15')` es medianoche UTC y en
+      Argentina cae el 14, así que la promo habría mostrado un día de menos.
+    - **Urgencia real, no inventada:** la sección "se están agotando" sale de
+      `totalStock(p) > 0 && totalStock(p) <= (p.lowStockThreshold ?? 3)` —el mismo
+      criterio que usa la alerta de reposición del panel—.
+    - **Accesibilidad:** en táctil (o con `prefers-reduced-motion`) el flip no
+      gira y esa misma información se muestra abajo, siempre visible
+      (`.flip-extra`); el bloque de accesibilidad apaga además la grilla, el
+      anillo y el reflejo.
+    - **Backend:** `neon` sumado al `@Pattern` de `AppearanceRequest`. **Hubo que
+      reiniciar el backend**: el proceso que estaba corriendo tenía la clase
+      compilada sin `neon`, así que el `PUT` de apariencia devolvía 400 hasta
+      reiniciarlo.
+    - **Verificación:** `ng build` de producción OK y sin warnings nuevos (initial
+      518,43 kB / 132,61 kB de transferencia; el CSS global pasó de 98,71 kB a
+      106,05 kB). Probado de punta a punta contra el backend real: login →
+      `PUT apariencia {layout:"neon"}` → 200, y el `GET /api/settings` lo refleja.
+      **No se probó a ojo en el navegador.**
+    - **Bug de tooling que vale anotar:** el dev server (`ng serve`) **no ve los
+      archivos nuevos** creados mientras está corriendo: se queda con el
+      `TS2307 Cannot find module` cacheado y hay que reiniciarlo (el build de
+      producción sí los resuelve). Ya había pasado con Nova.
+    - **Pendientes:** los mismos de siempre (la ficha de producto, el carrito,
+      `/nosotros` y `/como-comprar` siguen siendo únicos para los 9 diseños) ·
+      `/admin/config/diseno` renderiza **9 miniaturas vivas** · Neón es el único
+      con fondo oscuro: si se publica, conviene mirar que el logo (que es claro,
+      sobre fondo blanco) no quede con un halo raro sobre el negro.
+
+60. **Cuatro diseños más, para chicos: Caramelo, Cohete, Jungla y Crayón
+    (2026-10-01).** Pedido: "varios diseños más, como el último (con movimientos)
+    pero para niños, y que no tengan nada que ver con los que ya están".
+    - **Qué es cada uno** (detalle en la sección 7bis): **Caramelo** (pastel:
+      rayos que giran, manchas que flotan, ondas que corren y piezas que se
+      aplastan como un caramelo al pasar el mouse), **Cohete** (noche espacial,
+      el segundo diseño oscuro: estrellas que titilan, órbitas que giran, una
+      nave que cruza la pantalla y estrellas fugaces), **Jungla** (arboleda que
+      se mece, huellas que marchan solas y piezas que se balancean) y **Crayón**
+      (papel, bordes tembleques, cintas adhesivas y **garabatos SVG que se
+      dibujan solos**).
+    - **Cada uno con SU movimiento:** los keyframes son de la tanda
+      (`spin-slow`, `bob`, `jelly`, `wave-x`, `twinkle`, `fly-across`,
+      `shooting`, `sway`, `march-x`, `draw-in`, `wobble-slow`) y ninguno repite
+      el recurso de otro diseño. Todos se apagan con `prefers-reduced-motion`;
+      en Crayón hay un detalle que no se puede olvidar: al apagar la animación
+      hay que dejar `stroke-dashoffset: 0`, si no los dibujos quedan invisibles
+      (con el guion corrido).
+    - **Ahora hay DOS diseños oscuros:** Cohete también invierte la rampa
+      `brand-*`, así que el chrome compartido (header y footer) lleva las mismas
+      reglas acotadas que Neón. Las afirmaciones de "el único diseño oscuro" de
+      #58 y #59 quedaron corregidas en toda la documentación.
+    - **`ProductCard`** sumó `caramelo`, `cohete`, `jungla` y `crayon`. Las
+      variantes de Caramelo y Jungla usan animaciones arbitrarias de Tailwind
+      (`hover:animate-[jelly_.6s_ease]`, `hover:animate-[sway_1.1s_ease-in-out
+      _infinite]`): se verificó en el CSS compilado que Tailwind las genera.
+    - **Backend:** los 4 ids sumados al `@Pattern` de `AppearanceRequest`.
+      **Otra vez hubo que reiniciar el backend** (y el dev server, que no ve los
+      archivos nuevos): los dos quedaron levantados.
+    - **Tres errores reales que aparecieron en las plantillas nuevas** y que
+      conviene no repetir:
+      1. `[style.animation-delay]="-1s"` **no compila**: Angular lee el binding
+         como expresión y `-1s` no es una expresión válida (`NG5002 Parser Error:
+         Unexpected token 's'`). Lo correcto es `[style.animation-delay]="'-1s'"`
+         —con las comillas adentro—. La forma de atributo estático
+         (`style.animation-delay="-1s"`) compila, pero deja el warning `NG8104`.
+      2. `@let destacados = destacados();` **se auto-referencia** y Angular no lo
+         permite (`NG8016 Cannot read @let declaration before it has been
+         defined`): el `@let` tapa el nombre del computed. Hay que usar otro
+         nombre (`@let carril = destacados()`).
+      3. Faltaba importar `CldImagePipe` en Cohete, que igual usaba `| cldImg`
+         (`NG8004 No pipe found with name 'cldImg'`).
+      Los tres se arreglaron y el build quedó limpio.
+    - **Verificación:** `ng build` de producción **OK y sin warnings nuevos**
+      (initial 536,17 kB / 135,44 kB de transferencia; el CSS global pasó de
+      106,05 a 122,55 kB, todavía debajo del umbral de aviso de 550 kB) +
+      `tsc --noEmit` sin errores + los 16 keyframes presentes en el CSS
+      compilado. Probado de punta a punta: `PUT apariencia` con los 4 ids
+      devuelve 200 y el `GET /api/settings` lo refleja. **No se probó a ojo en el
+      navegador.**
+    - **Pendientes:** los mismos de siempre (la ficha de producto, el carrito,
+      `/nosotros` y `/como-comprar` siguen siendo únicos para los 13 diseños) ·
+      `/admin/config/diseno` renderiza **13 miniaturas vivas**: con 13 instancias
+      de la home —varias con animaciones infinitas y su propio carrusel— conviene
+      pasar a renderizarlas sólo cuando entran en pantalla · **el `styles.css`
+      global ya está en 122 kB y el aviso de presupuesto quedó a ~14 kB**: antes
+      del próximo diseño hay que decidir si se sube el umbral o si el CSS de cada
+      diseño se separa en archivos que se carguen **sólo** con el diseño activo
+      (que es la solución de fondo, porque hoy las utilidades de los 13 viajan en
+      el bundle inicial).
+
 ## 12. Backend (`../backend-ecommer-ruth/`) — resumen
 
 > **Ruta real:** la carpeta del backend en esta máquina es
@@ -1583,8 +1921,11 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
   (**sin caché de navegador** desde 2026-09-30, historial #56),
   `POST /api/orders` (checkout), `GET /api/orders/lookup` (mis pedidos),
   `GET /api/coupons/{code}`, y el **webhook de Mercado Pago**.
-- **Diseño de la tienda (2026-09-30):** `SiteSettings.layout` (`ruth` |
-  `editorial` | `pop`, validado con `@Pattern` en `AppearanceRequest`) +
+- **Diseño de la tienda (2026-09-30, ampliado el 2026-10-01):**
+  `SiteSettings.layout` (`ruth` | `editorial` | `pop` | `vidriera` | `ofertas` |
+  `fichero` | `mosaico` | `nova` | `neon` | `caramelo` | `cohete` | `jungla` |
+  `crayon`, validado con `@Pattern` en
+  `AppearanceRequest`) +
   `PUT /api/admin/settings/apariencia` con
   `@PreAuthorize("hasAnyAuthority('PLATFORM_SETTINGS_MANAGE',
   'CAROUSEL_MANAGE')")` — lo puede cambiar el dueño de la tienda, no sólo el

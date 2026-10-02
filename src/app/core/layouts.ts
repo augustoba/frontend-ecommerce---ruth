@@ -48,6 +48,95 @@ export const LAYOUTS: LayoutOption[] = [
     fontsHref:
       'https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap',
   },
+  {
+    id: 'vidriera',
+    label: 'Vidriera',
+    blurb:
+      'La home como catálogo por categorías: un riel que se desliza por cada público (bebé, nena, nene) y el catálogo completo al final.',
+    previewColor: '#d99a2b',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Karla:wght@300;400;500;600;700&display=swap',
+  },
+  {
+    id: 'ofertas',
+    label: 'Ofertas',
+    blurb:
+      'Sin hero: arriba la barra con las promos que cargaste en el panel, filtros en columna y grilla apretada de 4 con el precio grande.',
+    previewColor: '#e11d2e',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'fichero',
+    label: 'Fichero',
+    blurb:
+      'Ficha técnica: una prenda destacada en grande con su descripción y sus talles, y el catálogo en filas en vez de grilla.',
+    previewColor: '#1e3a8a',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap',
+  },
+  {
+    id: 'mosaico',
+    label: 'Mosaico',
+    blurb:
+      'Un tablero de piezas de distinto tamaño: carrusel, foto del local, tu "sobre nosotros" y una categoría, con la grilla abajo.',
+    previewColor: '#4f46e5',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@300;400;500;600;700&display=swap',
+  },
+  {
+    id: 'nova',
+    label: 'Nova',
+    blurb:
+      'El más de ahora: hero a pantalla completa con la foto en movimiento, vidrio, tarjetas que se inclinan con el mouse y el catálogo que sigue cargando solo.',
+    previewColor: '#f0288f',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap',
+  },
+  {
+    id: 'neon',
+    label: 'Neón',
+    blurb:
+      'El disruptivo: fondo oscuro con grilla luminosa, tipografía arcade, banners de promo que giran y brillan, y las prendas que se dan vuelta al pasar el mouse.',
+    previewColor: '#22d3ee',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rubik:wght@300;400;500;600;700&display=swap',
+  },
+  {
+    id: 'caramelo',
+    label: 'Caramelo',
+    blurb:
+      'Para los más chicos: rayos que giran detrás del logo, manchas pastel que flotan, ondas que corren y tarjetas que se aplastan como un caramelo.',
+    previewColor: '#22c39f',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Grandstander:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'cohete',
+    label: 'Cohete',
+    blurb:
+      'Un viaje espacial: cielo estrellado que titila, órbitas que giran, una nave que cruza la pantalla y estrellas fugaces.',
+    previewColor: '#6366f1',
+    fontsHref: 'https://fonts.googleapis.com/css2?family=Bungee&family=Varela+Round&display=swap',
+  },
+  {
+    id: 'jungla',
+    label: 'Jungla',
+    blurb:
+      'Aventura en la selva: hojas que se mecen como si hubiera viento, un camino de huellas que marcha solo y tarjetas que se balancean.',
+    previewColor: '#4aa32b',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Comic+Neue:wght@400;700&display=swap',
+  },
+  {
+    id: 'crayon',
+    label: 'Crayón',
+    blurb:
+      'Dibujado a mano sobre papel: los garabatos se trazan solos al bajar, bordes tembleques, cintas adhesivas y letra de chico.',
+    previewColor: '#f59e0b',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Comfortaa:wght@400;500;600;700&display=swap',
+  },
 ];
 
 export function isKnownLayout(id: string | null | undefined): boolean {

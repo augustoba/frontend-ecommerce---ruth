@@ -9,12 +9,13 @@ import {
   signal,
 } from '@angular/core';
 
-export type RevealVariant = 'up' | 'mask' | 'bounce';
+export type RevealVariant = 'up' | 'mask' | 'bounce' | 'blur' | 'left' | 'right' | 'zoom';
 
 /**
  * Aparición al hacer scroll: el elemento empieza invisible y entra cuando llega
  * al viewport. Sin dependencias — `IntersectionObserver` + las clases `.reveal`,
- * `.reveal-mask` y `.reveal-bounce` definidas en `styles.css`.
+ * `.reveal-mask`, `.reveal-bounce`, `.reveal-blur`, `.reveal-left`,
+ * `.reveal-right` y `.reveal-zoom` definidas en `styles.css`.
  *
  * `[delay]` sirve para el efecto escalonado: en un `@for` se pasa `i * 60`.
  * Con `prefers-reduced-motion` el CSS ya deja todo visible, así que acá no hace
@@ -26,6 +27,10 @@ export type RevealVariant = 'up' | 'mask' | 'bounce';
     '[class.reveal]': 'variant() === "up"',
     '[class.reveal-mask]': 'variant() === "mask"',
     '[class.reveal-bounce]': 'variant() === "bounce"',
+    '[class.reveal-blur]': 'variant() === "blur"',
+    '[class.reveal-left]': 'variant() === "left"',
+    '[class.reveal-right]': 'variant() === "right"',
+    '[class.reveal-zoom]': 'variant() === "zoom"',
     '[class.is-visible]': 'visible()',
     '[style.transition-delay.ms]': 'delay()',
   },

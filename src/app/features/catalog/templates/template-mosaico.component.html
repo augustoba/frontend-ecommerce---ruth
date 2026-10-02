@@ -1,0 +1,322 @@
+@if (vm(); as v) {
+  <!-- ===== Encabezado del tablero =====
+       Logo chico + nombre grande + UNA línea corta de cómo se compra. Es corto a
+       propósito: el tablero es el protagonista, no el texto. La frase sale de
+       `compraLine()`, que elige entre los dos caminos reales de la tienda
+       (carrito → Mercado Pago o carrito → WhatsApp), sin promesas inventadas. -->
+  <header class="mx-auto max-w-6xl px-4 pb-6 pt-8 sm:px-6 sm:pb-7 sm:pt-10">
+    <div class="flex items-center gap-3.5">
+      <img
+        [src]="v.logoSrc() | cldImg: 120"
+        [alt]="v.storeName()"
+        class="h-12 w-12 shrink-0 rounded-2xl bg-white object-cover ring-1 ring-brand-100 sm:h-14 sm:w-14"
+      />
+      <div class="min-w-0">
+        <h1 class="font-display text-3xl font-extrabold leading-none tracking-tight text-brand-700 sm:text-4xl">
+          {{ v.storeName() }}
+        </h1>
+        <p class="mt-1.5 text-sm text-stone-600 sm:text-base">{{ compraLine() }}</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Tablero (bento) =====
+       `auto-rows` fijo es lo que hace que las piezas "encajen" por filas: así el
+       `row-span-2` de una foto y el `col-span-2 row-span-2` del carrusel se
+       alinean sin alturas mágicas. Cada pieza se dibuja SÓLO si tiene datos
+       reales —si el local no cargó la foto, si no hay "sobre nosotros", si no
+       hay promos— y el tablero se reacomoda con lo que quede: por eso ninguna
+       pieza depende de que exista la anterior. -->
+  <section class="mx-auto max-w-6xl px-4 sm:px-6" aria-label="Lo más destacado de la tienda">
+    <div
+      class="grid grid-cols-2 gap-3 auto-rows-[7rem] sm:auto-rows-[8.5rem] sm:gap-4 lg:grid-cols-4"
+    >
+      <!-- Pieza 1: el carrusel de fotos. Es la pieza grande del tablero, así que
+           ocupa 2x2 en mobile y 2x3 en desktop. `app-hero-carousel` se estira
+           con `absolute inset-0` (la pieza ya es `relative`). Si todavía no hay
+           fotos cargadas, la MISMA pieza cae al logo sobre el lila de marca:
+           así el tablero nunca arranca con un hueco blanco. -->
+      <div
+        appReveal
+        [delay]="0"
+        [class]="tileClass('carousel')"
+        class="mos-tile bg-brand-100"
+      >
+        @if (v.heroSlides().length) {
+          <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+        } @else {
+          <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
+            <img
+              [src]="v.logoSrc() | cldImg: 400"
+              [alt]="v.storeName()"
+              class="h-20 w-20 rounded-3xl bg-white object-cover ring-1 ring-brand-200 sm:h-24 sm:w-24"
+            />
+            <p class="font-display text-lg font-bold text-brand-700 sm:text-xl">{{ v.storeName() }}</p>
+          </div>
+        }
+      </div>
+
+      <!-- Pieza 2: foto del local. Vive SÓLO acá fuera del footer, y recién
+           existe si el dueño la cargó desde /admin/config. `storePhotoUrl`
+           puede ser null, así que el pipe `cldImg` se usa únicamente adentro de
+           este `@if` (nunca sobre el null). Foto a sangre + scrim para que el
+           texto se lea, y la dirección real como dato de la pieza. -->
+      @if (v.settings().storePhotoUrl) {
+        <div appReveal [delay]="60" class="mos-tile col-span-1 row-span-2">
+          <img
+            class="mos-cover"
+            [src]="v.settings().storePhotoUrl | cldImg: 800"
+            [alt]="'Foto de ' + v.storeName()"
+          />
+          <div class="mos-scrim"></div>
+          <div class="mos-on-media absolute inset-x-0 bottom-0 p-4">
+            <p class="font-display text-base font-bold leading-tight sm:text-lg">{{ v.storeName() }}</p>
+            @if (v.settings().storeAddress) {
+              <p class="mt-1 text-xs leading-snug text-white/85 sm:text-sm">{{ v.settings().storeAddress }}</p>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Pieza 3: "quiénes somos", recortado a 3 líneas. El link a /nosotros
+           aparece SÓLO si la página existe de verdad (`aboutPageEnabled`): si no
+           está activada, la pieza muestra el texto y nada más, sin link roto. -->
+      @if (v.settings().aboutText) {
+        <div
+          appReveal
+          [delay]="120"
+          class="mos-tile col-span-2 flex flex-col justify-center gap-2 p-5 sm:col-span-1"
+        >
+          <p class="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-500">Quiénes somos</p>
+          <p class="line-clamp-3 text-[13px] leading-relaxed text-stone-700">
+            {{ v.settings().aboutText }}
+          </p>
+          @if (v.settings().aboutPageEnabled) {
+            <a
+              routerLink="/nosotros"
+              class="mt-1 self-start font-display text-sm font-semibold text-brand-600 hover:text-brand-700 hover:underline"
+            >
+              Leer más
+            </a>
+          }
+        </div>
+      }
+
+      <!-- Pieza 4: categorías REALES (primeras 2 opciones del grupo "Público"),
+           cada una con la cantidad de prendas que existen hoy en el catálogo
+           filtrado. El `@if` de adentro saltea la pieza si esa categoría quedó
+           sin prendas, así nunca se ve un "0 prendas". Al tocarla hace algo de
+           verdad: filtra el catálogo por ese público y baja hasta la grilla. -->
+      @for (opt of firstCategories(); track opt.id; let i = $index) {
+        @if (productsOf(opt.id).length) {
+          <button
+            appReveal
+            type="button"
+            [delay]="180 + i * 60"
+            (click)="v.setParam('grp-publico', opt.id); v.scrollToCatalog()"
+            class="mos-tile group flex flex-col justify-between p-5 text-left ring-1 ring-stone-900/5 transition-shadow duration-300 hover:shadow-xl"
+          >
+            <span class="font-display text-lg font-bold leading-tight text-stone-900 sm:text-xl">
+              {{ opt.label }}
+            </span>
+            <span class="text-xs text-stone-500 sm:text-sm">
+              {{ productsOf(opt.id).length }} prendas
+              <span class="inline-block transition-transform group-hover:translate-y-0.5">↓</span>
+            </span>
+          </button>
+        }
+      }
+
+      <!-- Piezas 5 y 6: dos prendas destacadas, en su propia pieza del tablero.
+           La variante `mosaico` de la tarjeta estira la foto para llenar la
+           pieza (de ahí que la celda necesite altura definida, que acá la da el
+           `row-span-2` de la grilla). -->
+      @for (p of spotlight(); track p.id; let i = $index) {
+        <div appReveal [delay]="240 + i * 60" [class]="tileClass('product')">
+          <app-product-card class="h-full" [product]="p" variant="mosaico" />
+        </div>
+      }
+
+      <!-- Pieza 7 (lima): la promo vigente. Sale de `/api/discounts`, o sea de
+           lo que el dueño cargó en /admin/promociones; si no hay ninguna promo
+           activa, la pieza NO existe (nada de banners genéricos). -->
+      @if (firstPromo(); as promo) {
+        <div
+          appReveal
+          [delay]="300"
+          class="mos-tile mos-lime flex flex-col justify-between p-5"
+        >
+          <span class="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-70">Promo vigente</span>
+          <p class="font-display text-base font-bold leading-tight sm:text-lg">
+            {{ clamp(promo.text) }}
+          </p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ===== Catálogo ===== -->
+  <section id="catalogo" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-10 sm:px-6">
+    <!-- Barra de filtros: campos chicos y redondeados, en línea, con los mismos
+         bindings que el resto de las plantillas (ngModel suelto: la fuente de
+         verdad es el vm, no un form propio). -->
+    <div class="mb-8 flex flex-col gap-3">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <input
+          type="search"
+          [ngModel]="v.searchTerm()"
+          (ngModelChange)="v.searchTerm.set($event)"
+          placeholder="Buscar producto..."
+          aria-label="Buscar producto"
+          class="w-full border border-brand-200 bg-white px-2.5 py-2 text-[13px] rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400 sm:w-64"
+        />
+
+        <select
+          [ngModel]="v.selectedSize()"
+          (ngModelChange)="v.selectedSize.set($event)"
+          aria-label="Talle"
+          class="w-full border border-brand-200 bg-white px-2.5 py-2 text-[13px] rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400 sm:w-auto"
+        >
+          <option value="todos">Talle: todos</option>
+          @for (size of v.availableSizes(); track size) {
+            <option [value]="size">Talle {{ size }}</option>
+          }
+        </select>
+
+        @for (group of v.selectGroups(); track group.id) {
+          <select
+            [ngModel]="v.paramValue(group.id)"
+            (ngModelChange)="v.setParam(group.id, $event)"
+            [attr.aria-label]="group.name"
+            class="w-full border border-brand-200 bg-white px-2.5 py-2 text-[13px] rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400 sm:w-auto"
+          >
+            <option value="">{{ group.name }}: todas</option>
+            @for (opt of group.options; track opt.id) {
+              <option [value]="opt.id">{{ opt.label }}</option>
+            }
+          </select>
+        }
+
+        <div class="flex items-center gap-2">
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            placeholder="$ mín"
+            aria-label="Precio mínimo"
+            [ngModel]="v.minPrice()"
+            (ngModelChange)="v.setMinPrice($event)"
+            class="w-24 border border-brand-200 bg-white px-2.5 py-2 text-[13px] rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
+          />
+          <span class="text-xs text-stone-400">a</span>
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            placeholder="$ máx"
+            aria-label="Precio máximo"
+            [ngModel]="v.maxPrice()"
+            (ngModelChange)="v.setMaxPrice($event)"
+            class="w-24 border border-brand-200 bg-white px-2.5 py-2 text-[13px] rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
+          />
+        </div>
+
+        <select
+          [ngModel]="v.sortBy()"
+          (ngModelChange)="v.sortBy.set($event)"
+          aria-label="Ordenar"
+          class="w-full border border-brand-200 bg-white px-2.5 py-2 text-[13px] rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400 sm:ml-auto sm:w-auto"
+        >
+          <option value="novedades">Orden: novedades</option>
+          <option value="precio-asc">Precio: de menor a mayor</option>
+          <option value="precio-desc">Precio: de mayor a menor</option>
+        </select>
+
+        <!-- "Limpiar" sólo cuando hay algo que limpiar (mismo criterio que Ruth). -->
+        @if (v.hasActiveFilters()) {
+          <button
+            type="button"
+            (click)="v.clearFilters()"
+            class="self-start text-[13px] font-semibold text-brand-600 hover:text-brand-700 sm:self-auto"
+          >
+            Limpiar filtros ✕
+          </button>
+        }
+      </div>
+
+      <!-- Público como chips: es el filtro que más se usa, así que va a la vista
+           y no escondido en un select. -->
+      @if (v.publicoGroup(); as grupo) {
+        <div class="flex flex-wrap gap-2">
+          <button
+            type="button"
+            (click)="v.setParam(grupo.id, '')"
+            [class.bg-brand-500]="!v.paramValue(grupo.id)"
+            [class.text-white]="!v.paramValue(grupo.id)"
+            [class.bg-white]="v.paramValue(grupo.id)"
+            [class.text-stone-600]="v.paramValue(grupo.id)"
+            class="rounded-full px-3.5 py-1.5 text-[13px] font-semibold ring-1 ring-brand-200 transition-colors hover:ring-brand-400"
+          >
+            Todas
+          </button>
+          @for (opt of grupo.options; track opt.id) {
+            <button
+              type="button"
+              (click)="v.setParam(grupo.id, opt.id)"
+              [class.bg-brand-500]="v.paramValue(grupo.id) === opt.id"
+              [class.text-white]="v.paramValue(grupo.id) === opt.id"
+              [class.bg-white]="v.paramValue(grupo.id) !== opt.id"
+              [class.text-stone-600]="v.paramValue(grupo.id) !== opt.id"
+              class="rounded-full px-3.5 py-1.5 text-[13px] font-semibold ring-1 ring-brand-200 transition-colors hover:ring-brand-400"
+            >
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Estados + grilla. Cada celda lleva altura fija (`h-80 sm:h-96`) porque
+         la tarjeta `mosaico` es `h-full` con la foto flexible: sin altura
+         definida en la celda, la foto no tendría contra qué estirarse. -->
+    @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+      <app-skeleton variant="card" [count]="8" />
+    } @else if (v.catalogStatus() === 'error') {
+      <div class="py-20 text-center text-stone-500">
+        <p class="mb-3 text-4xl">😕</p>
+        <p class="font-semibold">No se pudo cargar el catálogo.</p>
+        <button type="button" (click)="v.reloadCatalog()" class="mt-3 font-semibold text-brand-600 hover:underline">
+          Reintentar
+        </button>
+      </div>
+    } @else if (v.filteredProducts().length) {
+      <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        @for (product of v.visibleProducts(); track product.id; let i = $index) {
+          <div appReveal [delay]="i * 60" class="h-80 sm:h-96">
+            <app-product-card class="h-full" [product]="product" variant="mosaico" />
+          </div>
+        }
+      </div>
+
+      @if (v.hasMore()) {
+        <div class="mt-8 text-center">
+          <button
+            type="button"
+            (click)="v.showMore()"
+            class="rounded-xl bg-white px-6 py-2.5 font-display font-semibold text-stone-700 ring-1 ring-stone-900/10 transition-colors hover:text-brand-600 hover:ring-brand-400"
+          >
+            Ver más productos ({{ v.filteredProducts().length - v.visibleProducts().length }} más)
+          </button>
+        </div>
+      }
+    } @else {
+      <div class="py-20 text-center text-stone-500">
+        <p class="mb-3 text-4xl">🔍</p>
+        <p class="font-semibold">No encontramos productos con esos filtros.</p>
+        <button type="button" (click)="v.clearFilters()" class="mt-3 font-semibold text-brand-600 hover:underline">
+          Ver todo el catálogo
+        </button>
+      </div>
+    }
+  </section>
+}

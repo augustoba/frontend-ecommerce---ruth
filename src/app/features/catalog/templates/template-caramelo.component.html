@@ -1,0 +1,341 @@
+@if (vm(); as v) {
+  <!-- Lo que el template reusa en varias secciones se resuelve UNA vez con `@let`
+       para no volver a evaluar el mismo computed en cada bloque. -->
+  @let promos = v.promos();
+  @let nuevos = recienLlegados();
+
+  <!-- ===== 1. Hero golosina =====
+       `relative overflow-hidden` es la base de todo el diseño: los rayos y las
+       manchas van absolutos y recortados contra el borde, así que el hero no
+       puede crecer por culpa de un blob que se sale. -->
+  <section class="relative overflow-hidden px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-14">
+    <!-- Manchas pastel que flotan. Son decorativas (sin dato adentro), así que van
+         `aria-hidden`; cada una lleva su PROPIO `animation-delay` (negativo, para
+         que la animación ya venga empezada) porque si compartieran delay flotarían
+         todas al mismo tiempo y se vería como un solo bloque que se mueve. -->
+    <div class="candy-blob candy-pink -left-10 top-6 h-48 w-48 sm:h-64 sm:w-64" aria-hidden="true" [style.animation-delay]="'-1.5s'"></div>
+    <div class="candy-blob candy-lilac right-0 top-24 h-36 w-36 sm:h-52 sm:w-52" aria-hidden="true" [style.animation-delay]="'-3s'"></div>
+    <div class="candy-blob candy-yellow -bottom-10 left-1/4 h-32 w-32 sm:h-44 sm:w-44" aria-hidden="true" [style.animation-delay]="'-4.5s'"></div>
+    <div class="candy-blob candy-pink bottom-10 right-1/4 h-24 w-24 sm:h-36 sm:w-36" aria-hidden="true" [style.animation-delay]="'-2.2s'">></div>
+
+    <div class="relative mx-auto flex max-w-3xl flex-col items-center text-center">
+      <!-- El círculo del logo. Adentro va un contenedor `relative overflow-hidden
+           rounded-full` para que los rayos giren SIN salirse del círculo: el
+           `.candy-sun` sólo tiene sentido encerrado en un círculo. -->
+      <div class="relative h-44 w-44 rounded-full bg-white shadow-[0_24px_50px_-28px_rgba(18,127,104,.7)] sm:h-56 sm:w-56">
+        <div class="relative h-full w-full overflow-hidden rounded-full">
+          <div class="candy-sun"></div>
+        </div>
+        <div class="absolute inset-0 flex items-center justify-center p-6 sm:p-8">
+          <img
+            [src]="v.logoSrc() | cldImg: 400"
+            [alt]="v.storeName()"
+            class="h-full w-full rounded-full object-contain"
+          />
+        </div>
+      </div>
+
+      <h1 class="mt-7 font-display text-4xl font-extrabold tracking-tight text-brand-700 sm:text-6xl">
+        {{ v.storeName() }}
+      </h1>
+
+      <!-- Chip con datos REALES del catálogo filtrado (prendas y talles): son los
+           únicos números que esta plantilla puede mostrar sin inventar nada. -->
+      <div class="mt-5">
+        <span class="candy-chip">
+          <span class="tabular-nums">{{ v.filteredProducts().length }} prendas</span>
+          <span aria-hidden="true">·</span>
+          <span class="tabular-nums">{{ v.availableSizes().length }} talles</span>
+        </span>
+      </div>
+
+      <p class="mt-5 max-w-xl text-sm leading-relaxed text-stone-600 sm:text-base">{{ compraLine() }}</p>
+
+      <!-- Botón grande y blandito: `.jelly-hover` lo aplasta como un caramelo. -->
+      <button
+        type="button"
+        (click)="v.scrollToCatalog()"
+        class="jelly-hover mt-8 rounded-full bg-brand-500 px-8 py-4 font-display text-base font-extrabold uppercase tracking-wide text-white shadow-[0_18px_34px_-18px_rgba(18,127,104,.9)] sm:text-lg"
+      >
+        Ver el catálogo
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== 2. Burbujas de promo =====
+       Una burbuja por promo REAL cargada en /admin/promociones. Si no hay ninguna
+       vigente, el bloque de burbujas NO se dibuja: nada de banners de relleno. -->
+  <!-- Onda de nube como separador: lo que venga después se apoya en las ondas.
+       Va FUERA del `@if` a propósito, así el hero siempre cierra con la nube
+       aunque no haya ninguna promo cargada. -->
+  <div class="candy-scallop" aria-hidden="true"></div>
+
+  @if (promos.length) {
+    <section class="mx-auto max-w-6xl px-4 pb-14 pt-8 sm:px-6 sm:pb-16">
+      <h2 class="text-center font-display text-2xl font-extrabold text-brand-700 sm:text-3xl">
+        Promos ricas
+      </h2>
+
+      <div class="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        @for (promo of promos; track promo.id; let i = $index) {
+          <article
+            appReveal
+            variant="bounce"
+            [delay]="i * 80"
+            [class]="colorDePromo(i)"
+            class="flex flex-col gap-3 rounded-[34px] p-6 shadow-[0_18px_34px_-26px_rgba(18,127,104,.65)]"
+          >
+            <!-- El % REAL del descuento, bien grande. Cuando el backend manda 0 es
+                 una promo de ENVÍO GRATIS (no descuenta plata), así que se dice
+                 "ENVÍO": nunca un porcentaje inventado. -->
+            @if (promo.percent > 0) {
+              <span class="font-display text-5xl font-extrabold leading-none tabular-nums">-{{ promo.percent }}%</span>
+            } @else {
+              <span class="font-display text-3xl font-extrabold leading-none uppercase tracking-wide">Envío</span>
+            }
+
+            <h3 class="font-display text-lg font-bold leading-snug">{{ promo.text }}</h3>
+
+            <!-- Letra chica configurable del descuento: puede no existir. -->
+            @if (promo.detail) {
+              <p class="text-sm leading-snug opacity-80">{{ promo.detail }}</p>
+            }
+
+            <!-- Vigencia ya formateada por el contenedor ("Hasta el 15/10"). -->
+            @if (promo.endsLabel) {
+              <span class="candy-chip self-start">{{ promo.endsLabel }}</span>
+            }
+
+            <a href="#catalogo" class="mt-auto pt-2 font-display text-sm font-bold underline underline-offset-4">
+              Ver el catálogo →
+            </a>
+          </article>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 3. Recién llegados =====
+       Carril con snap y sin barra de scroll: en mobile entra una tarjeta y media y
+       eso invita a arrastrar. El orden es por `createdAt` (ver el computed), así
+       que "recién llegado" es un dato y no una etiqueta de marketing. -->
+  @if (nuevos.length) {
+    <section class="mx-auto max-w-6xl px-4 pb-14 sm:px-6 sm:pb-16">
+      <h2 class="font-display text-2xl font-extrabold text-brand-700 sm:text-3xl">Recién llegados</h2>
+      <p class="mt-2 text-sm text-stone-600">Lo último que entró a la tienda.</p>
+
+      <div class="mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        @for (p of nuevos; track p.id; let i = $index) {
+          <div appReveal variant="bounce" [delay]="i * 60" class="w-48 shrink-0 snap-start sm:w-56">
+            <app-product-card [product]="p" variant="caramelo" />
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 4. Catálogo =====
+       Onda de nube otra vez: el catálogo también arranca sobre ondas. Los filtros
+       van en una tarjeta muy redonda con los MISMOS bindings que el resto de las
+       plantillas (`[ngModel]` + `(ngModelChange)`): la fuente de verdad es el vm,
+       no un form propio. -->
+  <div class="candy-scallop" aria-hidden="true"></div>
+
+  <section id="catalogo" class="scroll-mt-24">
+    <div class="mx-auto max-w-6xl px-4 pb-14 pt-8 sm:px-6 sm:pb-16">
+      <h2 class="font-display text-2xl font-extrabold text-brand-700 sm:text-3xl">El catálogo</h2>
+
+      <div class="mt-6 rounded-[30px] bg-white p-4 shadow-sm sm:p-5">
+        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <input
+            type="search"
+            [ngModel]="v.searchTerm()"
+            (ngModelChange)="v.searchTerm.set($event)"
+            placeholder="Buscar prenda..."
+            aria-label="Buscar prenda"
+            class="min-w-[9rem] flex-1 rounded-full border-2 border-brand-200 bg-white px-4 py-2 text-sm focus:border-brand-400 focus:outline-none"
+          />
+
+          <select
+            [ngModel]="v.selectedSize()"
+            (ngModelChange)="v.selectedSize.set($event)"
+            aria-label="Filtrar por talle"
+            class="rounded-full border-2 border-brand-200 bg-white px-4 py-2 text-sm focus:border-brand-400 focus:outline-none"
+          >
+            <option value="todos">Talle: todos</option>
+            @for (size of v.availableSizes(); track size) {
+              <option [value]="size">Talle {{ size }}</option>
+            }
+          </select>
+
+          <!-- Grupos de parametrías que el contenedor decidió mostrar como select. -->
+          @for (group of v.selectGroups(); track group.id) {
+            <select
+              [ngModel]="v.paramValue(group.id)"
+              (ngModelChange)="v.setParam(group.id, $event)"
+              [attr.aria-label]="group.name"
+              class="rounded-full border-2 border-brand-200 bg-white px-4 py-2 text-sm focus:border-brand-400 focus:outline-none"
+            >
+              <option value="">{{ group.name }}: todas</option>
+              @for (option of group.options; track option.id) {
+                <option [value]="option.id">{{ option.label }}</option>
+              }
+            </select>
+          }
+
+          <div class="flex items-center gap-2">
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              placeholder="$ mín"
+              aria-label="Precio mínimo"
+              [ngModel]="v.minPrice()"
+              (ngModelChange)="v.setMinPrice($event)"
+              class="w-24 rounded-full border-2 border-brand-200 bg-white px-4 py-2 text-sm focus:border-brand-400 focus:outline-none"
+            />
+            <span class="text-xs text-stone-400">a</span>
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              placeholder="$ máx"
+              aria-label="Precio máximo"
+              [ngModel]="v.maxPrice()"
+              (ngModelChange)="v.setMaxPrice($event)"
+              class="w-24 rounded-full border-2 border-brand-200 bg-white px-4 py-2 text-sm focus:border-brand-400 focus:outline-none"
+            />
+          </div>
+
+          <select
+            [ngModel]="v.sortBy()"
+            (ngModelChange)="v.sortBy.set($event)"
+            aria-label="Ordenar"
+            class="rounded-full border-2 border-brand-200 bg-white px-4 py-2 text-sm focus:border-brand-400 focus:outline-none sm:ml-auto"
+          >
+            <option value="novedades">Orden: novedades</option>
+            <option value="precio-asc">Precio: de menor a mayor</option>
+            <option value="precio-desc">Precio: de mayor a menor</option>
+          </select>
+
+          <!-- "Limpiar" sólo cuando hay algo que limpiar. -->
+          @if (v.hasActiveFilters()) {
+            <button
+              type="button"
+              (click)="v.clearFilters()"
+              class="self-start font-display text-sm font-bold text-brand-600 hover:text-brand-700 sm:self-auto"
+            >
+              Limpiar filtros ✕
+            </button>
+          }
+        </div>
+
+        <!-- "Público" como chips: es el filtro que más se usa en indumentaria
+             infantil, así que va a la vista y no escondido en un select. -->
+        @if (v.publicoGroup(); as grupo) {
+          <div class="mt-4 flex flex-wrap items-center gap-2">
+            <span class="mr-1 font-display text-sm font-bold text-brand-700">Público</span>
+            <button type="button" (click)="v.setParam(grupo.id, '')" [class]="chipPublico(!v.paramValue(grupo.id))">
+              Todos
+            </button>
+            @for (option of grupo.options; track option.id) {
+              <button type="button" (click)="v.setParam(grupo.id, option.id)" [class]="chipPublico(v.paramValue(grupo.id) === option.id)">
+                {{ option.label }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Estados + grilla de tarjetas `caramelo` (redondísimas y con el apretón
+           de goma al pasar el mouse). -->
+      @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+        <div class="mt-8">
+          <app-skeleton variant="card" [count]="8" />
+        </div>
+      } @else if (v.catalogStatus() === 'error') {
+        <div class="py-20 text-center text-stone-600">
+          <p class="font-display text-lg font-extrabold text-brand-700">No se pudo cargar el catálogo.</p>
+          <button
+            type="button"
+            (click)="v.reloadCatalog()"
+            class="jelly-hover mt-5 rounded-full bg-brand-500 px-6 py-3 font-display font-bold text-white"
+          >
+            Reintentar
+          </button>
+        </div>
+      } @else if (v.filteredProducts().length) {
+        <div class="mt-8 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
+          @for (product of v.visibleProducts(); track product.id; let i = $index) {
+            <div appReveal variant="bounce" [delay]="(i % 8) * 60">
+              <app-product-card [product]="product" variant="caramelo" />
+            </div>
+          }
+        </div>
+
+        @if (v.hasMore()) {
+          <div class="pt-10 text-center">
+            <button
+              type="button"
+              (click)="v.showMore()"
+              class="jelly-hover rounded-full bg-brand-500 px-8 py-4 font-display font-extrabold uppercase tracking-wide text-white shadow-[0_18px_34px_-18px_rgba(18,127,104,.9)]"
+            >
+              Ver más
+            </button>
+          </div>
+        }
+      } @else {
+        <div class="py-20 text-center text-stone-600">
+          <p class="font-display text-lg font-extrabold text-brand-700">No hay prendas con esos filtros.</p>
+          <p class="mt-2 text-sm">Probá con otros filtros o mirá todo el catálogo.</p>
+          <button
+            type="button"
+            (click)="v.clearFilters()"
+            class="jelly-hover mt-5 rounded-full bg-brand-500 px-6 py-3 font-display font-bold text-white"
+          >
+            Ver todo el catálogo
+          </button>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ===== 5. Cierre =====
+       Banda pastel con datos REALES del local. Cada dato se dibuja sólo si existe:
+       si el dueño no cargó la dirección o el Facebook, el chip no aparece y la
+       banda se reacomoda (nunca un link roto ni un texto vacío). -->
+  <section class="rounded-t-[40px] bg-brand-100 px-4 py-14 sm:px-6 sm:py-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <h2 class="font-display text-2xl font-extrabold text-brand-700 sm:text-3xl">{{ v.storeName() }}</h2>
+
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+        @if (v.settings().storeAddress; as direccion) {
+          <span class="candy-chip">{{ direccion }}</span>
+        }
+        @if (v.settings().instagram; as instagram) {
+          <a
+            [href]="'https://instagram.com/' + instagram"
+            target="_blank"
+            rel="noopener"
+            class="candy-chip hover:text-brand-500"
+          >
+            &#64;{{ instagram }}
+          </a>
+        }
+        @if (v.settings().facebookUrl; as facebook) {
+          <a [href]="facebook" target="_blank" rel="noopener" class="candy-chip hover:text-brand-500">Facebook</a>
+        }
+        <a routerLink="/como-comprar" class="candy-chip hover:text-brand-500">Cómo comprar</a>
+      </div>
+
+      <a
+        [href]="'https://wa.me/' + v.settings().whatsappNumber"
+        target="_blank"
+        rel="noopener"
+        class="jelly-hover mt-8 inline-block rounded-full bg-brand-500 px-8 py-4 font-display text-base font-extrabold uppercase tracking-wide text-white shadow-[0_18px_34px_-18px_rgba(18,127,104,.9)]"
+      >
+        Comprar por WhatsApp
+      </a>
+    </div>
+  </section>
+}

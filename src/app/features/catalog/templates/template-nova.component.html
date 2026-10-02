@@ -1,0 +1,468 @@
+@if (vm(); as v) {
+  <!-- ===== Barra de progreso de scroll =====
+       No lleva binding: `appScrollProgress` escribe `--p` (0..1) en el host y el
+       CSS de `.nova-progress` hace el `scaleX`. Es la primera señal de que la
+       página se mueve, y en Nova el movimiento es el argumento del diseño. -->
+  <div class="nova-progress" appScrollProgress><span></span></div>
+
+  <!-- ===== Hero cinematográfico =====
+       Tres capas, en este orden: el gradiente vivo (`.nova-mesh`) SIEMPRE, para
+       que el hero se vea aunque el local todavía no subió fotos; el carrusel
+       encima, con la foto en Ken Burns lento; y el scrim oscuro arriba, que es lo
+       único que garantiza que el texto blanco se lea sobre cualquier foto (por
+       eso es hermano del carrusel y no un `::before` de él). El contenido va
+       después y con `relative z-10`: así los botones del carrusel quedan
+       clickeables entre el scrim (que es `pointer-events: none`) y el contenido. -->
+  <section class="relative flex h-[86vh] min-h-[540px] flex-col justify-center overflow-hidden">
+    <div class="nova-mesh"></div>
+
+    @if (v.heroSlides().length) {
+      <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+      <div class="nova-scrim"></div>
+    }
+
+    <div class="relative z-10 mx-auto w-full max-w-6xl px-5 py-16 sm:px-8">
+      <!-- Chip de vidrio con DATOS REALES del catálogo: son los únicos números
+           que la plantilla puede mostrar sin inventar nada (nada de reseñas ni
+           contadores de gente mirando). -->
+      <span appReveal [delay]="0" class="nova-chip nova-glass text-white">
+        <span class="tabular-nums">{{ v.filteredProducts().length }} prendas</span>
+        <span class="text-white/50">✦</span>
+        <span class="tabular-nums">{{ v.availableSizes().length }} talles</span>
+      </span>
+
+      <!-- El título sube desde atrás de una máscara (`variant="mask"`): es el
+           efecto más vistoso de `appReveal` y por eso queda para el nombre de la
+           tienda, que es lo primero que tiene que llamar la atención. La máscara
+           asume UN hijo en bloque adentro. -->
+      <h1
+        appReveal
+        variant="mask"
+        [delay]="120"
+        class="mt-6 font-display text-4xl font-extrabold leading-[0.95] tracking-tight text-white [text-wrap:balance] sm:text-6xl lg:text-7xl"
+      >
+        <span class="block">{{ v.storeName() }}</span>
+      </h1>
+
+      <!-- La línea de compra es factual y condicional: los dos caminos de la
+           tienda son excluyentes, así que nunca se prometen los dos. -->
+      <p
+        appReveal
+        variant="blur"
+        [delay]="260"
+        class="mt-5 max-w-xl text-base leading-relaxed text-white/80 sm:text-lg"
+      >
+        {{ compraLine() }}
+      </p>
+
+      <div class="mt-9 flex flex-wrap items-center gap-3">
+        <button
+          appReveal
+          variant="bounce"
+          [delay]="380"
+          type="button"
+          (click)="v.scrollToCatalog()"
+          class="sheen rounded-full bg-brand-500 px-7 py-3.5 font-display text-sm font-semibold text-white shadow-[0_20px_45px_-18px_rgba(240,40,143,.85)] transition-transform duration-300 hover:-translate-y-0.5"
+        >
+          Ver catálogo
+        </button>
+
+        <a
+          appReveal
+          variant="bounce"
+          [delay]="460"
+          href="#mas-vendido"
+          class="nova-glass inline-flex items-center gap-2 rounded-full px-6 py-3.5 font-display text-sm font-semibold text-white transition-colors hover:bg-white/20"
+        >
+          Lo más vendido
+          <span aria-hidden="true">↓</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Indicador de scroll: flota solo (`.anim-float`) y es puramente
+         decorativo, así que va `aria-hidden`. -->
+    <div
+      class="anim-float absolute inset-x-0 bottom-6 flex flex-col items-center gap-1.5 text-white/70"
+      aria-hidden="true"
+    >
+      <span class="text-[10px] font-semibold uppercase tracking-[0.28em]">Seguí bajando</span>
+      <span class="h-8 w-px bg-gradient-to-b from-white/70 to-transparent"></span>
+    </div>
+  </section>
+
+  <!-- ===== Banda kinética =====
+       Si no hay promos cargadas, la banda usa los nombres de las categorías
+       reales; si tampoco hay categorías, directamente no se dibuja (nada de
+       textos de relleno). El contenido va DUPLICADO porque `.anim-marquee`
+       corre 50%: con una sola copia se vería el salto. -->
+  @if (ticker().length) {
+    <div class="nova-ink overflow-hidden py-3">
+      <div class="anim-marquee">
+        @for (text of tickerLoop(); track $index; let i = $index) {
+          <span
+            [attr.aria-hidden]="i >= ticker().length ? true : null"
+            class="flex shrink-0 items-center gap-4 pr-4 font-display text-xs font-semibold uppercase tracking-[0.2em] text-white/85"
+          >
+            {{ text }}
+            <!-- El separador va con el item (no entre items) así el final de una
+                 copia y el arranque de la otra quedan iguales de espaciados. -->
+            @if (i !== tickerLoop().length - 1) {
+              <span class="nova-cyan rounded-full px-1.5 py-0.5 text-[10px]">✦</span>
+            }
+          </span>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===== Categorías con inclinación 3D =====
+       Cada pieza se inclina siguiendo al puntero (`[appTilt]`), con el brillo que
+       escribe la misma directiva (`.tilt-shine`). La foto es la portada REAL de la
+       primera prenda de esa categoría; si la categoría quedó sin prendas, la pieza
+       baja a un fondo liso de marca con el nombre y sin contador, porque "0
+       prendas" no se muestra nunca. -->
+  @if (categorias().length) {
+    <section class="mx-auto max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
+      <h2 class="font-display text-2xl font-extrabold tracking-tight text-brand-800 sm:text-3xl">
+        Elegí por categoría
+      </h2>
+
+      <div class="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        @for (opt of categorias(); track opt.id; let i = $index) {
+          @let foto = fotoDeCategoria()[opt.id];
+          @let total = productsOf(opt.id).length;
+          <button
+            appReveal
+            variant="zoom"
+            [delay]="i * 70"
+            type="button"
+            [appTilt]="7"
+            (click)="elegirCategoria(opt.id)"
+            class="tilt-shine group relative h-40 overflow-hidden rounded-3xl bg-brand-100 text-left sm:h-52"
+          >
+            @if (foto) {
+              <img
+                [src]="foto | cldImg: 800"
+                [alt]="opt.label"
+                loading="lazy"
+                class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-stone-950/85 via-stone-950/25 to-transparent"></div>
+            }
+
+            <div class="absolute inset-x-0 bottom-0 p-4">
+              <!-- Ojo: nada de `[class.text-white/75]`. Una barra dentro del nombre
+                   de un binding de clase hace que el parser HTML de Angular lea el
+                   `/` como cierre de tag y tire "Opening tag p not terminated". Por
+                   eso el color va con `[class]` y el modificador de opacidad dentro
+                   del string (que Tailwind igual detecta al escanear el archivo). -->
+              <p
+                class="font-display text-base font-bold leading-tight sm:text-lg"
+                [class]="foto ? 'text-white' : 'text-brand-800'"
+              >
+                {{ opt.label }}
+              </p>
+
+              <!-- El contador sale sólo si hay prendas: es el dato real. -->
+              @if (total) {
+                <p class="mt-0.5 text-xs font-semibold" [class]="foto ? 'text-white/75' : 'text-brand-800/70'">
+                  {{ total }} {{ total === 1 ? 'prenda' : 'prendas' }}
+                </p>
+              }
+            </div>
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== Lo más vendido =====
+       Carril que se desliza con snap. Sólo existe si hay "más vendidos" de verdad y
+       no hay filtros puestos: mostrar una prenda que no coincide con lo que el
+       cliente acaba de filtrar sería confuso (mismo criterio que el resto de los
+       diseños). -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section id="mas-vendido" class="scroll-mt-24 border-y border-brand-100 bg-white/60 py-12 sm:py-16">
+      <div class="mx-auto max-w-6xl px-5 sm:px-8">
+        <h2 class="font-display text-2xl font-extrabold tracking-tight text-brand-800 sm:text-3xl">
+          Lo más vendido
+        </h2>
+        <p class="mt-2 text-sm text-stone-500">Lo que más se llevan las familias.</p>
+
+        <div
+          class="mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          @for (p of v.bestSellers(); track p.id; let i = $index) {
+            <div appReveal variant="zoom" [delay]="i * 60" class="w-56 shrink-0 snap-start sm:w-64">
+              <div [appTilt]="5" class="tilt-shine h-full rounded-[26px]">
+                <app-product-card class="h-full" [product]="p" variant="nova" />
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ===== Catálogo ===== -->
+  <section id="catalogo" class="scroll-mt-24">
+    <!-- Barra de filtros de vidrio pegada arriba (alto del header = 4rem) para
+         poder filtrar sin volver a subir. Mismos bindings sueltos de `ngModel`
+         que las otras plantillas: la fuente de verdad es el vm, la plantilla no
+         tiene estado propio. -->
+    <div class="sticky top-16 z-20 mx-auto max-w-6xl px-5 pt-6 sm:px-8">
+      <div class="nova-glass-light rounded-2xl p-3 shadow-[0_18px_45px_-30px_rgba(12,10,25,.5)]">
+        <div class="flex flex-wrap items-center gap-2">
+          <input
+            type="search"
+            [ngModel]="v.searchTerm()"
+            (ngModelChange)="v.searchTerm.set($event)"
+            placeholder="Buscar prenda..."
+            aria-label="Buscar prenda"
+            class="min-w-[9rem] flex-1 rounded-full border border-brand-200 bg-white/80 px-4 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-brand-400"
+          />
+
+          <select
+            [ngModel]="v.selectedSize()"
+            (ngModelChange)="v.selectedSize.set($event)"
+            aria-label="Filtrar por talle"
+            class="rounded-full border border-brand-200 bg-white/80 px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-brand-400"
+          >
+            <option value="todos">Talle: todos</option>
+            @for (size of v.availableSizes(); track size) {
+              <option [value]="size">Talle {{ size }}</option>
+            }
+          </select>
+
+          @for (group of v.selectGroups(); track group.id) {
+            <select
+              [ngModel]="v.paramValue(group.id)"
+              (ngModelChange)="v.setParam(group.id, $event)"
+              [attr.aria-label]="group.name"
+              class="rounded-full border border-brand-200 bg-white/80 px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-brand-400"
+            >
+              <option value="">{{ group.name }}: todas</option>
+              @for (option of group.options; track option.id) {
+                <option [value]="option.id">{{ option.label }}</option>
+              }
+            </select>
+          }
+
+          <div class="flex items-center gap-1.5">
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              placeholder="$ mín"
+              aria-label="Precio mínimo"
+              [ngModel]="v.minPrice()"
+              (ngModelChange)="v.setMinPrice($event)"
+              class="w-20 rounded-full border border-brand-200 bg-white/80 px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-brand-400"
+            />
+            <span class="text-[13px] text-stone-400">a</span>
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              placeholder="$ máx"
+              aria-label="Precio máximo"
+              [ngModel]="v.maxPrice()"
+              (ngModelChange)="v.setMaxPrice($event)"
+              class="w-20 rounded-full border border-brand-200 bg-white/80 px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-brand-400"
+            />
+          </div>
+
+          <select
+            [ngModel]="v.sortBy()"
+            (ngModelChange)="v.sortBy.set($event)"
+            aria-label="Ordenar"
+            class="rounded-full border border-brand-200 bg-white/80 px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-brand-400 sm:ml-auto"
+          >
+            <option value="novedades">Orden: novedades</option>
+            <option value="precio-asc">Precio: menor a mayor</option>
+            <option value="precio-desc">Precio: mayor a menor</option>
+          </select>
+        </div>
+
+        <!-- El grupo "Público" va como chips a la vista (y no escondido en un
+             select) porque es el filtro que más se usa. -->
+        @if (v.publicoGroup(); as publico) {
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              (click)="v.setParam(publico.id, '')"
+              [class.bg-brand-500]="!v.paramValue(publico.id)"
+              [class.text-white]="!v.paramValue(publico.id)"
+              [class.bg-white]="v.paramValue(publico.id)"
+              [class.text-stone-600]="v.paramValue(publico.id)"
+              class="rounded-full px-3.5 py-1.5 text-[12px] font-semibold ring-1 ring-brand-200 transition-colors hover:ring-brand-400"
+            >
+              Todas
+            </button>
+
+            @for (option of publico.options; track option.id) {
+              <button
+                type="button"
+                (click)="v.setParam(publico.id, option.id)"
+                [class.bg-brand-500]="v.paramValue(publico.id) === option.id"
+                [class.text-white]="v.paramValue(publico.id) === option.id"
+                [class.bg-white]="v.paramValue(publico.id) !== option.id"
+                [class.text-stone-600]="v.paramValue(publico.id) !== option.id"
+                class="rounded-full px-3.5 py-1.5 text-[12px] font-semibold ring-1 ring-brand-200 transition-colors hover:ring-brand-400"
+              >
+                {{ option.label }}
+              </button>
+            }
+
+            <!-- "Limpiar" sólo cuando hay algo que limpiar. -->
+            @if (v.hasActiveFilters()) {
+              <button
+                type="button"
+                (click)="v.clearFilters()"
+                class="ml-auto self-center text-[12px] font-semibold text-brand-600 hover:text-brand-700"
+              >
+                Limpiar filtros ✕
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="mx-auto max-w-6xl px-5 pb-14 pt-8 sm:px-8">
+      <h2 class="font-display text-2xl font-extrabold tracking-tight text-brand-800 sm:text-3xl">
+        Todo el catálogo
+      </h2>
+
+      <div class="mt-6">
+        @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+          <app-skeleton variant="card" [count]="8" />
+        } @else if (v.catalogStatus() === 'error') {
+          <div class="py-20 text-center text-stone-500">
+            <p class="mb-3 text-4xl">😕</p>
+            <p class="font-semibold">No se pudo cargar el catálogo.</p>
+            <button
+              type="button"
+              (click)="v.reloadCatalog()"
+              class="mt-3 font-semibold text-brand-600 hover:underline"
+            >
+              Reintentar
+            </button>
+          </div>
+        } @else if (v.filteredProducts().length) {
+          <div class="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
+            @for (product of v.visibleProducts(); track product.id; let i = $index) {
+              <div appReveal variant="blur" [delay]="(i % 8) * 50" [appTilt]="5" class="tilt-shine h-full">
+                <app-product-card class="h-full" [product]="product" variant="nova" />
+              </div>
+            }
+          </div>
+
+          @if (v.hasMore()) {
+            <!-- Centinela de scroll infinito: cuando entra en pantalla (400px
+                 antes), pide la página siguiente. Se desmonta solo al no quedar
+                 nada más, y por eso el ciclo se corta. -->
+            <div appAutoMore (appAutoMore)="v.showMore()" class="h-1"></div>
+
+            <!-- Respaldo del centinela: sin `IntersectionObserver` o navegando con
+                 teclado, este botón es la única forma de seguir. No se saca. -->
+            <div class="mt-8 text-center">
+              <button
+                type="button"
+                (click)="v.showMore()"
+                class="rounded-full bg-white px-6 py-2.5 font-display text-[13px] font-semibold text-stone-700 ring-1 ring-stone-900/10 transition-colors hover:text-brand-600 hover:ring-brand-400"
+              >
+                Ver más prendas
+              </button>
+            </div>
+          }
+        } @else {
+          <div class="py-20 text-center text-stone-500">
+            <p class="mb-3 text-4xl">🔍</p>
+            <p class="font-semibold">No encontramos prendas con esos filtros.</p>
+            <button
+              type="button"
+              (click)="v.clearFilters()"
+              class="mt-3 font-semibold text-brand-600 hover:underline"
+            >
+              Ver todo el catálogo
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Cierre oscuro =====
+       Mismo gradiente vivo que el hero, pero apagado (`opacity-30`), para que la
+       home cierre con la misma identidad con la que abrió. Todos los datos salen
+       de `SiteSettings` y cada uno se dibuja SÓLO si existe: sin dirección, sin
+       Instagram o sin Facebook, el bloque se reacomoda y no queda un hueco ni un
+       link roto. -->
+  <footer class="nova-ink relative overflow-hidden">
+    <div class="nova-mesh opacity-30"></div>
+
+    <div class="relative z-10 mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-16">
+      <h2 class="font-display text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
+        {{ v.storeName() }}
+      </h2>
+
+      <div class="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div>
+          <p class="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45">El local</p>
+          @if (v.settings().storeAddress; as address) {
+            <p class="mt-2 text-sm leading-relaxed text-white/80">{{ address }}</p>
+          }
+
+          <a
+            href="/como-comprar"
+            class="mt-4 inline-block font-display text-sm font-semibold text-white underline decoration-brand-400 underline-offset-4 hover:text-brand-200"
+          >
+            Cómo comprar
+          </a>
+        </div>
+
+        @if (v.settings().instagram || v.settings().facebookUrl) {
+          <div>
+            <p class="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45">Seguinos</p>
+            <div class="mt-2 flex flex-col items-start gap-2 text-sm">
+              @if (v.settings().instagram; as instagram) {
+                <a
+                  [href]="'https://instagram.com/' + instagram"
+                  target="_blank"
+                  rel="noopener"
+                  class="text-white/80 underline decoration-white/25 underline-offset-4 hover:text-white"
+                >
+                  {{ '@' + instagram }}
+                </a>
+              }
+              @if (v.settings().facebookUrl; as facebook) {
+                <a
+                  [href]="facebook"
+                  target="_blank"
+                  rel="noopener"
+                  class="text-white/80 underline decoration-white/25 underline-offset-4 hover:text-white"
+                >
+                  Facebook
+                </a>
+              }
+            </div>
+          </div>
+        }
+
+        <div>
+          <p class="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45">Pedidos</p>
+          <a
+            [href]="'https://wa.me/' + v.settings().whatsappNumber"
+            target="_blank"
+            rel="noopener"
+            class="nova-cyan mt-3 inline-flex items-center gap-2 rounded-full px-6 py-3 font-display text-sm font-bold transition-transform duration-300 hover:-translate-y-0.5"
+          >
+            Escribirnos por WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+}

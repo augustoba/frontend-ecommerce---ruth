@@ -1,0 +1,345 @@
+@if (vm(); as v) {
+  <!-- Los datos que se repiten en varias secciones se leen UNA sola vez: con
+       `@let` el computed no se vuelve a evaluar en cada `@if` del template. -->
+  @let promos = v.promos();
+  @let carril = destacados();
+
+  <!-- ===== 1. Hero selvático =====
+       La arboleda (`.jungla-top`) va PRIMERO y absoluta arriba de todo: es el
+       techo de hojas y se mece sola (el keyframe `sway` lo dispara `styles.css`).
+       Las hojas de los costados son decorativas —`aria-hidden`— y cada una lleva
+       un `[style.animation-delay]` NEGATIVO distinto: con delays negativos las
+       hojas ya están a mitad del movimiento cuando carga la página, así no
+       arrancan las cuatro sincronizadas como un bloque. -->
+  <section class="relative overflow-hidden bg-brand-50">
+    <div class="jungla-top"></div>
+
+    <div class="jungla-leaf sway pointer-events-none absolute left-[6%] top-24 h-14 w-14 sm:h-20 sm:w-20" [style.animation-delay]="'-1s'" aria-hidden="true"></div>
+    <div class="jungla-leaf sway pointer-events-none absolute right-[8%] top-40 h-10 w-10 opacity-80 sm:h-14 sm:w-14" [style.animation-delay]="'-2.5s'" aria-hidden="true"></div>
+    <div class="jungla-leaf sway pointer-events-none absolute left-[14%] bottom-16 h-8 w-8 opacity-70 sm:h-12 sm:w-12" [style.animation-delay]="'-4s'" aria-hidden="true"></div>
+    <div class="jungla-leaf sway pointer-events-none absolute right-[14%] bottom-24 h-12 w-12 opacity-90 sm:h-16 sm:w-16" [style.animation-delay]="'-5.5s'" aria-hidden="true"></div>
+
+    <div class="relative z-10 mx-auto max-w-3xl px-5 pb-14 pt-20 text-center sm:pb-20 sm:pt-28">
+      <!-- El logo en un círculo blanco: es lo único que se ve siempre, haya o no
+           fotos de carrusel. `cldImg` pide el tamaño real que se dibuja. -->
+      <img
+        [src]="v.logoSrc() | cldImg: 240"
+        [alt]="v.storeName()"
+        class="mx-auto h-24 w-24 rounded-full bg-white p-3 shadow-lg sm:h-28 sm:w-28"
+      />
+
+      <h1 class="mt-6 font-display text-4xl uppercase leading-[1.05] text-brand-700 sm:text-6xl">
+        {{ v.storeName() }}
+      </h1>
+
+      <!-- Chip con datos REALES del catálogo filtrado: son los únicos números que
+           esta plantilla puede mostrar sin inventar nada (nada de "+500 clientes"). -->
+      <div class="mt-6 flex justify-center">
+        <span class="jungla-chip">
+          <span class="tabular-nums">{{ v.filteredProducts().length }} prendas</span>
+          <span class="text-brand-400" aria-hidden="true">🐾</span>
+          <span class="tabular-nums">{{ v.availableSizes().length }} talles</span>
+        </span>
+      </div>
+
+      <!-- La línea de compra es factual y condicional: los dos caminos de la
+           tienda son excluyentes, así que nunca se prometen los dos. -->
+      <p class="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-stone-700 sm:text-base">
+        {{ compraLine() }}
+      </p>
+
+      <button
+        type="button"
+        (click)="v.scrollToCatalog()"
+        class="sway-hover mt-8 rounded-[24px_8px_24px_8px] bg-brand-500 px-8 py-4 font-display text-white uppercase shadow-[0_10px_0_-2px_rgba(42,97,27,.35)] transition-colors hover:bg-brand-600"
+      >
+        A la selva
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== 2. Camino de huellas =====
+       Separador entre el hero y el campamento: las huellas marchan solas hacia
+       la derecha (`march-x`). Es puro adorno, así que va `aria-hidden`. -->
+  <div class="jungla-trail" aria-hidden="true"></div>
+
+  <!-- ===== 3. Cartel de promos colgado =====
+       Una pieza por promo REAL cargada en /admin/promociones (`/api/discounts`).
+       Sin promos cargadas la sección entera no existe: nada de carteles
+       genéricos. El cartel se mece (`sway`) con un delay por promo para que no
+       se muevan todos juntos, como si colgaran de la misma rama. -->
+  @if (promos.length) {
+    <section class="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+      <h2 class="text-center font-display text-3xl uppercase text-brand-700 sm:text-4xl">
+        Promos de la selva
+      </h2>
+
+      <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        @for (promo of promos; track promo.id; let i = $index) {
+          <article
+            class="sway rounded-[20px] bg-brand-700 p-5 text-white shadow-[0_14px_28px_-16px_rgba(30,71,20,.9)]"
+            [style.animation-delay]="-(i * 1.3) + 's'"
+          >
+            <!-- El % REAL del descuento. En las promos de "envío gratis" el
+                 backend manda 0 porque no descuenta plata: ahí se dice ENVÍO en
+                 vez de inventar un porcentaje. -->
+            @if (promo.percent > 0) {
+              <span class="font-display text-4xl leading-none">-{{ promo.percent }}%</span>
+            } @else {
+              <span class="font-display text-2xl uppercase leading-none">Envío</span>
+            }
+
+            <h3 class="mt-2 font-display text-xl leading-tight">{{ promo.text }}</h3>
+
+            <!-- Letra chica configurable del descuento: puede no existir. -->
+            @if (promo.detail) {
+              <p class="mt-2 text-sm leading-snug text-white/80">{{ promo.detail }}</p>
+            }
+
+            <!-- Vigencia ya formateada por el contenedor ("Hasta el 15/10"). -->
+            @if (promo.endsLabel) {
+              <span class="jungla-chip mt-3">{{ promo.endsLabel }}</span>
+            }
+          </article>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 4. "Los más elegidos del campamento" =====
+       Carril con snap y sin barra de scroll (en mobile entra una tarjeta y
+       media, y eso invita a arrastrar). `destacados()` ya resuelve el fallback
+       (más vendidos reales o, si todavía no hay ventas, las primeras del
+       catálogo filtrado), así que acá sólo se dibuja lo que vino. -->
+  @if (carril.length) {
+    <section class="mx-auto max-w-6xl px-3 py-10 sm:px-6">
+      <h2 class="px-1 font-display text-2xl uppercase text-brand-700 sm:text-3xl">
+        Los más elegidos del campamento
+      </h2>
+
+      <div class="mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        @for (product of carril; track product.id; let i = $index) {
+          <div appReveal variant="bounce" [delay]="i * 60" class="w-48 snap-start sm:w-56">
+            <!-- El wrapper es el que se balancea: la tarjeta ya trae su propio
+                 hover, así que el movimiento va afuera para no pelearse. -->
+            <div class="sway-hover">
+              <app-product-card [product]="product" variant="jungla" />
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 5. Catálogo ===== -->
+  <section id="catalogo" class="scroll-mt-24">
+    <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <h2 class="font-display text-3xl uppercase text-brand-700 sm:text-4xl">El catálogo</h2>
+      <p class="mt-2 text-sm text-stone-600">Buscá por talle, por público o por precio.</p>
+
+      <!-- Barra de filtros en una tarjeta de madera clara. Mismos bindings que el
+           resto de las plantillas (`[ngModel]` + `(ngModelChange)` sueltos): la
+           fuente de verdad es el vm, no un form propio. -->
+      <div class="mt-6 rounded-[26px] bg-white p-4 ring-2 ring-brand-200">
+        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <input
+            type="search"
+            [ngModel]="v.searchTerm()"
+            (ngModelChange)="v.searchTerm.set($event)"
+            placeholder="Buscar prenda..."
+            aria-label="Buscar prenda"
+            class="w-full rounded-[16px] border-2 border-brand-200 bg-brand-50 px-4 py-2 text-sm focus:border-brand-400 focus:outline-none sm:w-64"
+          />
+
+          <select
+            [ngModel]="v.selectedSize()"
+            (ngModelChange)="v.selectedSize.set($event)"
+            aria-label="Filtrar por talle"
+            class="w-full rounded-[16px] border-2 border-brand-200 bg-brand-50 px-4 py-2 text-sm focus:border-brand-400 focus:outline-none sm:w-auto"
+          >
+            <option value="todos">Talle: todos</option>
+            @for (size of v.availableSizes(); track size) {
+              <option [value]="size">Talle {{ size }}</option>
+            }
+          </select>
+
+          <!-- Grupos de parametrías que el contenedor decidió mostrar como select -->
+          @for (group of v.selectGroups(); track group.id) {
+            <select
+              [ngModel]="v.paramValue(group.id)"
+              (ngModelChange)="v.setParam(group.id, $event)"
+              [attr.aria-label]="group.name"
+              class="w-full rounded-[16px] border-2 border-brand-200 bg-brand-50 px-4 py-2 text-sm focus:border-brand-400 focus:outline-none sm:w-auto"
+            >
+              <option value="">{{ group.name }}: todas</option>
+              @for (option of group.options; track option.id) {
+                <option [value]="option.id">{{ option.label }}</option>
+              }
+            </select>
+          }
+
+          <div class="flex items-center gap-2">
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              placeholder="$ mín"
+              aria-label="Precio mínimo"
+              [ngModel]="v.minPrice()"
+              (ngModelChange)="v.setMinPrice($event)"
+              class="w-24 rounded-[16px] border-2 border-brand-200 bg-brand-50 px-4 py-2 text-sm focus:border-brand-400 focus:outline-none"
+            />
+            <span class="text-xs text-stone-500">a</span>
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              placeholder="$ máx"
+              aria-label="Precio máximo"
+              [ngModel]="v.maxPrice()"
+              (ngModelChange)="v.setMaxPrice($event)"
+              class="w-24 rounded-[16px] border-2 border-brand-200 bg-brand-50 px-4 py-2 text-sm focus:border-brand-400 focus:outline-none"
+            />
+          </div>
+
+          <select
+            [ngModel]="v.sortBy()"
+            (ngModelChange)="v.sortBy.set($event)"
+            aria-label="Ordenar"
+            class="w-full rounded-[16px] border-2 border-brand-200 bg-brand-50 px-4 py-2 text-sm focus:border-brand-400 focus:outline-none sm:ml-auto sm:w-auto"
+          >
+            <option value="novedades">Orden: novedades</option>
+            <option value="precio-asc">Precio: menor a mayor</option>
+            <option value="precio-desc">Precio: mayor a menor</option>
+          </select>
+
+          <!-- "Limpiar" sólo cuando hay algo que limpiar. -->
+          @if (v.hasActiveFilters()) {
+            <button
+              type="button"
+              (click)="v.clearFilters()"
+              class="self-start font-display text-sm uppercase text-brand-600 hover:text-brand-700 sm:self-auto"
+            >
+              Limpiar ✕
+            </button>
+          }
+        </div>
+
+        <!-- "Público" como chips: es el filtro que más se usa, así que va a la
+             vista y no escondido en un select. -->
+        @if (v.publicoGroup(); as grupo) {
+          <div class="mt-4 flex flex-wrap items-center gap-2">
+            <button type="button" (click)="v.setParam(grupo.id, '')" [class]="chipClass(!v.paramValue(grupo.id))">
+              Todas
+            </button>
+            @for (option of grupo.options; track option.id) {
+              <button
+                type="button"
+                (click)="v.setParam(grupo.id, option.id)"
+                [class]="chipClass(v.paramValue(grupo.id) === option.id)"
+              >
+                {{ option.label }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Estados + grilla, con los mismos cuatro casos que el resto de las
+           plantillas: cargando, error, con prendas y vacío. -->
+      @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+        <div class="mt-8">
+          <app-skeleton variant="card" [count]="8" />
+        </div>
+      } @else if (v.catalogStatus() === 'error') {
+        <div class="py-20 text-center text-stone-600">
+          <p class="mb-3 text-4xl" aria-hidden="true">🐒</p>
+          <p class="font-display text-xl uppercase text-brand-700">No se pudo cargar el catálogo</p>
+          <button
+            type="button"
+            (click)="v.reloadCatalog()"
+            class="mt-4 rounded-[20px_6px_20px_6px] bg-brand-500 px-6 py-3 font-display text-white uppercase"
+          >
+            Reintentar
+          </button>
+        </div>
+      } @else if (v.filteredProducts().length) {
+        <div class="mt-8 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
+          @for (product of v.visibleProducts(); track product.id; let i = $index) {
+            <div appReveal variant="bounce" [delay]="(i % 8) * 60">
+              <!-- La tarjeta se balancea sola por el hover de su propia variante
+                   `jungla`; el wrapper repite el gesto para toda la celda. -->
+              <div class="sway-hover">
+                <app-product-card [product]="product" variant="jungla" />
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (v.hasMore()) {
+          <div class="pt-10 text-center">
+            <button
+              type="button"
+              (click)="v.showMore()"
+              class="sway-hover rounded-[24px_8px_24px_8px] bg-brand-500 px-8 py-4 font-display text-white uppercase shadow-[0_10px_0_-2px_rgba(42,97,27,.35)] transition-colors hover:bg-brand-600"
+            >
+              Ver más
+            </button>
+          </div>
+        }
+      } @else {
+        <div class="py-20 text-center text-stone-600">
+          <p class="mb-3 text-4xl" aria-hidden="true">🌿</p>
+          <p class="font-display text-xl uppercase text-brand-700">No hay prendas con esos filtros</p>
+          <p class="mt-2 text-sm">Probá con otros filtros o mirá todo el catálogo.</p>
+          <button type="button" (click)="v.clearFilters()" class="jungla-chip mt-4">
+            Ver todo el catálogo
+          </button>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ===== 6. Segundo camino de huellas =====
+       El mismo separador antes del cierre, para que el campamento termine igual
+       que empezó. -->
+  <div class="jungla-trail" aria-hidden="true"></div>
+
+  <!-- ===== 7. Cierre del campamento =====
+       Banda verde oscuro con los datos REALES del local, cada uno SÓLO si existe
+       (dirección, Instagram, Facebook y el link a /como-comprar), más el botón
+       grande a WhatsApp. `jungla-bottom` es la arboleda invertida y cierra el
+       círculo con el hero. -->
+  <section class="relative bg-brand-700 pt-12 text-white">
+    <div class="mx-auto max-w-3xl px-5 pb-12 text-center sm:px-8">
+      <h2 class="font-display text-3xl uppercase sm:text-4xl">{{ v.storeName() }}</h2>
+      <p class="mt-3 text-sm leading-relaxed text-white/85">Te esperamos en la selva. 🌴</p>
+
+      <div class="mt-7 flex flex-wrap items-center justify-center gap-3">
+        @if (v.settings().storeAddress; as direccion) {
+          <span class="jungla-chip">{{ direccion }}</span>
+        }
+        @if (v.settings().instagram; as instagram) {
+          <a [href]="'https://instagram.com/' + instagram" target="_blank" rel="noopener" class="jungla-chip">
+            &#64;{{ instagram }}
+          </a>
+        }
+        @if (v.settings().facebookUrl; as facebook) {
+          <a [href]="facebook" target="_blank" rel="noopener" class="jungla-chip">Facebook</a>
+        }
+        <a routerLink="/como-comprar" class="jungla-chip">Cómo comprar</a>
+      </div>
+
+      <a
+        [href]="'https://wa.me/' + v.settings().whatsappNumber"
+        target="_blank"
+        rel="noopener"
+        class="sway-hover mt-8 inline-block rounded-[24px_8px_24px_8px] bg-brand-500 px-8 py-4 font-display uppercase text-white transition-colors hover:bg-brand-600"
+      >
+        Escribinos por WhatsApp
+      </a>
+    </div>
+
+    <div class="jungla-bottom"></div>
+  </section>
+}

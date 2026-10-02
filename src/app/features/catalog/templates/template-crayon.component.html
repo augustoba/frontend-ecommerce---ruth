@@ -1,0 +1,389 @@
+@if (vm(); as v) {
+  <!-- Los datos que se repiten en varias secciones se leen UNA vez: `@let` evita
+       volver a evaluar el mismo computed en cada bloque. -->
+  @let promos = v.promos();
+  @let ajustes = v.settings();
+  @let carril = carrilDestaque();
+
+  <!-- ===== 1. Hero: la hoja del cuaderno =====
+       Una hoja grande "pegada" al papel de fondo con dos cintas adhesivas (una en
+       cada esquina de arriba, torcidas distinto: si van derechas parece un borde
+       y no una cinta). Adentro va TODO el hero: el dibujo, el logo, el nombre,
+       los números reales del catálogo y la línea de compra. -->
+  <section class="relative mx-auto max-w-4xl px-4 pt-10 sm:px-6 sm:pt-14">
+    <div class="crayon-border relative p-6 shadow-[8px_10px_0_0_rgba(43,43,43,0.08)] sm:p-10">
+      <div class="crayon-tape -left-4 -top-3 -rotate-12"></div>
+      <div class="crayon-tape -right-4 -top-3 rotate-6"></div>
+
+      <!-- El dibujo del chico: sol con rayos, nubes, una casita, una estrella y
+           un corazón. Es el movimiento propio del diseño, así que va primero y
+           bien grande. Todas las formas llevan `pathLength="1"` (es lo que hace
+           que `stroke-dasharray: 1` cubra el contorno completo y el trazo se
+           dibuje de una) y NINGUNA lleva `fill`, `stroke` ni `stroke-width`: eso
+           lo pone `.crayon-draw` en `styles.css`. El SVG es decorativo
+           (`aria-hidden` + `focusable="false"`) porque no aporta información. -->
+      <div class="crayon-draw mx-auto w-full max-w-sm">
+        <svg viewBox="0 0 320 190" class="h-auto w-full" aria-hidden="true" focusable="false">
+          <!-- Sol -->
+          <circle cx="58" cy="52" r="20" pathLength="1" />
+          <line x1="58" y1="26" x2="58" y2="12" pathLength="1" />
+          <line x1="58" y1="78" x2="58" y2="92" pathLength="1" />
+          <line x1="32" y1="52" x2="18" y2="52" pathLength="1" />
+          <line x1="84" y1="52" x2="98" y2="52" pathLength="1" />
+          <line x1="40" y1="34" x2="30" y2="24" pathLength="1" />
+          <line x1="76" y1="70" x2="86" y2="80" pathLength="1" />
+          <line x1="76" y1="34" x2="86" y2="24" pathLength="1" />
+          <line x1="40" y1="70" x2="30" y2="80" pathLength="1" />
+
+          <!-- Nubes (la curva de arriba + la base recta de abajo) -->
+          <path d="M126 60c-8-9 1-21 13-18 5-11 22-10 26 1 12-2 17 12 8 17" pathLength="1" />
+          <line x1="126" y1="60" x2="173" y2="60" pathLength="1" />
+          <path d="M238 46c-6-7 1-16 10-14 4-8 17-7 20 1 9-1 12 9 6 13" pathLength="1" />
+          <line x1="238" y1="46" x2="274" y2="46" pathLength="1" />
+
+          <!-- Casita: techo, paredes, puerta, ventana y chimenea -->
+          <polyline points="196 122 241 88 286 122" pathLength="1" />
+          <path d="M208 122v36h66v-36" pathLength="1" />
+          <path d="M230 158v-22h16v22" pathLength="1" />
+          <path d="M258 130h12v12h-12z" pathLength="1" />
+          <polyline points="266 104 266 92 276 92" pathLength="1" />
+
+          <!-- Estrella, corazón, pastito y una florcita -->
+          <path d="M150 104l5 11 12 2-9 8 2 12-10-6-10 6 2-12-9-8 12-2z" pathLength="1" />
+          <path d="M96 120c-7-8 0-18 8-13 8-5 15 5 8 13l-8 9z" pathLength="1" />
+          <line x1="24" y1="166" x2="296" y2="166" pathLength="1" />
+          <line x1="60" y1="166" x2="60" y2="156" pathLength="1" />
+          <circle cx="60" cy="151" r="5" pathLength="1" />
+        </svg>
+      </div>
+
+      <div class="mt-6 flex flex-col items-center gap-4 text-center sm:mt-9">
+        <!-- El logo enmarcado a mano: el círculo "perfecto" no existe en este
+             diseño, así que el marco va con `crayon-border` y la foto redonda
+             adentro. -->
+        <span class="crayon-border inline-flex p-2">
+          <img
+            [src]="v.logoSrc() | cldImg: 240"
+            [alt]="v.storeName()"
+            class="h-20 w-20 rounded-full object-cover sm:h-24 sm:w-24"
+          />
+        </span>
+
+        <!-- El nombre con el subrayado garabateado (`.crayon-scribble` lo dibuja
+             con un `::after` que toma el color del texto). -->
+        <h1 class="font-display text-4xl leading-tight text-stone-800 sm:text-6xl">
+          <span class="crayon-scribble">{{ v.storeName() }}</span>
+        </h1>
+
+        <!-- Chip con datos REALES: prendas y talles del catálogo filtrado. Son los
+             únicos números que esta plantilla puede mostrar sin inventar nada. -->
+        <span class="crayon-chip">
+          <span class="tabular-nums">{{ v.filteredProducts().length }} prendas</span>
+          <span aria-hidden="true">·</span>
+          <span class="tabular-nums">{{ v.availableSizes().length }} talles</span>
+        </span>
+
+        <!-- La línea de compra es factual y condicional: los dos caminos de la
+             tienda son excluyentes, así que nunca se prometen los dos. -->
+        <p class="max-w-xl font-sans text-sm leading-relaxed text-stone-600 sm:text-base">
+          {{ compraLine() }}
+        </p>
+
+        <button
+          type="button"
+          (click)="v.scrollToCatalog()"
+          class="crayon-border wobble-slow mt-2 px-8 py-4 font-display text-xl text-stone-800"
+        >
+          VER EL CATÁLOGO
+        </button>
+      </div>
+
+      <!-- Tres garabatos sueltos por las esquinas del hero. Van SÓLO con
+           `.wobble-slow` (cada uno con su delay para que no tiemblen al mismo
+           tiempo) y adentro mantienen la misma regla del dibujo grande: todas las
+           formas con `pathLength="1"` y sin `fill` ni `stroke`. -->
+      <div class="crayon-draw wobble-slow pointer-events-none absolute -left-3 top-1/3 w-10 sm:w-12" [style.animation-delay]="'0s'">
+        <svg viewBox="0 0 48 48" class="h-auto w-full" aria-hidden="true" focusable="false">
+          <path d="M24 6l6 12 13 2-9 9 2 13-12-7-12 7 2-13-9-9 13-2z" pathLength="1" />
+        </svg>
+      </div>
+
+      <div class="crayon-draw wobble-slow pointer-events-none absolute -right-4 top-24 w-10 sm:w-12" [style.animation-delay]="'1.4s'">
+        <svg viewBox="0 0 48 48" class="h-auto w-full" aria-hidden="true" focusable="false">
+          <path d="M24 40C6 28 8 12 18 12c4 0 6 3 6 5 0-2 2-5 6-5 10 0 12 16-6 28z" pathLength="1" />
+        </svg>
+      </div>
+
+      <div class="crayon-draw wobble-slow pointer-events-none absolute bottom-6 right-3 w-11 sm:w-14" [style.animation-delay]="'2.8s'">
+        <svg viewBox="0 0 48 48" class="h-auto w-full" aria-hidden="true" focusable="false">
+          <path d="M8 32c8-16 30-18 33-4 2 9-10 13-15 6-4-5 3-10 7-6" pathLength="1" />
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. Cartel de promos pegado =====
+       Sólo promos REALES de `/api/discounts` (lo cargado en /admin/promociones):
+       si no hay ninguna vigente, la sección entera NO se dibuja. El cartel va un
+       poco torcido y con cinta arriba, como pegado al cuaderno. -->
+  @if (promos.length) {
+    <section class="mx-auto max-w-3xl px-4 pt-12 sm:px-6">
+      <div class="crayon-border-soft relative -rotate-1 p-5 sm:p-6">
+        <div class="crayon-tape -top-3 left-1/2 -translate-x-1/2 rotate-2"></div>
+
+        <h2 class="font-display text-2xl text-stone-800 sm:text-3xl">
+          <span class="crayon-scribble">Promos pegadas en el cuaderno</span>
+        </h2>
+
+        <ul class="mt-5 space-y-4">
+          @for (promo of promos; track promo.id) {
+            <li class="flex flex-wrap items-center gap-3 border-b-2 border-dashed border-stone-300 pb-4 last:border-0 last:pb-0">
+              <!-- El % REAL de la promo. En las de "envío gratis" el backend manda
+                   0 porque no descuenta plata: ahí va ENVÍO, nunca un porcentaje
+                   inventado. El tamaño va en un span de adentro porque
+                   `.crayon-chip` fija su `font-size` fuera de las capas de Tailwind. -->
+              @if (promo.percent > 0) {
+                <span class="crayon-chip shrink-0"><span class="font-display text-3xl text-stone-800">-{{ promo.percent }}%</span></span>
+              } @else {
+                <span class="crayon-chip shrink-0"><span class="font-display text-2xl text-stone-800">ENVÍO</span></span>
+              }
+
+              <div class="min-w-0 flex-1">
+                <p class="font-display text-xl text-stone-800">{{ promo.text }}</p>
+
+                <!-- Letra chica configurable del descuento: puede no existir. -->
+                @if (promo.detail) {
+                  <p class="font-sans text-sm text-stone-600">{{ promo.detail }}</p>
+                }
+              </div>
+
+              <!-- Vigencia ya formateada por el contenedor ("Hasta el 15/10"). -->
+              @if (promo.endsLabel) {
+                <span class="crayon-chip shrink-0">{{ promo.endsLabel }}</span>
+              }
+            </li>
+          }
+        </ul>
+      </div>
+    </section>
+  }
+
+  <!-- ===== 3. "Lo que más sale" =====
+       Carril con snap y sin barra de scroll: en mobile entra una tarjeta y media,
+       y eso invita a arrastrar. Sólo se dibuja si hay algo que mostrar. -->
+  @if (carril.length) {
+    <section class="mx-auto max-w-6xl px-4 pt-12 sm:px-6">
+      <h2 class="font-display text-2xl text-stone-800 sm:text-3xl">
+        <span class="crayon-scribble">Lo que más sale</span>
+      </h2>
+
+      <!-- Si el ranking real todavía no existe, se dice: son las primeras del
+           catálogo, no una lista de "más vendidas" inventada. -->
+      @if (!carrilEsRanking()) {
+        <p class="mt-2 font-sans text-sm text-stone-600">
+          Todavía no hay ventas suficientes para armar el ranking, así que van las primeras prendas del catálogo.
+        </p>
+      }
+
+      <div class="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        @for (product of carril; track product.id; let i = $index) {
+          <div appReveal [delay]="i * 60" class="w-48 shrink-0 snap-start sm:w-56">
+            <app-product-card [product]="product" variant="crayon" />
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 4. Catálogo =====
+       Filtros adentro de una pieza recortada con tijera (`crayon-border-soft`) y
+       los MISMOS bindings que el resto de las plantillas: la fuente de verdad es
+       el vm, no un form propio. -->
+  <section id="catalogo" class="scroll-mt-24">
+    <div class="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <h2 class="font-display text-3xl text-stone-800 sm:text-4xl">
+        <span class="crayon-scribble">El catálogo</span>
+      </h2>
+
+      <div class="crayon-border-soft mt-6 p-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <input
+            type="search"
+            [ngModel]="v.searchTerm()"
+            (ngModelChange)="v.searchTerm.set($event)"
+            placeholder="Buscar prenda..."
+            aria-label="Buscar prenda"
+            class="w-full rounded-[14px_4px_16px_6px] border-2 border-stone-800 bg-white px-3 py-2 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 sm:w-64"
+          />
+
+          <select
+            [ngModel]="v.selectedSize()"
+            (ngModelChange)="v.selectedSize.set($event)"
+            aria-label="Filtrar por talle"
+            class="w-full rounded-[14px_4px_16px_6px] border-2 border-stone-800 bg-white px-3 py-2 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 sm:w-auto"
+          >
+            <option value="todos">Talle: todos</option>
+            @for (size of v.availableSizes(); track size) {
+              <option [value]="size">Talle {{ size }}</option>
+            }
+          </select>
+
+          <!-- Grupos que el contenedor decidió mostrar como select. -->
+          @for (group of v.selectGroups(); track group.id) {
+            <select
+              [ngModel]="v.paramValue(group.id)"
+              (ngModelChange)="v.setParam(group.id, $event)"
+              [attr.aria-label]="group.name"
+              class="w-full rounded-[14px_4px_16px_6px] border-2 border-stone-800 bg-white px-3 py-2 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 sm:w-auto"
+            >
+              <option value="">{{ group.name }}: todas</option>
+              @for (option of group.options; track option.id) {
+                <option [value]="option.id">{{ option.label }}</option>
+              }
+            </select>
+          }
+
+          <div class="flex items-center gap-2">
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              placeholder="$ mín"
+              aria-label="Precio mínimo"
+              [ngModel]="v.minPrice()"
+              (ngModelChange)="v.setMinPrice($event)"
+              class="w-24 rounded-[14px_4px_16px_6px] border-2 border-stone-800 bg-white px-3 py-2 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+            />
+            <span class="font-sans text-xs text-stone-500">a</span>
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              placeholder="$ máx"
+              aria-label="Precio máximo"
+              [ngModel]="v.maxPrice()"
+              (ngModelChange)="v.setMaxPrice($event)"
+              class="w-24 rounded-[14px_4px_16px_6px] border-2 border-stone-800 bg-white px-3 py-2 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+            />
+          </div>
+
+          <select
+            [ngModel]="v.sortBy()"
+            (ngModelChange)="v.sortBy.set($event)"
+            aria-label="Ordenar"
+            class="w-full rounded-[14px_4px_16px_6px] border-2 border-stone-800 bg-white px-3 py-2 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 sm:ml-auto sm:w-auto"
+          >
+            <option value="novedades">Orden: novedades</option>
+            <option value="precio-asc">Precio: de menor a mayor</option>
+            <option value="precio-desc">Precio: de mayor a menor</option>
+          </select>
+
+          <!-- "Limpiar" sólo cuando hay algo que limpiar (mismo criterio que el
+               resto de las plantillas). -->
+          @if (v.hasActiveFilters()) {
+            <button
+              type="button"
+              (click)="v.clearFilters()"
+              class="self-start font-display text-base text-stone-800 underline decoration-wavy underline-offset-4 sm:self-auto"
+            >
+              Limpiar filtros ✕
+            </button>
+          }
+        </div>
+
+        <!-- "Público" como chips: es el filtro que más se usa, así que va a la
+             vista y no escondido en un select. -->
+        @if (v.publicoGroup(); as grupo) {
+          <div class="mt-4 flex flex-wrap items-center gap-2">
+            <span class="crayon-chip shrink-0">Público</span>
+            <button type="button" (click)="v.setParam(grupo.id, '')" [class]="publicoChipClass(!v.paramValue(grupo.id))">
+              Todas
+            </button>
+            @for (option of grupo.options; track option.id) {
+              <button type="button" (click)="v.setParam(grupo.id, option.id)" [class]="publicoChipClass(v.paramValue(grupo.id) === option.id)">
+                {{ option.label }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Estados + grilla. El orden de los `@if` es el de siempre: cargando,
+           error, con resultados, vacío. -->
+      @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+        <div class="mt-8">
+          <app-skeleton variant="card" [count]="8" />
+        </div>
+      } @else if (v.catalogStatus() === 'error') {
+        <div class="py-20 text-center">
+          <p class="font-display text-xl text-stone-800">No se pudo cargar el catálogo.</p>
+          <button type="button" (click)="v.reloadCatalog()" class="crayon-border mt-4 px-6 py-2.5 font-display text-lg text-stone-800">
+            Reintentar
+          </button>
+        </div>
+      } @else if (v.filteredProducts().length) {
+        <div class="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+          @for (product of v.visibleProducts(); track product.id; let i = $index) {
+            <div appReveal variant="up" [delay]="(i % 8) * 60">
+              <app-product-card [product]="product" variant="crayon" />
+            </div>
+          }
+        </div>
+
+        @if (v.hasMore()) {
+          <div class="mt-10 text-center">
+            <button type="button" (click)="v.showMore()" class="crayon-border px-8 py-3 font-display text-lg text-stone-800">
+              VER MÁS
+            </button>
+          </div>
+        }
+      } @else {
+        <div class="py-20 text-center">
+          <p class="font-display text-xl text-stone-800">No hay prendas con esos filtros.</p>
+          <p class="mt-2 font-sans text-sm text-stone-600">
+            Probá con otros filtros o mirá el catálogo completo.
+          </p>
+          <button type="button" (click)="v.clearFilters()" class="crayon-border mt-4 px-6 py-2.5 font-display text-lg text-stone-800">
+            Ver todo el catálogo
+          </button>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ===== 5. Cierre: la última hoja del cuaderno =====
+       Misma hoja con cinta que el hero, para cerrar el círculo. Sólo datos REALES
+       del local (dirección, Instagram, Facebook y el link a /como-comprar), cada
+       uno si existe, más el botón grande a WhatsApp. -->
+  <section class="mx-auto max-w-3xl px-4 pb-16 pt-4 sm:px-6">
+    <div class="crayon-border relative rotate-1 p-6 shadow-[8px_10px_0_0_rgba(43,43,43,0.08)] sm:p-8">
+      <div class="crayon-tape -left-4 -top-3 -rotate-12"></div>
+      <div class="crayon-tape -right-6 -top-3 rotate-6"></div>
+
+      <h2 class="text-center font-display text-3xl text-stone-800 sm:text-4xl">
+        <span class="crayon-scribble">{{ v.storeName() }}</span>
+      </h2>
+
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+        @if (ajustes.storeAddress; as direccion) {
+          <span class="crayon-chip">{{ direccion }}</span>
+        }
+        @if (ajustes.instagram; as instagram) {
+          <a [href]="'https://instagram.com/' + instagram" target="_blank" rel="noopener" class="crayon-chip">
+            &#64;{{ instagram }}
+          </a>
+        }
+        @if (ajustes.facebookUrl; as facebook) {
+          <a [href]="facebook" target="_blank" rel="noopener" class="crayon-chip">Facebook</a>
+        }
+        <a routerLink="/como-comprar" class="crayon-chip">Cómo comprar</a>
+      </div>
+
+      <div class="mt-8 text-center">
+        <a href="https://wa.me/{{ ajustes.whatsappNumber }}" target="_blank" rel="noopener" class="crayon-border wobble-slow inline-block px-8 py-4 font-display text-xl text-stone-800">
+          Escribinos por WhatsApp
+        </a>
+      </div>
+    </div>
+  </section>
+}

@@ -1,0 +1,360 @@
+@if (vm(); as v) {
+  <!-- ===== Encabezado tipo ficha =====
+       Arriba de todo va la identificación de la tienda y, al lado, la franja de
+       DATOS: son los únicos números reales que la plantilla puede mostrar sin
+       inventar nada (prendas, talles y, si el dueño/a los cargó, local e
+       Instagram). Cada ítem se dibuja sólo si el dato existe. -->
+  <section class="border-b border-brand-200 bg-brand-50">
+    <div
+      class="mx-auto flex max-w-6xl flex-col gap-5 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+    >
+      <div class="flex items-center gap-3">
+        <img
+          [src]="v.logoSrc() | cldImg: 120"
+          [alt]="v.storeName()"
+          class="h-12 w-12 shrink-0 bg-white object-cover ring-1 ring-brand-200"
+        />
+        <div class="min-w-0">
+          <p class="fic-key">Ficha de tienda</p>
+          <h1 class="font-display text-lg font-semibold tracking-tight text-brand-800 sm:text-xl">
+            {{ v.storeName() }}
+          </h1>
+        </div>
+      </div>
+
+      <dl class="grid grid-cols-2 gap-x-6 gap-y-3 sm:flex sm:flex-wrap sm:items-center sm:gap-x-8">
+        <div>
+          <dt class="fic-key">Prendas</dt>
+          <dd class="font-display text-lg tabular-nums text-brand-700">{{ v.filteredProducts().length }}</dd>
+        </div>
+        <div>
+          <dt class="fic-key">Talles</dt>
+          <dd class="font-display text-lg tabular-nums text-brand-700">{{ v.availableSizes().length }}</dd>
+        </div>
+
+        <!-- Sólo si hay dirección cargada en /admin/config -->
+        @if (v.settings().storeAddress; as address) {
+          <div>
+            <dt class="fic-key">Local</dt>
+            <dd class="text-[13px] leading-snug text-stone-600">{{ address }}</dd>
+          </div>
+        }
+
+        <!-- Sólo si hay Instagram cargado. El dato es el usuario, no la URL. -->
+        @if (v.settings().instagram; as instagram) {
+          <div>
+            <dt class="fic-key">Instagram</dt>
+            <dd class="text-[13px] leading-snug">
+              <a
+                [href]="'https://instagram.com/' + instagram"
+                target="_blank"
+                rel="noopener"
+                class="text-stone-600 underline decoration-brand-300 underline-offset-4 hover:text-brand-600"
+              >
+                {{ '@' + instagram }}
+              </a>
+            </dd>
+          </div>
+        }
+      </dl>
+    </div>
+  </section>
+
+  <!-- ===== Prenda destacada =====
+       La pieza más grande de la home, armada como ficha: foto a la izquierda y
+       todos los datos de la prenda a la derecha. Es lo que hace que Fichero no
+       se parezca a una grilla. -->
+  @if (featured(); as p) {
+    <section appReveal class="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <div class="grid gap-6 sm:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] sm:items-start sm:gap-10">
+        <a [routerLink]="['/producto', p.id]" class="group block bg-brand-100" [attr.aria-label]="p.name">
+          <img
+            [src]="p.imageUrl | cldImg: 800"
+            [alt]="p.name"
+            class="aspect-[4/5] w-full object-cover transition-opacity duration-500 group-hover:opacity-90"
+          />
+        </a>
+
+        <div class="min-w-0">
+          <p class="fic-key">Prenda destacada</p>
+          <h2 class="mt-2 font-display text-2xl font-semibold tracking-tight text-brand-800 sm:text-3xl">
+            {{ p.name }}
+          </h2>
+
+          <!-- La descripción puede venir vacía: si no hay, no se deja el hueco. -->
+          @if (p.description) {
+            <p class="mt-3 line-clamp-3 text-sm leading-relaxed text-stone-500">{{ p.description }}</p>
+          }
+
+          <!-- Edad y talles: los talles salen de `sizeStocks`, con el stock real
+               de cada uno (agotado = chip tachado). -->
+          @if (p.ageRange || p.sizeStocks.length) {
+            <dl class="mt-6 grid grid-cols-2 gap-4 border-y border-brand-200 py-4">
+              @if (p.ageRange) {
+                <div>
+                  <dt class="fic-key">Edad</dt>
+                  <dd class="mt-1 text-[13px] text-stone-700">{{ p.ageRange }}</dd>
+                </div>
+              }
+              @if (p.sizeStocks.length) {
+                <div>
+                  <dt class="fic-key">Talles</dt>
+                  <dd class="mt-1 flex flex-wrap gap-1">
+                    @for (sizeStock of p.sizeStocks; track sizeStock.size) {
+                      <span
+                        class="fic-chip"
+                        [class.fic-chip-on]="sizeStock.stock > 0"
+                        [class.fic-chip-off]="sizeStock.stock === 0"
+                      >
+                        {{ sizeStock.size }}
+                      </span>
+                    }
+                  </dd>
+                </div>
+              }
+            </dl>
+          }
+
+          <p class="mt-5 font-display text-2xl tabular-nums text-brand-700 sm:text-3xl">
+            {{ p.price | currency: 'ARS' : 'symbol' : '1.0-0' }}
+          </p>
+
+          <div class="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <a
+              [routerLink]="['/producto', p.id]"
+              class="inline-block bg-brand-600 px-5 py-2.5 font-display text-[13px] tracking-wide text-white transition-colors hover:bg-brand-700"
+            >
+              Ver la prenda
+            </a>
+
+            <!-- El video es opcional en el modelo: sin link, no hay link. -->
+            @if (p.videoUrl) {
+              <a
+                [href]="p.videoUrl"
+                target="_blank"
+                rel="noopener"
+                class="font-display text-[13px] text-brand-600 underline decoration-brand-300 underline-offset-4 hover:text-brand-700"
+              >
+                Ver video ↗
+              </a>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ===== Catálogo en filas ===== -->
+  <section id="catalogo" class="scroll-mt-20">
+    <!-- La barra de filtros queda pegada arriba (alto del header = 4rem) para
+         poder filtrar sin volver a subir. Fondo casi opaco + blur para que las
+         filas no se lean por transparencia. -->
+    <div class="sticky top-16 z-20 border-b border-brand-200 bg-brand-50/95 backdrop-blur">
+      <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3 sm:px-6">
+        <input
+          type="search"
+          [ngModel]="v.searchTerm()"
+          (ngModelChange)="v.searchTerm.set($event)"
+          placeholder="Buscar prenda..."
+          aria-label="Buscar prenda"
+          class="min-w-[9rem] flex-1 border border-brand-300 bg-white px-2.5 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-brand-500"
+        />
+
+        <select
+          [ngModel]="v.selectedSize()"
+          (ngModelChange)="v.selectedSize.set($event)"
+          aria-label="Filtrar por talle"
+          class="border border-brand-300 bg-white px-2.5 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-brand-500"
+        >
+          <option value="todos">Talle: todos</option>
+          @for (size of v.availableSizes(); track size) {
+            <option [value]="size">Talle {{ size }}</option>
+          }
+        </select>
+
+        <!-- Grupos de parametrías que el contenedor decidió mostrar como select -->
+        @for (group of v.selectGroups(); track group.id) {
+          <select
+            [ngModel]="v.paramValue(group.id)"
+            (ngModelChange)="v.setParam(group.id, $event)"
+            [attr.aria-label]="group.name"
+            class="border border-brand-300 bg-white px-2.5 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-brand-500"
+          >
+            <option value="">{{ group.name }}: todas</option>
+            @for (option of group.options; track option.id) {
+              <option [value]="option.id">{{ option.label }}</option>
+            }
+          </select>
+        }
+
+        <!-- El grupo "Público" también es un filtro real del catálogo: se dibuja
+             como un select más para no cortar la línea única de la barra. -->
+        @if (v.publicoGroup(); as publico) {
+          <select
+            [ngModel]="v.paramValue(publico.id)"
+            (ngModelChange)="v.setParam(publico.id, $event)"
+            [attr.aria-label]="publico.name"
+            class="border border-brand-300 bg-white px-2.5 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-brand-500"
+          >
+            <option value="">{{ publico.name }}: todos</option>
+            @for (option of publico.options; track option.id) {
+              <option [value]="option.id">{{ option.label }}</option>
+            }
+          </select>
+        }
+
+        <div class="flex items-center gap-2">
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            placeholder="$ mín"
+            aria-label="Precio mínimo"
+            [ngModel]="v.minPrice()"
+            (ngModelChange)="v.setMinPrice($event)"
+            class="w-20 border border-brand-300 bg-white px-2.5 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-brand-500"
+          />
+          <span class="text-[13px] text-stone-400">a</span>
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            placeholder="$ máx"
+            aria-label="Precio máximo"
+            [ngModel]="v.maxPrice()"
+            (ngModelChange)="v.setMaxPrice($event)"
+            class="w-20 border border-brand-300 bg-white px-2.5 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-brand-500"
+          />
+        </div>
+
+        <select
+          [ngModel]="v.sortBy()"
+          (ngModelChange)="v.sortBy.set($event)"
+          aria-label="Ordenar"
+          class="border border-brand-300 bg-white px-2.5 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-brand-500"
+        >
+          <option value="novedades">Orden: novedades</option>
+          <option value="precio-asc">Precio: menor a mayor</option>
+          <option value="precio-desc">Precio: mayor a menor</option>
+        </select>
+
+        @if (v.hasActiveFilters()) {
+          <button
+            type="button"
+            (click)="v.clearFilters()"
+            class="font-display text-[12px] tracking-wide text-brand-600 underline decoration-brand-300 underline-offset-4 hover:text-brand-700"
+          >
+            Limpiar filtros ✕
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="mx-auto max-w-6xl px-4 pt-6 pb-14 sm:px-6">
+      @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+        <app-skeleton variant="card" [count]="6" />
+      } @else if (v.catalogStatus() === 'error') {
+        <div class="py-20 text-center">
+          <p class="fic-key">Error de carga</p>
+          <p class="mt-3 font-display text-lg font-semibold text-brand-800">No se pudo cargar el catálogo.</p>
+          <button
+            type="button"
+            (click)="v.reloadCatalog()"
+            class="mt-4 font-display text-[13px] text-brand-600 underline decoration-brand-300 underline-offset-4 hover:text-brand-700"
+          >
+            Reintentar
+          </button>
+        </div>
+      } @else if (v.filteredProducts().length) {
+        <!-- Encabezado de la lista: se declara cuántas prendas hay y cuántas se
+             están mostrando, como el renglón de totales de una planilla. -->
+        <p class="fic-key border-b border-brand-200 pb-3">
+          Mostrando {{ v.visibleProducts().length }} de {{ v.filteredProducts().length }} prendas
+        </p>
+
+        <!-- Filas: el markup respeta SIEMPRE el orden foto | datos | precio que
+             espera `.fic-row`. En mobile la grilla tiene dos columnas, así que
+             el tercer hijo se estira a las dos y el precio baja alineado a la
+             derecha, en vez de quedar apretado bajo la foto. -->
+        @for (product of v.visibleProducts(); track product.id; let i = $index) {
+          <article appReveal [delay]="(i % 8) * 40" class="fic-row">
+            <a [routerLink]="['/producto', product.id]" class="block bg-brand-100">
+              <img
+                [src]="product.imageUrl | cldImg: 200"
+                [alt]="product.name"
+                loading="lazy"
+                class="aspect-square w-full object-cover"
+              />
+            </a>
+
+            <div class="min-w-0">
+              <h3 class="font-display text-[15px] font-semibold text-brand-800">{{ product.name }}</h3>
+
+              @if (product.description) {
+                <p class="mt-1 line-clamp-2 text-[13px] leading-relaxed text-stone-500">
+                  {{ product.description }}
+                </p>
+              }
+
+              @if (product.ageRange || product.sizeStocks.length) {
+                <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                  @if (product.ageRange) {
+                    <span class="fic-key">{{ product.ageRange }}</span>
+                  }
+                  @for (sizeStock of product.sizeStocks; track sizeStock.size) {
+                    <span
+                      class="fic-chip"
+                      [class.fic-chip-on]="sizeStock.stock > 0"
+                      [class.fic-chip-off]="sizeStock.stock === 0"
+                    >
+                      {{ sizeStock.size }}
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="col-span-2 flex items-center justify-end gap-4 text-right sm:col-span-1">
+              <p class="font-display text-lg tabular-nums text-brand-700">
+                {{ product.price | currency: 'ARS' : 'symbol' : '1.0-0' }}
+              </p>
+              <a
+                [routerLink]="['/producto', product.id]"
+                class="font-display text-[12px] tracking-wide text-brand-600 underline decoration-brand-300 underline-offset-4 hover:text-brand-700"
+              >
+                Ver
+              </a>
+            </div>
+          </article>
+        }
+
+        @if (v.hasMore()) {
+          <div class="pt-8 text-center">
+            <button
+              type="button"
+              (click)="v.showMore()"
+              class="border border-brand-300 bg-white px-6 py-2.5 font-display text-[12px] tracking-wide text-brand-700 transition-colors hover:border-brand-500"
+            >
+              Ver más (+{{ v.filteredProducts().length - v.visibleProducts().length }})
+            </button>
+          </div>
+        }
+      } @else {
+        <div class="py-20 text-center">
+          <p class="fic-key">Sin resultados</p>
+          <p class="mt-3 font-display text-lg font-semibold text-brand-800">
+            No hay prendas con esos filtros.
+          </p>
+          <p class="mt-2 text-[13px] text-stone-500">Probá con otros filtros o mirá el catálogo completo.</p>
+          <button
+            type="button"
+            (click)="v.clearFilters()"
+            class="mt-4 font-display text-[13px] text-brand-600 underline decoration-brand-300 underline-offset-4 hover:text-brand-700"
+          >
+            Ver todo el catálogo
+          </button>
+        </div>
+      }
+    </div>
+  </section>
+}

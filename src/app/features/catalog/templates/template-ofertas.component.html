@@ -1,0 +1,296 @@
+@if (vm(); as v) {
+  <!-- ===== 1. Barra de promos, arriba de todo =====
+       Este diseño arranca por la promo y no por la marca, así que la barra es lo
+       primero que se ve. Son las promos REALES de `/api/discounts`: el contenedor
+       ya las filtró por vigencia y les armó el texto, así que acá sólo se dibujan.
+       Si no hay ninguna cargada, la barra no existe: antes que inventar un
+       descuento o dejar un placeholder, no se muestra nada. -->
+  @if (v.promos().length) {
+    <div class="bg-brand-600 text-white">
+      <div
+        class="mx-auto flex max-w-7xl gap-4 overflow-x-auto px-4 py-2.5 sm:px-6 lg:flex-wrap lg:items-baseline lg:gap-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        @for (promo of v.promos(); track promo.id) {
+          <!-- En mobile cada promo es una parada del deslizamiento horizontal; en
+               desktop se ponen en fila y el separador lo da el borde izquierdo. -->
+          <div
+            class="flex shrink-0 items-baseline gap-2 lg:border-l lg:border-white/25 lg:px-5 lg:first:border-l-0 lg:first:pl-0"
+          >
+            <span class="oft-promo">{{ promo.text }}</span>
+            @if (promo.detail) {
+              <!-- Letra chica de la promo, tal cual la cargó el dueño en /admin/promociones. -->
+              <span class="text-[11px] font-medium leading-tight text-white/70">{{ promo.detail }}</span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===== 2. Encabezado compacto (a propósito, NO es un hero) =====
+       En una góndola el cartel de la marca es chico y lo que importa está abajo:
+       logo, nombre y una sola línea. Nada de foto a sangre ni de título gigante,
+       que es justo lo que hacen los otros diseños. -->
+  <header class="border-b border-stone-200 bg-white">
+    <div class="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6">
+      <img
+        [src]="v.logoSrc() | cldImg: 150"
+        [alt]="v.storeName()"
+        class="h-11 w-11 shrink-0 border border-stone-200 bg-white object-cover sm:h-14 sm:w-14"
+      />
+
+      <div class="min-w-0">
+        <p class="font-display text-3xl font-extrabold uppercase leading-none text-brand-700 sm:text-4xl">
+          {{ v.storeName() }}
+        </p>
+        <!-- UNA línea, y factual: dice el camino de compra que la tienda tiene
+             configurado de verdad (`/api/settings`), no una promesa ni un adorno. -->
+        @if (v.settings().mercadoPagoAvailable) {
+          <p class="mt-1 text-[13px] leading-snug text-stone-500">
+            Sumás las prendas al carrito y pagás online con Mercado Pago.
+          </p>
+        } @else {
+          <p class="mt-1 text-[13px] leading-snug text-stone-500">
+            Sumás las prendas al carrito y coordinamos la compra por WhatsApp.
+          </p>
+        }
+      </div>
+
+      <!-- El carrusel administrable (mismo de /admin/carrusel) acá es un banner
+           chico a la derecha, no el protagonista. Se oculta en mobile para no
+           empujar los filtros y la grilla hacia abajo, y si no hay fotos
+           cargadas no reserva el espacio. -->
+      @if (v.heroSlides().length) {
+        <div
+          class="relative ml-auto hidden h-48 w-72 shrink-0 overflow-hidden border border-stone-200 bg-stone-50 md:block sm:h-56 lg:w-[26rem]"
+        >
+          <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+        </div>
+      }
+    </div>
+  </header>
+
+  <section id="catalogo" class="mx-auto max-w-7xl scroll-mt-20 px-4 py-6 sm:px-6">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
+      <!-- ===== 3a. Filtros en columna (sólo desktop) =====
+           Pegados al costado, en caja dura y con los títulos en versalita: es la
+           columna de la góndola. El sticky deja la grilla scrolleable al lado. -->
+      <aside class="hidden shrink-0 lg:block lg:w-64">
+        <div class="flex flex-col gap-5 border border-stone-200 bg-white p-4 lg:sticky lg:top-20">
+          <ng-container [ngTemplateOutlet]="filtros" />
+        </div>
+      </aside>
+
+      <div class="min-w-0 flex-1">
+        <!-- ===== 3b. Los mismos filtros en mobile =====
+             <details> nativo: no hace falta estado propio ni JS, y el resumen
+             lleva el contador de filtros puestos. -->
+        <details class="mb-3 border border-stone-300 bg-white lg:hidden">
+          <summary
+            class="oft-side-title flex cursor-pointer list-none items-center justify-between px-3 py-3 [&::-webkit-details-marker]:hidden"
+          >
+            Filtros
+            @if (activeFilterCount(); as activos) {
+              <!-- Etiqueta de góndola con el número de filtros puestos (0 = ninguna,
+                   y el `@if` no la dibuja). -->
+              <span class="oft-tag">{{ activos }}</span>
+            }
+          </summary>
+          <div class="grid grid-cols-2 gap-3 border-t border-stone-200 p-3">
+            <ng-container [ngTemplateOutlet]="filtros" />
+          </div>
+        </details>
+
+        <!-- ===== 4. Estados y grilla densa =====
+             Mismo orden de estados que el resto de las plantillas: cargando,
+             error, resultados y vacío. -->
+        @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+          <app-skeleton variant="card" [count]="8" />
+        } @else if (v.catalogStatus() === 'error') {
+          <div class="border border-stone-300 bg-white px-6 py-16 text-center">
+            <p class="font-display text-4xl font-extrabold uppercase leading-none text-brand-600">Se cortó</p>
+            <p class="mt-2 text-sm text-stone-500">No se pudo cargar el catálogo.</p>
+            <button
+              type="button"
+              (click)="v.reloadCatalog()"
+              class="mt-5 border border-brand-600 px-6 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-brand-600 transition-colors hover:bg-brand-600 hover:text-white"
+            >
+              Reintentar
+            </button>
+          </div>
+        } @else if (v.filteredProducts().length) {
+          <!-- 4 columnas desde xl y gap chico: apretada a propósito, como la
+               góndola. La celda es `relative` para poder colgarle el chip. -->
+          <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+            @for (product of v.visibleProducts(); track product.id; let i = $index) {
+              <!-- Movimiento sutil (el diseño es denso): entrada corta y escalonada
+                   de a 8 celdas, que es lo que entra en una fila de 4. -->
+              <div class="relative" appReveal [delay]="(i % 8) * 40">
+                <!-- `block` porque el host de un componente nace inline y sin eso el
+                     `h-full` de la tarjeta de góndola no la estira al alto de la fila. -->
+                <app-product-card class="block h-full" [product]="product" variant="oferta" />
+
+                <!-- El único precio que existe es `product.price`, así que acá NO hay
+                     precio tachado ni "precio antes": el chip comunica el % real que
+                     esa prenda tiene por su categoría (0 = sin descuento, y el `@if`
+                     lo descarta solo) y que se aplica en el carrito. -->
+                @if (v.discountPercentFor(product); as descuento) {
+                  <span class="oft-disc pointer-events-none absolute right-0 top-0 z-10">
+                    <span aria-hidden="true">-{{ descuento }}%</span>
+                    <span class="sr-only">Descuento del {{ descuento }}%</span>
+                  </span>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- "Ver más" a ancho completo, abajo de la grilla. -->
+          @if (v.hasMore()) {
+            <button
+              type="button"
+              (click)="v.showMore()"
+              class="mt-3 w-full border border-stone-300 bg-white py-3 font-display text-sm font-bold uppercase tracking-wider text-stone-600 transition-colors hover:border-brand-600 hover:text-brand-600"
+            >
+              Ver más productos (+{{ v.filteredProducts().length - v.visibleProducts().length }})
+            </button>
+          }
+        } @else {
+          <div class="border border-stone-300 bg-white px-6 py-16 text-center">
+            <p class="font-display text-4xl font-extrabold uppercase leading-none text-stone-700">Sin resultados</p>
+            <p class="mt-2 text-sm text-stone-500">No hay prendas con esos filtros.</p>
+            <button
+              type="button"
+              (click)="v.clearFilters()"
+              class="mt-5 bg-brand-600 px-6 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-brand-700"
+            >
+              Ver todo el catálogo
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Plantilla de filtros =====
+       Una sola pieza para el sidebar de desktop y el `<details>` de mobile: son
+       exactamente los mismos campos, así que duplicar el markup sólo serviría
+       para que se separen con el tiempo. El `col-span-2` de algunos bloques sólo
+       tiene efecto en la grilla del <details>; en el sidebar (flex-col) se ignora.
+       Los campos no llevan `id` porque el template se instancia dos veces y
+       quedarían ids repetidos en el DOM: el nombre accesible va por `aria-label`. -->
+  <ng-template #filtros>
+    <div class="col-span-2 flex flex-col gap-1.5">
+      <span class="oft-side-title">Buscar</span>
+      <input
+        type="search"
+        placeholder="Prenda, talle, color..."
+        aria-label="Buscar producto"
+        [ngModel]="v.searchTerm()"
+        (ngModelChange)="v.searchTerm.set($event)"
+        class="oft-field"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <span class="oft-side-title">Talle</span>
+      <select
+        aria-label="Talle"
+        [ngModel]="v.selectedSize()"
+        (ngModelChange)="v.selectedSize.set($event)"
+        class="oft-field"
+      >
+        <option value="todos">Todos los talles</option>
+        @for (size of v.availableSizes(); track size) {
+          <option [value]="size">{{ size }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Grupos de parametrías, todos como select: en este diseño los filtros son
+         campos de formulario apilados, no píldoras. -->
+    @if (v.publicoGroup(); as grupo) {
+      <div class="flex flex-col gap-1.5">
+        <span class="oft-side-title">{{ grupo.name }}</span>
+        <select
+          [attr.aria-label]="grupo.name"
+          [ngModel]="v.paramValue(grupo.id)"
+          (ngModelChange)="v.setParam(grupo.id, $event)"
+          class="oft-field"
+        >
+          <option value="">Todas</option>
+          @for (opt of grupo.options; track opt.id) {
+            <option [value]="opt.id">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+    }
+
+    @for (group of v.selectGroups(); track group.id) {
+      <div class="flex flex-col gap-1.5">
+        <span class="oft-side-title">{{ group.name }}</span>
+        <select
+          [attr.aria-label]="group.name"
+          [ngModel]="v.paramValue(group.id)"
+          (ngModelChange)="v.setParam(group.id, $event)"
+          class="oft-field"
+        >
+          <option value="">Todas</option>
+          @for (opt of group.options; track opt.id) {
+            <option [value]="opt.id">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+    }
+
+    <div class="col-span-2 flex flex-col gap-1.5">
+      <span class="oft-side-title">Precio</span>
+      <div class="grid grid-cols-2 gap-2">
+        <input
+          type="number"
+          inputmode="numeric"
+          min="0"
+          placeholder="$ mín"
+          aria-label="Precio mínimo"
+          [ngModel]="v.minPrice()"
+          (ngModelChange)="v.setMinPrice($event)"
+          class="oft-field"
+        />
+        <input
+          type="number"
+          inputmode="numeric"
+          min="0"
+          placeholder="$ máx"
+          aria-label="Precio máximo"
+          [ngModel]="v.maxPrice()"
+          (ngModelChange)="v.setMaxPrice($event)"
+          class="oft-field"
+        />
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <span class="oft-side-title">Orden</span>
+      <select
+        aria-label="Ordenar"
+        [ngModel]="v.sortBy()"
+        (ngModelChange)="v.sortBy.set($event)"
+        class="oft-field"
+      >
+        <option value="novedades">Novedades primero</option>
+        <option value="precio-asc">Precio: menor a mayor</option>
+        <option value="precio-desc">Precio: mayor a menor</option>
+      </select>
+    </div>
+
+    <!-- Limpiar sólo aparece si hay algo puesto. -->
+    @if (v.hasActiveFilters()) {
+      <button
+        type="button"
+        (click)="v.clearFilters()"
+        class="col-span-2 border border-brand-600 py-2 font-display text-xs font-bold uppercase tracking-wider text-brand-600 transition-colors hover:bg-brand-600 hover:text-white"
+      >
+        Limpiar filtros ✕
+      </button>
+    }
+  </ng-template>
+}

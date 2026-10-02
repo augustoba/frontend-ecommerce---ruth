@@ -1,0 +1,362 @@
+@if (vm(); as v) {
+  <!-- Los datos que se repiten en varias secciones se calculan UNA vez: `@let`
+       evita volver a evaluar el mismo computed (y el mismo `v.promos()`) en cada
+       sección. -->
+  @let promos = v.promos();
+  @let bajas = prendasBajas();
+  @let ajustes = v.settings();
+
+  <!-- ===== 1. Hero espacial =====
+       El cielo va en capas ABSOLUTAS y en este orden: el degradado de noche, las
+       estrellas que titilan, dos órbitas punteadas girando (distinto diámetro y
+       distinta duración para que no se sincronicen nunca) y, encima de todo, el
+       carrusel real al 25% de opacidad si el dueño cargó fotos. Si no hay fotos,
+       el hero se ve igual: las capas de CSS ya son el fondo. -->
+  <section class="relative flex min-h-[82vh] flex-col justify-center overflow-hidden">
+    <div class="space-sky"></div>
+    <div class="space-stars"></div>
+
+    <!-- Órbita chica: 420px, una vuelta cada 42s. -->
+    <div
+      class="space-ring left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2"
+      [style.animation-duration]="'42s'"
+      aria-hidden="true"
+    ></div>
+    <!-- Órbita grande: 640px y más lenta (88s), así se cruzan a destiempo. -->
+    <div
+      class="space-ring left-1/2 top-1/2 h-[640px] w-[640px] -translate-x-1/2 -translate-y-1/2"
+      [style.animation-duration]="'88s'"
+      aria-hidden="true"
+    ></div>
+
+    @if (v.heroSlides().length) {
+      <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0 opacity-25" />
+    }
+
+    <!-- La nave: decoración dibujada acá mismo (cuerpo blanco, punta y llamas
+         amarillas, aletas índigo) apuntando hacia arriba-derecha. Va antes del
+         contenido para que el texto quede por encima; `.rocket` ya trae el
+         `position: absolute` y la animación que la cruza cada 24s. -->
+    <div class="rocket left-[5%] top-[16%] w-16 sm:w-24" aria-hidden="true">
+      <svg viewBox="0 0 120 140" class="w-full" aria-hidden="true" focusable="false">
+        <!-- El `rotate(42 …)` va en un grupo y no en el `<svg>` porque el atributo
+             `transform` de presentación no se aplica en todos los motores. -->
+        <g transform="rotate(42 60 70)">
+          <path d="M60 4c13 13 21 34 21 56 0 10-2 20-5 28H44c-3-8-5-18-5-28 0-22 8-43 21-56Z" fill="#fff" />
+          <path d="M60 4c13 13 21 34 21 56 0 3 0 6-1 9H40c-1-3-1-6-1-9 0-22 8-43 21-56Z" fill="#e6e9ff" />
+          <path d="M60 4c7 7 13 17 17 28H43c4-11 10-21 17-28Z" fill="#ffe066" />
+          <circle cx="60" cy="62" r="9" fill="#a5b4fc" stroke="#fff" stroke-width="3" />
+          <path d="M39 74 20 104l19-6Z" fill="#a5b4fc" />
+          <path d="M81 74l19 30-19-6Z" fill="#a5b4fc" />
+          <path d="M52 88h16l-8 34Z" fill="#ffe066" />
+          <path d="M56 88h8l-4 18Z" fill="#fff" />
+        </g>
+      </svg>
+    </div>
+
+    <div class="relative z-10 mx-auto w-full max-w-3xl px-5 py-20 text-center sm:px-8">
+      <h1 class="font-display text-4xl leading-tight text-white sm:text-6xl">{{ v.storeName() }}</h1>
+
+      <!-- Chip con datos REALES: prendas y talles del catálogo filtrado. Son los
+           únicos números que esta plantilla puede mostrar sin inventar nada. -->
+      <div class="mt-7 flex justify-center">
+        <span class="space-chip">
+          <span class="tabular-nums">{{ v.filteredProducts().length }} prendas</span>
+          <span class="text-[#ffe066]" aria-hidden="true">★</span>
+          <span class="tabular-nums">{{ v.availableSizes().length }} talles</span>
+        </span>
+      </div>
+
+      <p class="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-brand-300 sm:text-base">{{ compraLine() }}</p>
+
+      <div class="mt-9 flex justify-center">
+        <button
+          type="button"
+          (click)="v.scrollToCatalog()"
+          class="sheen rounded-full bg-brand-500 px-8 py-4 font-display text-white transition-transform duration-300 hover:-translate-y-0.5"
+        >
+          DESPEGAR AL CATÁLOGO
+        </button>
+      </div>
+    </div>
+
+    <!-- Estrellas fugaces: abajo del contenido a propósito, son puro adorno. La
+         segunda arranca en otro alto y con otro delay para que no salgan juntas. -->
+    <div class="shooting-star" [style.top]="'18%'" [style.left]="'-10%'" aria-hidden="true"></div>
+    <div
+      class="shooting-star"
+      [style.top]="'64%'"
+      [style.left]="'-10%'"
+      [style.animation-delay]="'4.5s'"
+      aria-hidden="true"
+    ></div>
+  </section>
+
+  <!-- ===== 2. Banners de promo espaciales =====
+       Una pieza por promo REAL cargada en /admin/promociones. El disco muestra el
+       % real cuando hay descuento y "ENVÍO" cuando el backend manda 0 (envío
+       gratis no descuenta plata: nunca se inventa un porcentaje). Sin promos
+       vigentes la sección no existe. -->
+  @if (promos.length) {
+    <section id="promos" class="relative mx-auto max-w-6xl scroll-mt-24 px-4 py-14 sm:px-6">
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        @for (promo of promos; track promo.id) {
+          <article
+            appReveal
+            variant="zoom"
+            [delay]="60"
+            class="flex flex-col gap-3 rounded-3xl bg-brand-100/80 p-5 ring-1 ring-white/15"
+          >
+            <!-- El disco: el % REAL. En las promos de envío gratis el backend
+                 manda 0 porque no descuenta plata, así que ahí dice ENVÍO.
+                 El tamaño se ajusta con `[class.*]` sueltos y no con `[class]`
+                 junto a `class`, que Angular rechaza. -->
+            <span
+              class="space-yellow flex h-16 w-16 items-center justify-center rounded-full font-display text-lg"
+              [class.text-xl]="promo.percent > 0"
+              [class.tabular-nums]="promo.percent > 0"
+            >
+              {{ promoLabel(promo) }}
+            </span>
+
+            <h3 class="font-display text-lg text-white">{{ promo.text }}</h3>
+
+            @if (promo.detail) {
+              <p class="text-sm text-brand-300">{{ promo.detail }}</p>
+            }
+
+            @if (promo.endsLabel) {
+              <span class="space-chip self-start">{{ promo.endsLabel }}</span>
+            }
+          </article>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 3. "Cuenta regresiva de talles" =====
+       Urgencia con datos de verdad, igual que Neón: sólo prendas con stock total
+       mayor a 0 (si es 0 no es urgencia, es una prenda que no se puede comprar) y
+       menor o igual a su umbral. Carril con snap y sin barra de scroll: en mobile
+       entra una tarjeta y media, y eso invita a arrastrar. El chip de arriba
+       lleva el número real de unidades, no una promesa. -->
+  @if (bajas.length) {
+    <section class="relative mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <h2 class="font-display text-2xl text-white sm:text-3xl">QUEDAN POCAS EN EL PLANETA</h2>
+      <p class="mt-2 text-sm text-brand-300">Estas prendas están por agotarse en el taller.</p>
+
+      <div class="mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        @for (product of bajas; track product.id) {
+          <div class="flex w-48 shrink-0 snap-start flex-col gap-2 sm:w-56">
+            <span class="space-chip space-yellow self-start">{{ stockLabel(product) }}</span>
+            <app-product-card [product]="product" variant="cohete" />
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 4. Catálogo =====
+       Filtros adentro de una pieza de noche con los MISMOS bindings que el resto
+       de las plantillas (ngModel suelto: la fuente de verdad es el vm, no un form
+       propio). "Público" va como chips porque es el filtro que más se usa. -->
+  <section id="catalogo" class="scroll-mt-24">
+    <div class="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <h2 class="font-display text-2xl text-white sm:text-3xl">EL CATÁLOGO</h2>
+
+      <div class="mt-6 rounded-3xl bg-brand-100/70 p-4 ring-1 ring-white/10">
+        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <input
+            type="search"
+            [ngModel]="v.searchTerm()"
+            (ngModelChange)="v.searchTerm.set($event)"
+            placeholder="Buscar prenda..."
+            aria-label="Buscar prenda"
+            class="min-w-[9rem] flex-1 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white placeholder:text-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-400"
+          />
+
+          <select
+            [ngModel]="v.selectedSize()"
+            (ngModelChange)="v.selectedSize.set($event)"
+            aria-label="Filtrar por talle"
+            class="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-400"
+          >
+            <option value="todos">Talle: todos</option>
+            @for (size of v.availableSizes(); track size) {
+              <option [value]="size">Talle {{ size }}</option>
+            }
+          </select>
+
+          <!-- Grupos de parametrías que el contenedor decidió mostrar como select. -->
+          @for (group of v.selectGroups(); track group.id) {
+            <select
+              [ngModel]="v.paramValue(group.id)"
+              (ngModelChange)="v.setParam(group.id, $event)"
+              [attr.aria-label]="group.name"
+              class="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-400"
+            >
+              <option value="">{{ group.name }}: todas</option>
+              @for (option of group.options; track option.id) {
+                <option [value]="option.id">{{ option.label }}</option>
+              }
+            </select>
+          }
+
+          <div class="flex items-center gap-2">
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              placeholder="$ mín"
+              aria-label="Precio mínimo"
+              [ngModel]="v.minPrice()"
+              (ngModelChange)="v.setMinPrice($event)"
+              class="w-24 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white placeholder:text-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-400"
+            />
+            <span class="text-xs text-brand-300">a</span>
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              placeholder="$ máx"
+              aria-label="Precio máximo"
+              [ngModel]="v.maxPrice()"
+              (ngModelChange)="v.setMaxPrice($event)"
+              class="w-24 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white placeholder:text-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-400"
+            />
+          </div>
+
+          <select
+            [ngModel]="v.sortBy()"
+            (ngModelChange)="v.sortBy.set($event)"
+            aria-label="Ordenar"
+            class="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-400 sm:ml-auto"
+          >
+            <option value="novedades">Orden: novedades</option>
+            <option value="precio-asc">Precio: menor a mayor</option>
+            <option value="precio-desc">Precio: mayor a menor</option>
+          </select>
+
+          <!-- "Limpiar" sólo cuando hay algo que limpiar. -->
+          @if (v.hasActiveFilters()) {
+            <button
+              type="button"
+              (click)="v.clearFilters()"
+              class="text-[13px] font-semibold text-brand-400 hover:text-brand-300"
+            >
+              Limpiar filtros ✕
+            </button>
+          }
+        </div>
+
+        @if (v.publicoGroup(); as grupo) {
+          <div class="mt-4 flex flex-wrap items-center gap-2">
+            <span class="space-chip">Público</span>
+            <button type="button" (click)="v.setParam(grupo.id, '')" [class]="chipClass(!v.paramValue(grupo.id))">
+              Todos
+            </button>
+            @for (option of grupo.options; track option.id) {
+              <button
+                type="button"
+                (click)="v.setParam(grupo.id, option.id)"
+                [class]="chipClass(v.paramValue(grupo.id) === option.id)"
+              >
+                {{ option.label }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Estados + grilla. La tarjeta `cohete` ya trae su propio brillo, así que
+           cada celda sólo aporta el reveal escalonado. -->
+      @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+        <div class="mt-8">
+          <app-skeleton variant="card" [count]="8" />
+        </div>
+      } @else if (v.catalogStatus() === 'error') {
+        <div class="py-20 text-center">
+          <p class="font-display text-lg text-white">No se pudo cargar el catálogo.</p>
+          <button type="button" (click)="v.reloadCatalog()" class="space-chip mt-4">
+            Reintentar
+          </button>
+        </div>
+      } @else if (v.filteredProducts().length) {
+        <div class="mt-8 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
+          @for (product of v.visibleProducts(); track product.id; let i = $index) {
+            <div appReveal variant="zoom" [delay]="(i % 8) * 60">
+              <app-product-card [product]="product" variant="cohete" />
+            </div>
+          }
+        </div>
+
+        @if (v.hasMore()) {
+          <div class="pt-10 text-center">
+            <button
+              type="button"
+              (click)="v.showMore()"
+              class="sheen rounded-full bg-brand-500 px-8 py-4 font-display text-white transition-transform duration-300 hover:-translate-y-0.5"
+            >
+              VER MÁS
+            </button>
+          </div>
+        }
+      } @else {
+        <div class="py-20 text-center">
+          <p class="font-display text-lg text-white">No hay prendas con esos filtros.</p>
+          <p class="mt-2 text-sm text-brand-300">Probá con otros filtros o mirá todo el catálogo.</p>
+          <button type="button" (click)="v.clearFilters()" class="space-chip mt-4">
+            Ver todo el catálogo
+          </button>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ===== 5. Cierre =====
+       Misma noche estrellada del hero para cerrar el círculo. Sólo datos REALES
+       del local, cada uno si existe (dirección, Instagram, Facebook y el link a
+       /como-comprar), más el botón grande a WhatsApp. -->
+  <section class="relative overflow-hidden border-t border-white/10">
+    <div class="space-stars"></div>
+
+    <div class="relative z-10 mx-auto max-w-4xl px-5 py-16 text-center sm:px-8">
+      <img
+        [src]="v.logoSrc() | cldImg: 160"
+        [alt]="v.storeName()"
+        class="mx-auto h-16 w-16 rounded-3xl bg-white/10 object-cover ring-1 ring-white/20"
+      />
+      <h2 class="mt-5 font-display text-3xl text-white sm:text-4xl">{{ v.storeName() }}</h2>
+      <p class="mt-3 text-sm text-brand-300">Te esperamos en el taller para que elijas en persona.</p>
+
+      <div class="mt-7 flex flex-wrap items-center justify-center gap-3">
+        @if (ajustes.storeAddress; as direccion) {
+          <span class="space-chip">{{ direccion }}</span>
+        }
+        @if (ajustes.instagram; as instagram) {
+          <a
+            [href]="'https://instagram.com/' + instagram"
+            target="_blank"
+            rel="noopener"
+            class="space-chip"
+          >
+            &#64;{{ instagram }}
+          </a>
+        }
+        @if (ajustes.facebookUrl; as facebook) {
+          <a [href]="facebook" target="_blank" rel="noopener" class="space-chip">Facebook</a>
+        }
+        <a routerLink="/como-comprar" class="space-chip">Cómo comprar</a>
+      </div>
+
+      <a
+        [href]="'https://wa.me/' + ajustes.whatsappNumber"
+        target="_blank"
+        rel="noopener"
+        class="sheen mt-9 inline-block rounded-full bg-brand-500 px-10 py-5 font-display text-white transition-transform duration-300 hover:-translate-y-0.5"
+      >
+        Hablar por WhatsApp
+      </a>
+    </div>
+  </section>
+}

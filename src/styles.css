@@ -148,6 +148,11 @@ body {
 .anim-marquee       { display: flex; width: max-content; animation: marquee 30s linear infinite; }
 .anim-marquee:hover { animation-play-state: paused; }
 
+/* La misma marquesina al revés y un poco más lenta: Neón la usa para que las dos
+   franjas se crucen en direcciones opuestas. */
+.anim-marquee-reverse       { display: flex; width: max-content; animation: marquee 36s linear infinite reverse; }
+.anim-marquee-reverse:hover { animation-play-state: paused; }
+
 .wobble-on-hover:hover { animation: wobble .45s ease-in-out; }
 
 /* Brillo que cruza el botón al pasar el mouse */
@@ -318,23 +323,1236 @@ body {
   box-shadow: 1px 1px 0 0 #1c1917;
 }
 
+/* ==========================================================================
+   DISEÑOS DE TIENDA — tanda 2: vidriera / ofertas / fichero / mosaico
+   Mismas reglas que los de arriba: los tokens van duplicados (`html[data-layout]`
+   cubre la tienda entera, header y footer incluidos; `.tpl-*` cubre la miniatura
+   viva de /admin/config/diseno, donde el diseño activo puede ser otro) y las
+   piezas propias de cada plantilla van acá, en el CSS global, por el presupuesto
+   de `anyComponentStyle` (4 kB de aviso, 8 kB de error por componente).
+   ========================================================================== */
+
+/* Vidriera: catálogo por categorías. Crema, mostaza y todo redondeado. */
+[data-layout="vidriera"],
+.tpl-vidriera {
+  --font-display: "Fredoka", "Baloo 2", ui-rounded, system-ui, sans-serif;
+  --font-sans: "Karla", "Nunito", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #fffcf5;
+  --color-brand-100: #fdf4e3;
+  --color-brand-200: #f9e6c1;
+  --color-brand-300: #f2d193;
+  --color-brand-400: #e8b85e;
+  --color-brand-500: #d99a2b;
+  --color-brand-600: #b87c19;
+  --color-brand-700: #916013;
+  --color-brand-800: #6d4810;
+}
+
+/* Riel que se desliza. Cada tarjeta se lleva su ancho por Tailwind (`w-56`,
+   `sm:w-64`…): acá sólo va el comportamiento del scroll. */
+.vid-rail {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: .75rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.vid-rail::-webkit-scrollbar { display: none; }
+.vid-rail > * {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+/* Subrayado "hecho a mano" abajo del título de cada categoría. */
+.vid-underline {
+  position: relative;
+  display: inline-block;
+}
+.vid-underline::after {
+  content: "";
+  position: absolute;
+  left: -2%;
+  right: -2%;
+  bottom: -.35rem;
+  height: .4rem;
+  background: var(--color-brand-300);
+  border-radius: 999px 999px 999px 999px / 60% 60% 100% 100%;
+}
+
+/* Ficha chica de categoría, arriba de cada riel. */
+.vid-tag {
+  background: var(--color-brand-100);
+  color: var(--color-brand-700);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  padding: .2rem .6rem;
+  border-radius: 999px;
+}
+
+/* Ofertas: góndola. Rojo de cartel, tipografía condensada, cajas duras. */
+[data-layout="ofertas"],
+.tpl-ofertas {
+  --font-display: "Barlow Condensed", "Archivo", system-ui, sans-serif;
+  --font-sans: "Barlow", "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #ffffff;
+  --color-brand-100: #fff5f5;
+  --color-brand-200: #ffe0e0;
+  --color-brand-300: #ffb8b8;
+  --color-brand-400: #ff7a7a;
+  --color-brand-500: #e11d2e;
+  --color-brand-600: #c1121f;
+  --color-brand-700: #96101a;
+  --color-brand-800: #6d0b13;
+
+  --radius-xs: 0px;
+  --radius-sm: 1px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
+  --radius-xl: 4px;
+  --radius-2xl: 6px;
+  --radius-3xl: 8px;
+  --radius-4xl: 10px;
+}
+
+/* La frase de la promo, en la barra de arriba. */
+.oft-promo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+
+/* Etiqueta de precio con la esquina cortada, tipo etiqueta de góndola. */
+.oft-tag {
+  font-family: var(--font-display);
+  background: var(--color-brand-600);
+  color: #fff;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: .1rem .5rem;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%);
+}
+
+/* "% off" sobre la foto de una prenda con descuento por parametría. */
+.oft-disc {
+  font-family: var(--font-display);
+  background: var(--color-brand-600);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  line-height: 1;
+  padding: .3rem .45rem;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%);
+}
+
+.oft-side-title {
+  font-family: var(--font-display);
+  font-size: .82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: #44403c;
+}
+
+.oft-field {
+  width: 100%;
+  border: 1px solid #d6d3d1;
+  background: #fff;
+  padding: .5rem .65rem;
+  font-size: 13px;
+  color: #292524;
+}
+.oft-field:focus {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: -1px;
+}
+.oft-field::placeholder { color: #a8a29e; }
+
+/* Fichero: ficha técnica. Papel blanco, azul tinta y monoespaciada. */
+[data-layout="fichero"],
+.tpl-fichero {
+  --font-display: "IBM Plex Mono", ui-monospace, "Courier New", monospace;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #ffffff;
+  --color-brand-100: #f5f7fb;
+  --color-brand-200: #e8edf7;
+  --color-brand-300: #ccd8ec;
+  --color-brand-400: #6d8cc4;
+  --color-brand-500: #3f66ab;
+  --color-brand-600: #2b4c8c;
+  --color-brand-700: #1e3a75;
+  --color-brand-800: #14264f;
+
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+}
+
+/* Rótulo de dato: "EDAD", "TALLES", "CÓDIGO". */
+.fic-key {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  color: #94a3b8;
+}
+
+/* Fila del catálogo: foto | datos | precio.
+   El markup espera SIEMPRE ese orden de hijos (3ro opcional). */
+.fic-row {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  gap: .75rem 1rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-top: 1px solid var(--color-brand-200);
+}
+@media (min-width: 640px) {
+  .fic-row {
+    grid-template-columns: 7rem 1fr auto;
+    gap: 1.5rem;
+  }
+}
+
+/* Chip de talle. `-on` = hay stock, `-off` = agotado. */
+.fic-chip {
+  font-family: var(--font-display);
+  border: 1px solid var(--color-brand-300);
+  background: #fff;
+  color: #334155;
+  font-size: 11px;
+  letter-spacing: .06em;
+  padding: .1rem .4rem;
+}
+.fic-chip-on {
+  border-color: var(--color-brand-500);
+  color: var(--color-brand-700);
+}
+.fic-chip-off {
+  border-style: dashed;
+  color: #cbd5e1;
+  text-decoration: line-through;
+}
+
+/* Mosaico: tablero de piezas. Blanco frío, índigo y un toque de lima. */
+[data-layout="mosaico"],
+.tpl-mosaico {
+  --font-display: "Sora", "Space Grotesk", system-ui, sans-serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #f6f6fe;
+  --color-brand-100: #ecebfd;
+  --color-brand-200: #d9d7fb;
+  --color-brand-300: #bdb9f6;
+  --color-brand-400: #9a93ef;
+  --color-brand-500: #4f46e5;
+  --color-brand-600: #443ad4;
+  --color-brand-700: #3a30b0;
+  --color-brand-800: #2c2585;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+  --radius-4xl: 28px;
+}
+
+/* Pieza del tablero. Las alturas las da el template con Tailwind (`h-64`,
+   `sm:row-span-2`…); acá va que la foto se coma la pieza. */
+.mos-tile {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-3xl);
+  background: #fff;
+}
+
+/* Foto que ocupa toda la pieza (para las piezas que son sólo imagen + texto). */
+.mos-cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Degradé para que el texto se lea arriba de una foto. */
+.mos-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(15, 15, 25, .74), rgba(15, 15, 25, .06) 62%);
+}
+
+/* Texto que va arriba de la foto. */
+.mos-on-media {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, .5);
+}
+
+/* El acento lima, el único color que no sale de la paleta índigo. */
+.mos-lime {
+  background: #c8f169;
+  color: #1a2e05;
+}
+
+/* ==========================================================================
+   DISEÑO "NOVA" (tanda 3) + las piezas de movimiento que trae
+   Nova es el diseño más "de ahora": hero cinematográfico a sangre, gradiente
+   vivo, tarjetas de vidrio, inclinación 3D que sigue al puntero, barra de
+   progreso de scroll y catálogo que sigue cargando solo. Los tokens van
+   duplicados como en el resto (atributo = tienda entera, clase = miniatura).
+   ========================================================================== */
+
+@keyframes aurora-drift {
+  0%   { background-position: 0% 50%; transform: scale(1); }
+  50%  { background-position: 100% 50%; transform: scale(1.08); }
+  100% { background-position: 0% 50%; transform: scale(1); }
+}
+
+@keyframes blur-in {
+  from { opacity: 0; filter: blur(18px); transform: translate3d(0, 26px, 0) scale(1.02); }
+  to   { opacity: 1; filter: blur(0); transform: none; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: .5; transform: scale(1); }
+  50%      { opacity: .85; transform: scale(1.06); }
+}
+
+/* Variantes de `appReveal` que estrena Nova. Mismo contrato que `.reveal`: la
+   clase la pone el directive y `is-visible` la dispara al entrar en pantalla. */
+.reveal-blur {
+  opacity: 0;
+  filter: blur(18px);
+  transform: translate3d(0, 26px, 0) scale(1.02);
+  transition:
+    opacity .7s cubic-bezier(.22, 1, .36, 1),
+    filter .9s ease,
+    transform .95s cubic-bezier(.22, 1, .36, 1);
+}
+.reveal-blur.is-visible { opacity: 1; filter: blur(0); transform: none; }
+
+.reveal-left {
+  opacity: 0;
+  transform: translate3d(-52px, 0, 0);
+  transition:
+    opacity .6s ease,
+    transform .95s cubic-bezier(.19, 1, .22, 1);
+}
+.reveal-left.is-visible { opacity: 1; transform: none; }
+
+.reveal-right {
+  opacity: 0;
+  transform: translate3d(52px, 0, 0);
+  transition:
+    opacity .6s ease,
+    transform .95s cubic-bezier(.19, 1, .22, 1);
+}
+.reveal-right.is-visible { opacity: 1; transform: none; }
+
+.reveal-zoom {
+  opacity: 0;
+  transform: scale(.88);
+  transition:
+    opacity .55s ease,
+    transform .8s cubic-bezier(.34, 1.28, .64, 1);
+}
+.reveal-zoom.is-visible { opacity: 1; transform: none; }
+
+.anim-blur-in { animation: blur-in .9s cubic-bezier(.22, 1, .36, 1) both; }
+.anim-glow    { animation: glow-pulse 6s ease-in-out infinite; }
+
+[data-layout="nova"],
+.tpl-nova {
+  --font-display: "Bricolage Grotesque", "Outfit", system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #fff5fb;
+  --color-brand-100: #ffe7f6;
+  --color-brand-200: #ffc9ea;
+  --color-brand-300: #ff9dd8;
+  --color-brand-400: #ff5fbd;
+  --color-brand-500: #f0288f;
+  --color-brand-600: #cc0f73;
+  --color-brand-700: #a30b5c;
+  --color-brand-800: #7d0a48;
+
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 22px;
+  --radius-3xl: 28px;
+  --radius-4xl: 34px;
+}
+
+/* Gradiente vivo del hero: tres manchas que se corren solas. Va detrás del
+   carrusel para que, si el local todavía no subió fotos, el hero igual se vea. */
+.nova-mesh {
+  position: absolute;
+  inset: -25%;
+  background-image:
+    radial-gradient(38% 42% at 18% 26%, var(--color-brand-400) 0%, transparent 62%),
+    radial-gradient(34% 38% at 82% 18%, #22d3ee 0%, transparent 60%),
+    radial-gradient(46% 48% at 62% 84%, var(--color-brand-600) 0%, transparent 64%);
+  background-size: 180% 180%;
+  filter: blur(44px) saturate(135%);
+  opacity: .55;
+  animation: aurora-drift 26s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+/* Oscurecido de abajo hacia arriba: el texto se lee sobre cualquier foto. */
+.nova-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(12, 10, 25, .88) 0%,
+    rgba(12, 10, 25, .5) 46%,
+    rgba(12, 10, 25, .12) 100%
+  );
+  pointer-events: none;
+}
+
+/* Vidrio: para los chips y las cajas que van arriba de una foto. */
+.nova-glass {
+  background: rgba(255, 255, 255, .12);
+  border: 1px solid rgba(255, 255, 255, .24);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+}
+.nova-glass-light {
+  background: rgba(255, 255, 255, .72);
+  border: 1px solid rgba(255, 255, 255, .9);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+}
+
+/* Sección oscura: la usa el cierre del diseño y las bandas kinéticas. */
+.nova-ink {
+  background: #0c0a19;
+  color: #f6f4ff;
+}
+
+/* El acento cian, el único color que no sale de la paleta magenta. */
+.nova-cyan {
+  background: #22d3ee;
+  color: #06323c;
+}
+
+.nova-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  border-radius: 999px;
+  padding: .4rem .85rem;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  white-space: nowrap;
+}
+
+/* Barra de progreso de lectura: `--p` (0..1) la escribe appScrollProgress. */
+.nova-progress {
+  position: fixed;
+  top: 4rem;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 30;
+  pointer-events: none;
+}
+.nova-progress > span {
+  display: block;
+  height: 100%;
+  transform-origin: 0 50%;
+  transform: scaleX(var(--p, 0));
+  background: linear-gradient(90deg, var(--color-brand-500), #22d3ee);
+}
+
+/* Inclinación 3D: la rotación la maneja `appTilt` escribiendo `--rx`/`--ry`.
+   `is-tilting` acorta la transición para que siga al puntero sin arrastrar. */
+.tilt-3d {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform .5s cubic-bezier(.22, 1, .36, 1);
+  will-change: transform;
+}
+.tilt-3d.is-tilting { transition: transform .06s linear; }
+
+/* Brillo que sigue al puntero (`--mx`/`--my`, también de appTilt). */
+.tilt-shine { position: relative; }
+.tilt-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    340px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, .34),
+    transparent 62%
+  );
+  transition: opacity .35s ease;
+}
+.tilt-shine:hover::after { opacity: 1; }
+
+/* En Nova las fotos del carrusel se mueven solas (Ken Burns lento). El `img` no
+   lleva transform propio en `hero-carousel`, así que no pisa el deslizamiento
+   del track: la animación es del `<img>` de adentro, no del contenedor. */
+[data-layout="nova"] app-hero-carousel img,
+.tpl-nova app-hero-carousel img {
+  animation: ken-burns 26s ease-in-out infinite alternate;
+}
+
+/* ==========================================================================
+   DISEÑO "NEÓN" (tanda 4) — el disruptivo
+   Es uno de los DOS diseños oscuros de la tienda (el otro es Cohete). El fondo
+   de página sale de
+   `--color-brand-50` (el body lo usa como `background-color`), así que
+   pisándolo acá se oscurece toda la tienda; el header y el footer compartidos,
+   que tienen superficies claras escritas a mano, se oscurecen con las reglas
+   acotadas que están más abajo (llevan `[data-layout="neon"]` adelante para
+   ganarle en especificidad a las utilidades de Tailwind).
+   Todo lo que brilla o se mueve —grilla, anillos de los banners, shimmer y el
+   flip de las prendas— se apaga con `prefers-reduced-motion`.
+   ========================================================================== */
+
+/* El ángulo del anillo que gira. Se registra como propiedad tipada para que el
+   navegador pueda interpolarlo; donde no exista `@property`, el degradado queda
+   quieto (se ve igual, sólo no gira). */
+@property --neon-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes marquee-reverse {
+  from { transform: translate3d(-50%, 0, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+
+/* La grilla del fondo se corre sola hacia arriba, como un tablero en movimiento. */
+@keyframes grid-slide {
+  from { background-position: 0 0; }
+  to   { background-position: 0 56px; }
+}
+
+@keyframes neon-ring-spin {
+  to { --neon-angle: 360deg; }
+}
+
+@keyframes neon-pulse {
+  0%, 100% { opacity: .55; }
+  50%      { opacity: 1; }
+}
+
+@keyframes shimmer-x {
+  from { transform: translateX(-130%) skewX(-16deg); }
+  to   { transform: translateX(330%) skewX(-16deg); }
+}
+
+[data-layout="neon"],
+.tpl-neon {
+  --font-display: "Orbitron", "Archivo Black", system-ui, sans-serif;
+  --font-sans: "Rubik", ui-sans-serif, system-ui, sans-serif;
+
+  /* Rampa invertida a propósito: el 50 es el fondo (casi negro) y el 500 el
+     cian neón. El pie usa `bg-brand-700`, que también queda oscuro. */
+  --color-brand-50: #06060b;
+  --color-brand-100: #0e0e1a;
+  --color-brand-200: #1d1d33;
+  --color-brand-300: #2e2e4d;
+  --color-brand-400: #67e8f9;
+  --color-brand-500: #22d3ee;
+  --color-brand-600: #06b6d4;
+  --color-brand-700: #0a0a14;
+  --color-brand-800: #14142a;
+
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius-2xl: 10px;
+  --radius-3xl: 12px;
+  --radius-4xl: 14px;
+}
+
+/* --- El chrome compartido, oscurecido sólo para este diseño --- */
+
+[data-layout="neon"] body { color: #e8e8f4; }
+
+[data-layout="neon"] app-header header {
+  background: rgba(6, 6, 11, .85);
+  border-bottom-color: rgba(34, 211, 238, .2);
+  box-shadow: none;
+}
+[data-layout="neon"] app-header header nav a { color: #b9b9d0; }
+/* El botón del carrito queda cian: el texto blanco no se leería. */
+[data-layout="neon"] app-header header .bg-brand-500 { color: #04121a; }
+
+[data-layout="neon"] app-footer footer { background: #08080f; }
+[data-layout="neon"] app-footer footer p,
+[data-layout="neon"] app-footer footer span,
+[data-layout="neon"] app-footer footer a { color: #d8d8ec; }
+
+/* --- Piezas del diseño --- */
+
+/* Tablero luminoso del fondo (hero y cierres). Se desvanece hacia los bordes. */
+.neon-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(34, 211, 238, .14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, .14) 1px, transparent 1px);
+  background-size: 56px 56px;
+  animation: grid-slide 6s linear infinite;
+  mask-image: radial-gradient(72% 62% at 50% 28%, #000 0%, transparent 78%);
+  -webkit-mask-image: radial-gradient(72% 62% at 50% 28%, #000 0%, transparent 78%);
+  pointer-events: none;
+}
+
+/* Cartel de neón: el resplandor del texto. */
+.neon-glow {
+  text-shadow:
+    0 0 6px rgba(34, 211, 238, .75),
+    0 0 22px rgba(34, 211, 238, .45),
+    0 0 48px rgba(34, 211, 238, .25);
+}
+.neon-glow-yellow {
+  text-shadow:
+    0 0 6px rgba(234, 255, 0, .8),
+    0 0 24px rgba(234, 255, 0, .45);
+}
+
+/* Superficie oscura con borde y resplandor cian. */
+.neon-box {
+  background: linear-gradient(180deg, rgba(20, 20, 42, .92), rgba(8, 8, 16, .92));
+  border: 1px solid rgba(34, 211, 238, .26);
+  box-shadow: 0 18px 55px -32px rgba(34, 211, 238, .55);
+}
+
+/* Anillo de luz que gira alrededor de la pieza (se usa en los banners de promo). */
+.neon-ring { position: relative; }
+.neon-ring::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--neon-angle),
+    #22d3ee,
+    #eaff00,
+    #a855f7,
+    #22d3ee
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: neon-ring-spin 5.5s linear infinite;
+  pointer-events: none;
+}
+
+/* Reflejo que cruza la pieza cada pocos segundos. */
+.neon-shimmer { position: relative; overflow: hidden; }
+.neon-shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 38%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .34), transparent);
+  animation: shimmer-x 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* El disco con el % real del descuento. */
+.neon-disc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: radial-gradient(circle at 32% 26%, #eaff00, #a3e635 72%);
+  color: #10160a;
+  font-family: var(--font-display);
+  font-weight: 800;
+  box-shadow: 0 0 34px -6px rgba(234, 255, 0, .85);
+}
+
+.neon-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  border: 1px solid rgba(34, 211, 238, .38);
+  background: rgba(34, 211, 238, .1);
+  color: var(--color-brand-400);
+  border-radius: 999px;
+  padding: .35rem .8rem;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  white-space: nowrap;
+}
+
+/* Franja inclinada: la usa la cinta de promos, que va torcida a propósito. */
+.neon-ribbon { transform: rotate(-2.5deg); }
+
+/* --- Prendas que se dan vuelta (flip 3D) ---
+   El dorso muestra la descripción y los talles con stock reales. Sólo gira
+   donde hay puntero fino: en táctil (o con `prefers-reduced-motion`) el dorso no
+   existe y la misma info se ve abajo, siempre visible, en `.flip-extra`. */
+.flip { perspective: 1100px; }
+.flip-inner {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform .8s cubic-bezier(.22, 1, .36, 1);
+}
+.flip-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flip-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+  overflow: hidden;
+}
+.flip-extra { display: none; }
+
+@media (hover: hover) and (pointer: fine) {
+  .flip:hover .flip-inner,
+  .flip:focus-within .flip-inner { transform: rotateY(180deg); }
+}
+@media (hover: none), (pointer: coarse) {
+  .flip-back { display: none; }
+  .flip-extra { display: block; }
+}
+
+/* ==========================================================================
+   DISEÑOS PARA CHICOS (tanda 5): caramelo / cohete / jungla / crayon
+   Cuatro diseños con el mismo espíritu que Neón (mucho movimiento) pero para
+   público infantil, y cada uno con SU movimiento, no con el de otro:
+   caramelo gira y rebota, cohete titila y vuela, jungla se mece y deja huellas,
+   crayon se dibuja solo. Todos los efectos se apagan con
+   `prefers-reduced-motion` (último bloque del archivo).
+   ========================================================================== */
+
+/* --- Movimiento compartido por la tanda --- */
+
+@keyframes spin-slow {
+  to { transform: rotate(1turn); }
+}
+
+@keyframes bob {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -16px, 0); }
+}
+
+@keyframes jelly {
+  0%   { transform: scale(1, 1); }
+  25%  { transform: scale(1.08, .92); }
+  45%  { transform: scale(.94, 1.06); }
+  65%  { transform: scale(1.04, .97); }
+  85%  { transform: scale(.99, 1.01); }
+  100% { transform: scale(1, 1); }
+}
+
+@keyframes wave-x {
+  to { background-position-x: 240px; }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: .3; }
+  50%      { opacity: 1; }
+}
+
+@keyframes fly-across {
+  0%   { transform: translate3d(-14vw, 14vh, 0) rotate(16deg); opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: translate3d(114vw, -20vh, 0) rotate(16deg); opacity: 0; }
+}
+
+@keyframes shooting {
+  0%   { transform: translate3d(0, 0, 0) rotate(32deg); opacity: 0; }
+  6%   { opacity: 1; }
+  45%  { opacity: 0; }
+  100% { transform: translate3d(58vw, 34vh, 0) rotate(32deg); opacity: 0; }
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50%      { transform: rotate(2.5deg); }
+}
+
+@keyframes march-x {
+  to { background-position-x: 224px; }
+}
+
+/* El trazo que se dibuja solo (Crayón): cada forma del SVG lleva
+   `pathLength="1"` para que `stroke-dasharray: 1` cubra el trazo completo. */
+@keyframes draw-in {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes wobble-slow {
+  0%, 100% { transform: rotate(-1.6deg) translate3d(0, 0, 0); }
+  50%      { transform: rotate(1.6deg) translate3d(0, -4px, 0); }
+}
+
+/* ---------- CARAMELO: caramelo pastel, todo redondo y blandito ---------- */
+
+[data-layout="caramelo"],
+.tpl-caramelo {
+  --font-display: "Grandstander", "Baloo 2", ui-rounded, system-ui, sans-serif;
+  --font-sans: "Quicksand", ui-rounded, system-ui, sans-serif;
+
+  --color-brand-50: #f2fffb;
+  --color-brand-100: #dcfff5;
+  --color-brand-200: #b8f7e6;
+  --color-brand-300: #86ecd4;
+  --color-brand-400: #4fd9bd;
+  --color-brand-500: #22c39f;
+  --color-brand-600: #17a183;
+  --color-brand-700: #127f68;
+  --color-brand-800: #0e5f4f;
+
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 26px;
+  --radius-2xl: 32px;
+  --radius-3xl: 40px;
+  --radius-4xl: 48px;
+}
+
+/* Rayos que giran detrás de lo que haya que destacar (el logo). */
+.candy-sun {
+  position: absolute;
+  inset: -35%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, .75) 0deg 8deg,
+    rgba(255, 255, 255, 0) 8deg 16deg
+  );
+  animation: spin-slow 44s linear infinite;
+  pointer-events: none;
+}
+
+/* Manchas blanditas que flotan. El color y el tamaño los pone el template. */
+.candy-blob {
+  position: absolute;
+  border-radius: 60% 40% 55% 45% / 45% 55% 40% 60%;
+  animation: bob 6.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Borde de nube: la sección se apoya en ondas que corren solas. */
+.candy-scallop {
+  height: 26px;
+  background-image: radial-gradient(circle at 50% 0, var(--color-brand-200) 0 14px, transparent 15px);
+  background-size: 48px 26px;
+  background-repeat: repeat-x;
+  animation: wave-x 14s linear infinite;
+}
+
+/* Se aplasta como un caramelo al pasar el mouse. */
+.jelly-hover { transition: transform .35s cubic-bezier(.34, 1.56, .64, 1); }
+.jelly-hover:hover { animation: jelly .6s ease; }
+
+.candy-pink   { background: #ffd6ec; color: #7a1e52; }
+.candy-lilac  { background: #e4dcff; color: #3f2a7a; }
+.candy-yellow { background: #fff2b8; color: #6b4e00; }
+
+.candy-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  border-radius: 999px;
+  background: #fff;
+  padding: .45rem 1rem;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-brand-700);
+  box-shadow: 0 6px 16px -10px rgba(14, 95, 79, .6);
+}
+
+/* ---------- COHETE: noche espacial, estrellas y naves ---------- */
+
+[data-layout="cohete"],
+.tpl-cohete {
+  --font-display: "Bungee", "Luckiest Guy", system-ui, sans-serif;
+  --font-sans: "Varela Round", ui-rounded, system-ui, sans-serif;
+
+  --color-brand-50: #0a0620;
+  --color-brand-100: #160f3d;
+  --color-brand-200: #241a5e;
+  --color-brand-300: #8b8cf0;
+  --color-brand-400: #a5b4fc;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #3730a3;
+  --color-brand-800: #1e1b4b;
+
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-2xl: 30px;
+  --radius-3xl: 36px;
+  --radius-4xl: 44px;
+}
+
+.space-sky {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(125% 95% at 50% 0%, #2b1a6b 0%, #140b38 52%, #05030f 100%);
+}
+
+/* Cohete también es oscuro (su rampa arranca en noche), así que el chrome
+   compartido lleva las mismas reglas acotadas que Neón. */
+[data-layout="cohete"] body { color: #eef0ff; }
+
+[data-layout="cohete"] app-header header {
+  background: rgba(10, 6, 32, .85);
+  border-bottom-color: rgba(255, 255, 255, .12);
+  box-shadow: none;
+}
+[data-layout="cohete"] app-header header nav a { color: #c7c9f5; }
+
+[data-layout="cohete"] app-footer footer { background: #0d0828; }
+[data-layout="cohete"] app-footer footer p,
+[data-layout="cohete"] app-footer footer span,
+[data-layout="cohete"] app-footer footer a { color: #dcdefb; }
+
+/* Cielo estrellado: capas de puntitos que titilan juntas. */
+.space-stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1.6px 1.6px at 22% 28%, #fff 50%, transparent 51%),
+    radial-gradient(1.4px 1.4px at 68% 62%, #fff 50%, transparent 51%),
+    radial-gradient(1.2px 1.2px at 44% 82%, #cfe0ff 50%, transparent 51%),
+    radial-gradient(1.8px 1.8px at 86% 18%, #fff 50%, transparent 51%);
+  background-size: 190px 190px, 240px 240px, 300px 300px, 340px 340px;
+  animation: twinkle 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Órbita punteada girando lento. */
+.space-ring {
+  position: absolute;
+  border: 1px dashed rgba(255, 255, 255, .22);
+  border-radius: 999px;
+  animation: spin-slow 70s linear infinite;
+  pointer-events: none;
+}
+
+/* La nave que cruza la pantalla cada tanto. */
+.rocket {
+  position: absolute;
+  animation: fly-across 24s linear infinite;
+  pointer-events: none;
+}
+
+/* Estrella fugaz: una raya que se va. */
+.shooting-star {
+  position: absolute;
+  width: 130px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #fff);
+  animation: shooting 9s ease-in infinite;
+  pointer-events: none;
+}
+
+.space-yellow { background: #ffe066; color: #4a3300; }
+
+.space-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .25);
+  background: rgba(255, 255, 255, .1);
+  padding: .4rem .9rem;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ---------- JUNGLA: selva con hojas que se mecen y huellas ---------- */
+
+[data-layout="jungla"],
+.tpl-jungla {
+  --font-display: "Luckiest Guy", "Baloo 2", ui-rounded, system-ui, sans-serif;
+  --font-sans: "Comic Neue", "Nunito", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #f7fdf2;
+  --color-brand-100: #e9f9d9;
+  --color-brand-200: #d0f0b4;
+  --color-brand-300: #a8e07f;
+  --color-brand-400: #79c94f;
+  --color-brand-500: #4aa32b;
+  --color-brand-600: #377f21;
+  --color-brand-700: #2a611b;
+  --color-brand-800: #1e4714;
+}
+
+/* Arboleda de arriba: hojas redondas que se mecen como si hubiera viento. */
+.jungla-top {
+  height: 44px;
+  background-image:
+    radial-gradient(circle at 50% 100%, var(--color-brand-600) 0 15px, transparent 16px),
+    radial-gradient(circle at 50% 100%, var(--color-brand-400) 0 22px, transparent 23px);
+  background-size: 58px 44px;
+  background-repeat: repeat-x;
+  transform-origin: 50% 0;
+  animation: sway 7s ease-in-out infinite;
+}
+.jungla-bottom {
+  height: 44px;
+  background-image:
+    radial-gradient(circle at 50% 100%, var(--color-brand-600) 0 15px, transparent 16px),
+    radial-gradient(circle at 50% 100%, var(--color-brand-400) 0 22px, transparent 23px);
+  background-size: 58px 44px;
+  background-repeat: repeat-x;
+  transform: rotate(180deg);
+  transform-origin: 50% 100%;
+  animation: sway 8s ease-in-out infinite;
+}
+
+/* Se mece sola (adornos) o al pasar el mouse (piezas). */
+.sway { animation: sway 6s ease-in-out infinite; transform-origin: 50% 0; }
+.sway-hover { transition: transform .4s cubic-bezier(.34, 1.56, .64, 1); }
+.sway-hover:hover { animation: sway 1.3s ease-in-out infinite; }
+
+/* Camino de huellas que va marchando. */
+.jungla-trail {
+  height: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='40' viewBox='0 0 56 40'%3E%3Cg fill='%232a611b' opacity='.35'%3E%3Cellipse cx='28' cy='26' rx='9' ry='11'/%3E%3Ccircle cx='18' cy='15' r='4'/%3E%3Ccircle cx='26' cy='10' r='4'/%3E%3Ccircle cx='34' cy='11' r='4'/%3E%3Ccircle cx='41' cy='17' r='3.5'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  animation: march-x 22s linear infinite;
+}
+
+/* Hoja: la forma sale del border-radius, sin imágenes. */
+.jungla-leaf {
+  border-radius: 0 100% 0 100%;
+  background: var(--color-brand-500);
+  box-shadow: inset -6px -6px 0 0 rgba(0, 0, 0, .08);
+}
+
+.jungla-sand { background: #f7e7c8; color: #6b4a17; }
+
+.jungla-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  border-radius: 999px;
+  background: #fff;
+  padding: .4rem .9rem;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-brand-700);
+  box-shadow: 0 4px 0 0 var(--color-brand-300);
+}
+
+/* ---------- CRAYON: dibujado a mano con crayón sobre papel ---------- */
+
+[data-layout="crayon"],
+.tpl-crayon {
+  --font-display: "Patrick Hand", "Comic Neue", ui-rounded, system-ui, sans-serif;
+  --font-sans: "Comfortaa", ui-rounded, system-ui, sans-serif;
+
+  --color-brand-50: #fffdf7;
+  --color-brand-100: #fff8e6;
+  --color-brand-200: #ffedc2;
+  --color-brand-300: #ffd98a;
+  --color-brand-400: #ffc24d;
+  --color-brand-500: #f59e0b;
+  --color-brand-600: #d97706;
+  --color-brand-700: #a35708;
+  --color-brand-800: #7a4106;
+}
+
+/* Borde tembleque, como dibujado a mano alzada. */
+.crayon-border {
+  border: 3px solid #2b2b2b;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  background: #fffdf7;
+}
+
+.crayon-border-soft {
+  border: 2px dashed #2b2b2b;
+  border-radius: 18px 6px 20px 8px / 8px 20px 6px 18px;
+}
+
+/* Las formas del SVG se dibujan solas al entrar en pantalla. */
+.crayon-draw path,
+.crayon-draw circle,
+.crayon-draw ellipse,
+.crayon-draw line,
+.crayon-draw polyline,
+.crayon-draw rect {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw-in 1.9s ease-out forwards;
+  fill: none;
+  stroke: #2b2b2b;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Subrayado garabateado. Toma el color del texto (`currentColor`). */
+.crayon-scribble { position: relative; display: inline-block; }
+.crayon-scribble::after {
+  content: "";
+  position: absolute;
+  left: -3%;
+  right: -3%;
+  bottom: -.4rem;
+  height: .5rem;
+  background: currentColor;
+  opacity: .35;
+  border-radius: 60% 40% 55% 45% / 100% 100% 60% 60%;
+  transform: rotate(-1.2deg);
+}
+
+.wobble-slow { animation: wobble-slow 5.5s ease-in-out infinite; }
+
+/* Cinta adhesiva para pegar las cosas al papel. */
+.crayon-tape {
+  position: absolute;
+  width: 74px;
+  height: 22px;
+  background: rgba(250, 240, 180, .85);
+  border-left: 1px dashed rgba(0, 0, 0, .12);
+  border-right: 1px dashed rgba(0, 0, 0, .12);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .08);
+}
+
+.crayon-red    { background: #ffd9d6; color: #8f1d12; }
+.crayon-blue   { background: #d7e8ff; color: #123a75; }
+.crayon-green  { background: #dcf7d4; color: #1d5c14; }
+.crayon-yellow { background: #fff0bf; color: #7a4c00; }
+
+.crayon-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  border: 2px solid #2b2b2b;
+  border-radius: 14px 4px 16px 6px / 6px 16px 4px 14px;
+  background: #fff;
+  padding: .35rem .8rem;
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: #2b2b2b;
+}
+
 /* Accesibilidad: quien pide menos movimiento ve todo en su lugar, sin animar.
    Va al final y con !important porque es el interruptor general. */
 @media (prefers-reduced-motion: reduce) {
   .reveal,
   .reveal-bounce,
+  .reveal-blur,
+  .reveal-left,
+  .reveal-right,
+  .reveal-zoom,
   .reveal-mask > * {
     opacity: 1 !important;
+    filter: none !important;
     transform: none !important;
     transition: none !important;
   }
   .anim-fade-up,
   .anim-pop-in,
+  .anim-blur-in,
   .anim-ken-burns,
   .anim-float,
+  .anim-glow,
   .anim-marquee,
+  .anim-marquee-reverse,
+  .nova-mesh,
+  .neon-grid,
+  .neon-ring::before,
+  .neon-shimmer::after,
+  .candy-sun,
+  .candy-blob,
+  .candy-scallop,
+  .jelly-hover:hover,
+  .space-stars,
+  .space-ring,
+  .rocket,
+  .shooting-star,
+  .jungla-top,
+  .jungla-bottom,
+  .jungla-trail,
+  .sway,
+  .sway-hover:hover,
+  .wobble-slow,
   .wobble-on-hover:hover,
-  .sheen:hover::after {
+  .sheen:hover::after,
+  [data-layout="nova"] app-hero-carousel img,
+  .tpl-nova app-hero-carousel img {
     animation: none !important;
+  }
+  /* El tilt queda plano: sin rotación ni brillo que siga al puntero. */
+  .tilt-3d {
+    transform: none !important;
+    transition: none !important;
+  }
+  .tilt-shine::after { display: none !important; }
+
+  /* Y las prendas no se dan vuelta: se ve la info de la cara de abajo. */
+  .flip-inner {
+    transform: none !important;
+    transition: none !important;
+  }
+  .flip-back { display: none !important; }
+  .flip-extra { display: block !important; }
+
+  /* Los dibujos de Crayón no se dibujan solos: tienen que quedar ya trazados
+     (si sólo apagáramos la animación quedarían con el guion corrido, o sea
+     invisibles). */
+  .crayon-draw path,
+  .crayon-draw circle,
+  .crayon-draw ellipse,
+  .crayon-draw line,
+  .crayon-draw polyline,
+  .crayon-draw rect {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
   }
 }

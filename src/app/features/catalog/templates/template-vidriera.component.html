@@ -1,0 +1,260 @@
+@if (vm(); as v) {
+  <!-- ===== Encabezado propio: logo con anillo, nombre grande y UNA línea de cómo se
+       compra. La frase sale de `compraLine()`, que lee el camino de pago real que
+       tiene configurado el local: nada de promesas inventadas. ===== -->
+  <header class="mx-auto max-w-6xl px-4 pt-10 sm:px-6 sm:pt-14">
+    <div class="flex flex-col items-center gap-5 text-center sm:flex-row sm:gap-7 sm:text-left">
+      <img
+        [src]="v.logoSrc() | cldImg: 300"
+        [alt]="v.storeName()"
+        class="h-20 w-20 shrink-0 rounded-full bg-white object-cover ring-4 ring-brand-200 sm:h-28 sm:w-28"
+      />
+      <div>
+        <h1 class="font-display text-4xl leading-tight font-semibold text-brand-700 sm:text-5xl">
+          {{ v.storeName() }}
+        </h1>
+        <p class="mt-3 text-stone-600 sm:text-lg">{{ compraLine() }}</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Carrusel administrable (/admin/carrusel). Proporción apaisada fija, porque
+       las fotos se suben recortadas a 21:9. Va envuelto en un @if: sin fotos cargadas
+       el carrusel se aguanta, pero no queremos dejar un hueco gigante en la home. ===== -->
+  @if (v.heroSlides().length) {
+    <section class="mx-auto mt-8 max-w-6xl px-4 sm:mt-10 sm:px-6">
+      <div class="relative aspect-[16/9] w-full overflow-hidden rounded-3xl bg-brand-100 sm:aspect-[21/9]">
+        <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+      </div>
+    </section>
+  }
+
+  <!-- ===== Rieles por categoría real: una sección por cada opción del grupo "Público".
+       Es el corazón de Vidriera — se recorre el local categoría por categoría en vez de
+       tirar todo en una grilla única. Si el grupo no está cargado, o una categoría se
+       quedó sin prendas (por ejemplo por un filtro activo), esa sección no existe: el
+       catálogo completo de abajo se encarga de que igual se vea todo. ===== -->
+  @if (v.publicoGroup(); as grupo) {
+    @for (option of grupo.options; track option.id) {
+      @let prendas = productsOf(option.id);
+      @if (prendas.length) {
+        <section class="mx-auto mt-12 max-w-6xl px-4 sm:mt-14 sm:px-6">
+          <div appReveal class="mb-6 flex flex-wrap items-center gap-3">
+            <h2 class="vid-underline font-display text-2xl font-semibold text-brand-700 sm:text-3xl">
+              {{ option.label }}
+            </h2>
+            <!-- Cantidad real de prendas de la categoría, para que se vea qué hay adentro -->
+            <span class="vid-tag">
+              {{ prendas.length }} {{ prendas.length === 1 ? 'prenda' : 'prendas' }}
+            </span>
+          </div>
+
+          <!-- El riel se desliza con el dedo en mobile (y con la rueda/trackpad en desktop).
+               En mobile se sale del padding del contenedor para que la última tarjeta no
+               quede cortada contra el borde. -->
+          <div class="vid-rail -mx-4 px-4 sm:mx-0 sm:px-0">
+            @for (product of prendas; track product.id; let i = $index) {
+              <div appReveal [delay]="i * 60" class="w-52 sm:w-60">
+                <app-product-card [product]="product" variant="vidriera" />
+              </div>
+            }
+          </div>
+        </section>
+      }
+    }
+  }
+
+  <!-- ===== Lo más vendido: otro riel, mismo ancho de tarjeta. Sólo si hay prendas:
+       en la miniatura del admin el contenedor manda la lista vacía a propósito y no
+       puede quedar un título suelto sin nada abajo. Y con filtros puestos no se
+       muestra, igual que en Ruth/Editorial/Pop: la lista viene sin filtrar, así que
+       al lado de los rieles (que sí siguen a `filteredProducts()`) sería la única
+       sección que ignora lo que el cliente acaba de filtrar. ===== -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section class="mx-auto mt-12 max-w-6xl px-4 sm:mt-14 sm:px-6">
+      <div appReveal class="mb-6 flex flex-wrap items-center gap-3">
+        <h2 class="vid-underline font-display text-2xl font-semibold text-brand-700 sm:text-3xl">
+          Lo más vendido
+        </h2>
+      </div>
+
+      <div class="vid-rail -mx-4 px-4 sm:mx-0 sm:px-0">
+        @for (product of v.bestSellers(); track product.id; let i = $index) {
+          <div appReveal [delay]="i * 60" class="w-52 sm:w-60">
+            <app-product-card [product]="product" variant="vidriera" />
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== Catálogo completo: el mismo bloque de siempre (búsqueda, talle, grupos de
+       parametrías, precio, orden y limpiar), con la piel de Vidriera. Está siempre,
+       aunque no haya ninguna categoría cargada, para que nunca falte el catálogo. ===== -->
+  <section id="catalogo" class="mx-auto max-w-6xl scroll-mt-24 px-4 py-12 sm:px-6 sm:py-16">
+    <div appReveal class="mb-7">
+      <h2 class="vid-underline font-display text-2xl font-semibold text-brand-700 sm:text-3xl">
+        Catálogo completo
+      </h2>
+    </div>
+
+    <div class="flex flex-col gap-4 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-brand-100 sm:p-6">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <input
+          type="search"
+          [ngModel]="v.searchTerm()"
+          (ngModelChange)="v.searchTerm.set($event)"
+          placeholder="Buscar producto..."
+          aria-label="Buscar producto"
+          class="w-full rounded-full border border-brand-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 sm:w-72"
+        />
+
+        <select
+          [ngModel]="v.selectedSize()"
+          (ngModelChange)="v.selectedSize.set($event)"
+          aria-label="Talle"
+          class="w-full rounded-full border border-brand-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 sm:w-auto"
+        >
+          <option value="todos">Todos los talles</option>
+          @for (size of v.availableSizes(); track size) {
+            <option [value]="size">Talle {{ size }}</option>
+          }
+        </select>
+
+        @for (group of v.selectGroups(); track group.id) {
+          <select
+            [ngModel]="v.paramValue(group.id)"
+            (ngModelChange)="v.setParam(group.id, $event)"
+            [attr.aria-label]="group.name"
+            class="w-full rounded-full border border-brand-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 sm:w-auto"
+          >
+            <option value="">{{ group.name }}: todas</option>
+            @for (opt of group.options; track opt.id) {
+              <option [value]="opt.id">{{ opt.label }}</option>
+            }
+          </select>
+        }
+
+        <div class="flex items-center gap-2">
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            placeholder="$ mín"
+            aria-label="Precio mínimo"
+            [ngModel]="v.minPrice()"
+            (ngModelChange)="v.setMinPrice($event)"
+            class="w-24 rounded-full border border-brand-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+          />
+          <span class="text-sm text-stone-400">a</span>
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            placeholder="$ máx"
+            aria-label="Precio máximo"
+            [ngModel]="v.maxPrice()"
+            (ngModelChange)="v.setMaxPrice($event)"
+            class="w-24 rounded-full border border-brand-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+          />
+        </div>
+
+        <select
+          [ngModel]="v.sortBy()"
+          (ngModelChange)="v.sortBy.set($event)"
+          aria-label="Ordenar"
+          class="w-full rounded-full border border-brand-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 sm:w-auto"
+        >
+          <option value="novedades">Ordenar: novedades</option>
+          <option value="precio-asc">Precio: de menor a mayor</option>
+          <option value="precio-desc">Precio: de mayor a menor</option>
+        </select>
+
+        @if (v.hasActiveFilters()) {
+          <button
+            type="button"
+            (click)="v.clearFilters()"
+            class="self-start text-sm font-semibold text-brand-600 hover:text-brand-700 sm:ml-auto sm:self-auto"
+          >
+            Limpiar filtros ✕
+          </button>
+        }
+      </div>
+
+      <!-- El "Público" también se puede filtrar desde acá: los rieles de arriba son
+           escaparate, no filtros, y sin estos botones no habría forma de elegir un
+           público puntual (los grupos de sistema no salen en `selectGroups`). -->
+      @if (v.publicoGroup(); as grupo) {
+        <div class="flex flex-wrap gap-2 border-t border-brand-100 pt-4">
+          <button
+            type="button"
+            (click)="v.setParam(grupo.id, '')"
+            [class.bg-brand-500]="!v.paramValue(grupo.id)"
+            [class.text-white]="!v.paramValue(grupo.id)"
+            [class.bg-brand-50]="v.paramValue(grupo.id)"
+            [class.text-stone-600]="v.paramValue(grupo.id)"
+            class="rounded-full px-4 py-1.5 text-sm font-semibold ring-1 ring-brand-200 transition-colors hover:ring-brand-400"
+          >
+            Todas
+          </button>
+          @for (opt of grupo.options; track opt.id) {
+            <button
+              type="button"
+              (click)="v.setParam(grupo.id, opt.id)"
+              [class.bg-brand-500]="v.paramValue(grupo.id) === opt.id"
+              [class.text-white]="v.paramValue(grupo.id) === opt.id"
+              [class.bg-brand-50]="v.paramValue(grupo.id) !== opt.id"
+              [class.text-stone-600]="v.paramValue(grupo.id) !== opt.id"
+              class="rounded-full px-4 py-1.5 text-sm font-semibold ring-1 ring-brand-200 transition-colors hover:ring-brand-400"
+            >
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Grilla del catálogo completo -->
+    @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+      <div class="pt-10">
+        <app-skeleton variant="card" [count]="8" />
+      </div>
+    } @else if (v.catalogStatus() === 'error') {
+      <div class="mt-10 rounded-3xl bg-white py-20 text-center text-stone-500 ring-1 ring-brand-100">
+        <p class="text-4xl">😕</p>
+        <p class="mt-3 font-semibold">No se pudo cargar el catálogo.</p>
+        <button type="button" (click)="v.reloadCatalog()" class="mt-3 font-semibold text-brand-600 hover:underline">
+          Reintentar
+        </button>
+      </div>
+    } @else if (v.filteredProducts().length) {
+      <div class="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
+        @for (product of v.visibleProducts(); track product.id; let i = $index) {
+          <div appReveal [delay]="i * 60">
+            <app-product-card [product]="product" variant="vidriera" />
+          </div>
+        }
+      </div>
+
+      @if (v.hasMore()) {
+        <div class="mt-10 text-center">
+          <button
+            type="button"
+            (click)="v.showMore()"
+            class="rounded-full bg-white px-6 py-2.5 font-semibold text-stone-700 ring-1 ring-brand-200 transition-colors hover:ring-brand-400"
+          >
+            Ver más productos ({{ v.filteredProducts().length - v.visibleProducts().length }} más)
+          </button>
+        </div>
+      }
+    } @else {
+      <div class="mt-10 rounded-3xl bg-white py-20 text-center text-stone-500 ring-1 ring-brand-100">
+        <p class="text-4xl">🔍</p>
+        <p class="mt-3 font-semibold">No encontramos productos con esos filtros.</p>
+        <button type="button" (click)="v.clearFilters()" class="mt-3 font-semibold text-brand-600 hover:underline">
+          Ver todo el catálogo
+        </button>
+      </div>
+    }
+  </section>
+}
