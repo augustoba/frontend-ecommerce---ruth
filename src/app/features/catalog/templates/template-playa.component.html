@@ -1,0 +1,275 @@
+@if (vm(); as v) {
+  <!-- ===== 1. Cabecera: cielo y mar =====
+       Fondo degradé turquesa, el logo en un círculo blanco como sol y el nombre
+       en tipografía script. La ola del pie "rompe" contra el color de la página
+       para que el header no corte seco. ===== -->
+  <header class="playa-sky">
+    <div class="relative mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 pb-6 pt-10 text-center sm:px-6 sm:pt-12">
+      <div class="playa-sun" aria-hidden="true"></div>
+
+      <img
+        [src]="v.logoSrc() | cldImg: 200"
+        [alt]="v.storeName()"
+        class="playa-logo"
+      />
+
+      <div>
+        <p class="playa-kicker">Ropa para chicos · verano todo el año</p>
+        <h1 class="playa-title">{{ v.storeName() }}</h1>
+      </div>
+
+      <p class="playa-note">{{ compraLine() }}</p>
+    </div>
+
+    <div class="playa-wave text-brand-50" aria-hidden="true">
+      <svg viewBox="0 0 1440 74" preserveAspectRatio="none" class="block h-10 w-full sm:h-14">
+        <path
+          d="M0,40 C180,74 360,8 540,30 C720,52 900,4 1080,26 C1260,48 1350,60 1440,34 L1440,74 L0,74 Z"
+          fill="currentColor"
+        />
+      </svg>
+    </div>
+  </header>
+
+  <!-- ===== 2. Promos: la sombrilla coral =====
+       Las promos vigentes de verdad, en banda coral. Si no hay ninguna
+       cargada, no se dibuja nada. ===== -->
+  @if (v.promos().length) {
+    <section class="playa-promos">
+      <div class="mx-auto flex max-w-6xl flex-wrap items-baseline justify-center gap-x-7 gap-y-1 px-4 py-3 sm:px-6">
+        @for (promo of v.promos(); track promo.id) {
+          <p class="text-sm">
+            <span class="font-display text-base text-white">{{ promo.text }}</span>
+            @if (promo.detail) {
+              <span class="ml-2 text-xs text-white/75">{{ promo.detail }}</span>
+            }
+          </p>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 3. La foto del verano: el carrusel administrable enmarcado como
+       una postal (marco blanco, sombra turquesa, un grado de inclinación). ===== -->
+  @if (v.heroSlides().length) {
+    <section class="mx-auto mt-8 max-w-6xl px-4 sm:px-6">
+      <div class="playa-frame">
+        <div class="relative aspect-[16/9] w-full overflow-hidden rounded-[1.5rem] bg-brand-100 sm:aspect-[21/9]">
+          <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+        </div>
+      </div>
+      <p class="playa-caption">Postales del verano — deslizá →</p>
+    </section>
+  }
+
+  <!-- ===== 4. Público: ¿para quién buscás? ===== -->
+  @if (v.publicoGroup(); as grupo) {
+    <section class="mx-auto mt-9 max-w-6xl px-4 sm:px-6">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="playa-kicker mr-1">¿Para quién buscás?</span>
+        <button
+          type="button"
+          (click)="v.setParam(grupo.id, '')"
+          class="playa-chip"
+          [class.playa-chip-on]="!v.paramValue(grupo.id)"
+        >
+          Todos
+        </button>
+        @for (opt of grupo.options; track opt.id) {
+          <button
+            type="button"
+            (click)="v.setParam(grupo.id, opt.id)"
+            class="playa-chip"
+            [class.playa-chip-on]="v.paramValue(grupo.id) === opt.id"
+          >
+            {{ opt.label }}
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 5. Lo más pedido del verano ===== -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section class="mx-auto mt-12 max-w-6xl px-4 sm:px-6">
+      <div class="mb-7 flex flex-wrap items-center gap-3">
+        <h2 class="playa-title-lg">Lo más pedido del verano</h2>
+        <span class="playa-pill">Los favoritos de la temporada</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
+        @for (product of v.bestSellers(); track product.id; let i = $index) {
+          <div appReveal [delay]="i * 60" [class.playa-offset]="i % 2 === 1">
+            <app-product-card [product]="product" variant="playa" />
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 6. Toda la colección =====
+       La ola de entrada pinta el fondo brand-100 de la sección, así la playa
+       sigue bajando. Adentro, filtros y grilla con los estados de siempre. ===== -->
+  <div class="playa-wave mt-14 text-brand-100" aria-hidden="true">
+    <svg viewBox="0 0 1440 74" preserveAspectRatio="none" class="block h-10 w-full sm:h-14">
+      <path
+        d="M0,34 C240,66 480,6 720,28 C960,50 1200,8 1440,38 L1440,74 L0,74 Z"
+        fill="currentColor"
+      />
+    </svg>
+  </div>
+
+  <section id="catalogo" class="playa-shore scroll-mt-20 pb-16 pt-8">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6">
+      <div class="mb-7 flex flex-wrap items-center gap-3">
+        <h2 class="playa-title-lg">Toda la colección</h2>
+        <span class="playa-pill">{{ v.filteredProducts().length }} prendas</span>
+      </div>
+
+      <div class="rounded-3xl bg-white p-4 shadow-[0_18px_40px_-28px_rgba(13,148,136,.55)] sm:p-6">
+        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <input
+            type="search"
+            placeholder="Buscar prenda, talle, color…"
+            aria-label="Buscar producto"
+            [ngModel]="v.searchTerm()"
+            (ngModelChange)="v.searchTerm.set($event)"
+            class="playa-field w-full sm:w-64"
+          />
+
+          <select
+            aria-label="Talle"
+            [ngModel]="v.selectedSize()"
+            (ngModelChange)="v.selectedSize.set($event)"
+            class="playa-field w-full sm:w-auto"
+          >
+            <option value="todos">Todos los talles</option>
+            @for (size of v.availableSizes(); track size) {
+              <option [value]="size">Talle {{ size }}</option>
+            }
+          </select>
+
+          @for (group of v.selectGroups(); track group.id) {
+            <select
+              [attr.aria-label]="group.name"
+              [ngModel]="v.paramValue(group.id)"
+              (ngModelChange)="v.setParam(group.id, $event)"
+              class="playa-field w-full sm:w-auto"
+            >
+              <option value="">{{ group.name }}: todas</option>
+              @for (opt of group.options; track opt.id) {
+                <option [value]="opt.id">{{ opt.label }}</option>
+              }
+            </select>
+          }
+
+          <div class="flex items-center gap-2">
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              placeholder="$ mín"
+              aria-label="Precio mínimo"
+              [ngModel]="v.minPrice()"
+              (ngModelChange)="v.setMinPrice($event)"
+              class="playa-field w-24"
+            />
+            <span class="text-sm text-stone-400">a</span>
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              placeholder="$ máx"
+              aria-label="Precio máximo"
+              [ngModel]="v.maxPrice()"
+              (ngModelChange)="v.setMaxPrice($event)"
+              class="playa-field w-24"
+            />
+          </div>
+
+          <select
+            aria-label="Ordenar"
+            [ngModel]="v.sortBy()"
+            (ngModelChange)="v.sortBy.set($event)"
+            class="playa-field w-full sm:w-auto"
+          >
+            <option value="novedades">Novedades</option>
+            <option value="precio-asc">Precio: de menor a mayor</option>
+            <option value="precio-desc">Precio: de mayor a menor</option>
+          </select>
+
+          @if (v.hasActiveFilters()) {
+            <button
+              type="button"
+              (click)="v.clearFilters()"
+              class="self-start text-sm font-bold uppercase tracking-wide text-brand-600 hover:text-brand-700 sm:ml-auto sm:self-auto"
+            >
+              Limpiar ✕
+            </button>
+          }
+        </div>
+
+        @if (v.publicoGroup(); as grupo) {
+          <div class="mt-4 flex flex-wrap gap-2 border-t border-dashed border-brand-200 pt-4">
+            <button
+              type="button"
+              (click)="v.setParam(grupo.id, '')"
+              class="playa-chip"
+              [class.playa-chip-on]="!v.paramValue(grupo.id)"
+            >
+              Todos
+            </button>
+            @for (opt of grupo.options; track opt.id) {
+              <button
+                type="button"
+                (click)="v.setParam(grupo.id, opt.id)"
+                class="playa-chip"
+                [class.playa-chip-on]="v.paramValue(grupo.id) === opt.id"
+              >
+                {{ opt.label }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+        <div class="pt-10">
+          <app-skeleton variant="card" [count]="8" />
+        </div>
+      } @else if (v.catalogStatus() === 'error') {
+        <div class="mt-10 rounded-3xl bg-white py-20 text-center">
+          <p class="playa-title-lg text-brand-600">Bajó la marea</p>
+          <p class="mt-2 text-sm text-stone-500">No se pudo cargar el catálogo.</p>
+          <button type="button" (click)="v.reloadCatalog()" class="playa-chip playa-chip-on mt-5">
+            Reintentar
+          </button>
+        </div>
+      } @else if (v.filteredProducts().length) {
+        <div class="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
+          @for (product of v.visibleProducts(); track product.id; let i = $index) {
+            <div appReveal [delay]="(i % 8) * 50">
+              <app-product-card [product]="product" variant="playa" />
+            </div>
+          }
+        </div>
+
+        @if (v.hasMore()) {
+          <div class="mt-10 text-center">
+            <button type="button" (click)="v.showMore()" class="playa-chip playa-chip-on px-6 py-3">
+              Ver más ({{ v.filteredProducts().length - v.visibleProducts().length }} más)
+            </button>
+          </div>
+        }
+      } @else {
+        <div class="mt-10 rounded-3xl bg-white py-20 text-center">
+          <p class="playa-title-lg">No hay nada con esos filtros</p>
+          <p class="mt-2 text-sm text-stone-500">Probá aflojar la red.</p>
+          <button type="button" (click)="v.clearFilters()" class="playa-chip playa-chip-on mt-5">
+            Ver toda la colección
+          </button>
+        </div>
+      }
+    </div>
+  </section>
+}

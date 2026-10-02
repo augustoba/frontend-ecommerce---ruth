@@ -1,0 +1,238 @@
+@if (vm(); as v) {
+  <!-- ===== Cabecera del diario: fecha real, nombre en gótica y filete doble.
+       La fecha se calcula en el componente (la portada no cambia de fecha
+       mientras la leés); la gótica sólo se usa para la cabecera, como en un
+       diario de verdad. ===== -->
+  <header class="mx-auto max-w-5xl px-4 pt-6 sm:px-6">
+    <div class="per-topline">
+      <span>{{ fecha }}</span>
+      <span class="hidden sm:inline">Edición digital</span>
+      <span>{{ v.storeName() }}</span>
+    </div>
+
+    <h1 class="font-display py-4 text-center text-5xl leading-none text-stone-900 sm:py-6 sm:text-7xl">
+      {{ v.storeName() }}
+    </h1>
+
+    <div class="per-double-rule" aria-hidden="true"></div>
+    <p class="py-2 text-center text-[13px] leading-snug text-stone-600">{{ compraLine() }}</p>
+    <div class="per-double-rule" aria-hidden="true"></div>
+  </header>
+
+  <!-- ===== ÚLTIMO MOMENTO: las promos vigentes reales, como el copete de
+       urgencia de un diario. Sin promos cargadas, la franja no existe. ===== -->
+  @if (v.promos().length) {
+    <section class="mx-auto mt-6 max-w-5xl px-4 sm:px-6">
+      <div class="per-extra">
+        <span class="per-extra-tag">Último momento</span>
+        <div class="flex flex-wrap items-baseline gap-x-8 gap-y-1">
+          @for (promo of v.promos(); track promo.id) {
+            <p class="text-sm">
+              <span class="font-semibold text-stone-900">{{ promo.text }}</span>
+              @if (promo.detail) {
+                <span class="ml-1.5 text-xs text-stone-500">({{ promo.detail }})</span>
+              }
+            </p>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ===== Foto de tapa: el carrusel administrable, con epígrafe como los
+       diarios. Sin fotos cargadas no hay tapa. ===== -->
+  @if (v.heroSlides().length) {
+    <section class="mx-auto mt-8 max-w-5xl px-4 sm:px-6">
+      <div class="border border-brand-300 bg-white p-1.5">
+        <div class="relative aspect-[16/9] w-full overflow-hidden bg-brand-100 sm:aspect-[21/9]">
+          <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+        </div>
+      </div>
+      <p class="per-caption mt-2">Foto de tapa — deslizá para ver más</p>
+    </section>
+  }
+
+  <!-- ===== Lo más leído: la lista de "notas más leídas" del diario, con foto
+       chica, número grande y precio. Es una fila de texto, no una tarjeta:
+       la diferencia estructural con el resto de los diseños. ===== -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section class="mx-auto mt-10 max-w-5xl px-4 sm:px-6">
+      <h2 class="per-section-title">Lo más leído</h2>
+      <ol class="mt-2 grid gap-x-10 sm:grid-cols-2">
+        @for (product of v.bestSellers(); track product.id; let i = $index) {
+          <li>
+            <a [routerLink]="['/producto', product.id]" class="per-read">
+              <span class="per-rank">{{ i + 1 }}</span>
+              <img
+                [src]="product.imageUrl | cldImg: 120"
+                [alt]="product.name"
+                loading="lazy"
+                class="h-16 w-16 shrink-0 border border-brand-200 object-cover"
+              />
+              <span class="min-w-0 flex-1">
+                <span class="font-display block truncate text-base font-semibold text-stone-900">
+                  {{ product.name }}
+                </span>
+                <span class="block text-xs text-stone-500">{{ product.ageRange }}</span>
+              </span>
+              <span class="font-display shrink-0 text-base font-semibold tabular-nums text-stone-900">
+                {{ product.price | currency: 'ARS' : 'symbol' : '1.0-0' }}
+              </span>
+            </a>
+          </li>
+        }
+      </ol>
+    </section>
+  }
+
+  <!-- ===== Clasificados: el catálogo completo, con los avisos en grilla y los
+       mismos estados que el resto de las plantillas. ===== -->
+  <section id="catalogo" class="mx-auto mt-12 max-w-5xl scroll-mt-20 px-4 pb-16 sm:px-6">
+    <h2 class="per-section-title">Clasificados</h2>
+
+    <div class="mt-4 border border-brand-300 bg-white/60 p-4 sm:p-5">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <input
+          type="search"
+          placeholder="Buscar en el archivo…"
+          aria-label="Buscar producto"
+          [ngModel]="v.searchTerm()"
+          (ngModelChange)="v.searchTerm.set($event)"
+          class="per-field w-full sm:w-64"
+        />
+
+        <select
+          aria-label="Talle"
+          [ngModel]="v.selectedSize()"
+          (ngModelChange)="v.selectedSize.set($event)"
+          class="per-field w-full sm:w-auto"
+        >
+          <option value="todos">Todos los talles</option>
+          @for (size of v.availableSizes(); track size) {
+            <option [value]="size">Talle {{ size }}</option>
+          }
+        </select>
+
+        @for (group of v.selectGroups(); track group.id) {
+          <select
+            [attr.aria-label]="group.name"
+            [ngModel]="v.paramValue(group.id)"
+            (ngModelChange)="v.setParam(group.id, $event)"
+            class="per-field w-full sm:w-auto"
+          >
+            <option value="">{{ group.name }}: todas</option>
+            @for (opt of group.options; track opt.id) {
+              <option [value]="opt.id">{{ opt.label }}</option>
+            }
+          </select>
+        }
+
+        <div class="flex items-center gap-2">
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            placeholder="$ mín"
+            aria-label="Precio mínimo"
+            [ngModel]="v.minPrice()"
+            (ngModelChange)="v.setMinPrice($event)"
+            class="per-field w-24"
+          />
+          <span class="text-sm text-stone-400">a</span>
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            placeholder="$ máx"
+            aria-label="Precio máximo"
+            [ngModel]="v.maxPrice()"
+            (ngModelChange)="v.setMaxPrice($event)"
+            class="per-field w-24"
+          />
+        </div>
+
+        <select
+          aria-label="Ordenar"
+          [ngModel]="v.sortBy()"
+          (ngModelChange)="v.sortBy.set($event)"
+          class="per-field w-full sm:w-auto"
+        >
+          <option value="novedades">Novedades</option>
+          <option value="precio-asc">Precio: menor a mayor</option>
+          <option value="precio-desc">Precio: mayor a menor</option>
+        </select>
+
+        @if (v.hasActiveFilters()) {
+          <button
+            type="button"
+            (click)="v.clearFilters()"
+            class="self-start text-sm font-semibold uppercase tracking-wide text-stone-600 underline underline-offset-4 hover:text-stone-900 sm:ml-auto sm:self-auto"
+          >
+            Limpiar ✕
+          </button>
+        }
+      </div>
+
+      @if (v.publicoGroup(); as grupo) {
+        <div class="mt-3 flex flex-wrap gap-2 border-t border-brand-200 pt-3">
+          <button
+            type="button"
+            (click)="v.setParam(grupo.id, '')"
+            class="per-chip"
+            [class.per-chip-on]="!v.paramValue(grupo.id)"
+          >
+            Todas
+          </button>
+          @for (opt of grupo.options; track opt.id) {
+            <button
+              type="button"
+              (click)="v.setParam(grupo.id, opt.id)"
+              class="per-chip"
+              [class.per-chip-on]="v.paramValue(grupo.id) === opt.id"
+            >
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+      <div class="pt-8">
+        <app-skeleton variant="card" [count]="6" />
+      </div>
+    } @else if (v.catalogStatus() === 'error') {
+      <div class="mt-8 border border-brand-300 bg-white/60 py-20 text-center">
+        <p class="font-display text-2xl font-semibold text-stone-800">Se interrumpió la edición</p>
+        <p class="mt-2 text-sm text-stone-500">No se pudo cargar el catálogo.</p>
+        <button type="button" (click)="v.reloadCatalog()" class="per-chip per-chip-on mt-4">
+          Reintentar
+        </button>
+      </div>
+    } @else if (v.filteredProducts().length) {
+      <div class="mt-8 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3">
+        @for (product of v.visibleProducts(); track product.id; let i = $index) {
+          <div appReveal [delay]="(i % 6) * 60">
+            <app-product-card [product]="product" variant="periodico" />
+          </div>
+        }
+      </div>
+
+      @if (v.hasMore()) {
+        <div class="mt-10 text-center">
+          <button type="button" (click)="v.showMore()" class="per-chip per-chip-on">
+            Ver más avisos ({{ v.filteredProducts().length - v.visibleProducts().length }} más)
+          </button>
+        </div>
+      }
+    } @else {
+      <div class="mt-8 border border-brand-300 bg-white/60 py-20 text-center">
+        <p class="font-display text-2xl font-semibold text-stone-800">Sin avisos para esos filtros</p>
+        <p class="mt-2 text-sm text-stone-500">Ninguna prenda coincide con lo que buscás.</p>
+        <button type="button" (click)="v.clearFilters()" class="per-chip per-chip-on mt-4">
+          Ver todo el catálogo
+        </button>
+      </div>
+    }
+  </section>
+}

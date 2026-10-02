@@ -1,0 +1,256 @@
+@if (vm(); as v) {
+  <!-- ===== Toldito rayado: la franja que corona el puesto. Puro CSS
+       (.feria-awning), sin imágenes: así se adapta a cualquier ancho. ===== -->
+  <div class="feria-awning" aria-hidden="true"></div>
+
+  <!-- ===== Cartel del puesto: logo en tablita inclinada, nombre en slab y la
+       línea de compra en un papelito. ===== -->
+  <header class="mx-auto max-w-6xl px-4 pt-8 sm:px-6 sm:pt-10">
+    <div class="flex flex-col items-center gap-5 text-center sm:flex-row sm:gap-7 sm:text-left">
+      <div class="feria-board shrink-0">
+        <img
+          [src]="v.logoSrc() | cldImg: 200"
+          [alt]="v.storeName()"
+          class="h-20 w-20 object-cover sm:h-24 sm:w-24"
+        />
+      </div>
+      <div>
+        <p class="feria-kicker">Puesto de ropa para chicos</p>
+        <h1 class="font-display text-4xl leading-none text-brand-700 sm:text-5xl">{{ v.storeName() }}</h1>
+        <p class="feria-note mt-3 inline-block">{{ compraLine() }}</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Carteles de oferta: las promos reales de `/api/discounts`, pegadas
+       con cinta y apenas rotadas, como en la puerta del puesto. Sin promos
+       cargadas no hay carteles. ===== -->
+  @if (v.promos().length) {
+    <section class="mx-auto mt-8 max-w-6xl px-4 sm:px-6">
+      <div class="flex flex-wrap items-stretch justify-center gap-4">
+        @for (promo of v.promos(); track promo.id; let i = $index) {
+          <div class="feria-note relative max-w-xs text-center" [class.feria-tilt-a]="i % 2 === 0" [class.feria-tilt-b]="i % 2 !== 0">
+            <span class="feria-tape" aria-hidden="true"></span>
+            <p class="font-display text-base text-brand-700">{{ promo.text }}</p>
+            @if (promo.detail) {
+              <p class="mt-0.5 text-[11px] text-stone-500">{{ promo.detail }}</p>
+            }
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== El carrusel administrable, colgado abajo del toldito: la franja
+       rayada lo corona y el marco de madera lo encuadra. Sin fotos no existe. ===== -->
+  @if (v.heroSlides().length) {
+    <section class="mx-auto mt-10 max-w-6xl px-4 sm:px-6">
+      <div class="feria-frame">
+        <div class="feria-awning feria-awning-short" aria-hidden="true"></div>
+        <div class="relative aspect-[16/9] w-full overflow-hidden bg-brand-100 sm:aspect-[21/9]">
+          <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ===== Público: chips de cartón que filtran de verdad (`setParam`), no
+       adorno. Pasan por cada categoría real del grupo "Público". ===== -->
+  @if (v.publicoGroup(); as grupo) {
+    <section class="mx-auto mt-10 max-w-6xl px-4 sm:px-6">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="feria-kicker mr-1">Pasá por:</span>
+        <button
+          type="button"
+          (click)="v.setParam(grupo.id, '')"
+          class="feria-chip"
+          [class.feria-chip-on]="!v.paramValue(grupo.id)"
+        >
+          Todo
+        </button>
+        @for (opt of grupo.options; track opt.id) {
+          <button
+            type="button"
+            (click)="v.setParam(grupo.id, opt.id)"
+            class="feria-chip"
+            [class.feria-chip-on]="v.paramValue(grupo.id) === opt.id"
+          >
+            {{ opt.label }}
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== Lo que más se lleva: riel con las tarjetas apenas inclinadas,
+       alternando para acá y para allá, como colgadas del alambre. ===== -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section class="mx-auto mt-12 max-w-6xl px-4 sm:px-6">
+      <div class="feria-rule">
+        <h2 class="font-display text-2xl text-brand-700 sm:text-3xl">Lo que más se lleva</h2>
+        <span class="feria-kicker">Recién traído</span>
+      </div>
+
+      <div class="feria-rail -mx-4 mt-8 px-4 sm:mx-0 sm:px-0">
+        @for (product of v.bestSellers(); track product.id; let i = $index) {
+          <div appReveal [delay]="i * 60" class="w-48 shrink-0 sm:w-56" [class.feria-tilt-a]="i % 2 === 0" [class.feria-tilt-b]="i % 2 !== 0">
+            <app-product-card class="block" [product]="product" variant="feria" />
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== Catálogo completo del puesto: mismos estados que el resto. ===== -->
+  <section id="catalogo" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-14 sm:px-6">
+    <div class="feria-rule mb-7">
+      <h2 class="font-display text-2xl text-brand-700 sm:text-3xl">Todo el puesto</h2>
+      <span class="feria-kicker">{{ v.filteredProducts().length }} prendas</span>
+    </div>
+
+    <div class="feria-panel flex flex-col gap-4 p-4 sm:p-6">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <input
+          type="search"
+          placeholder="Buscar en el puesto…"
+          aria-label="Buscar producto"
+          [ngModel]="v.searchTerm()"
+          (ngModelChange)="v.searchTerm.set($event)"
+          class="feria-field w-full sm:w-64"
+        />
+
+        <select
+          aria-label="Talle"
+          [ngModel]="v.selectedSize()"
+          (ngModelChange)="v.selectedSize.set($event)"
+          class="feria-field w-full sm:w-auto"
+        >
+          <option value="todos">Todos los talles</option>
+          @for (size of v.availableSizes(); track size) {
+            <option [value]="size">Talle {{ size }}</option>
+          }
+        </select>
+
+        @for (group of v.selectGroups(); track group.id) {
+          <select
+            [attr.aria-label]="group.name"
+            [ngModel]="v.paramValue(group.id)"
+            (ngModelChange)="v.setParam(group.id, $event)"
+            class="feria-field w-full sm:w-auto"
+          >
+            <option value="">{{ group.name }}: todas</option>
+            @for (opt of group.options; track opt.id) {
+              <option [value]="opt.id">{{ opt.label }}</option>
+            }
+          </select>
+        }
+
+        <div class="flex items-center gap-2">
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            placeholder="$ mín"
+            aria-label="Precio mínimo"
+            [ngModel]="v.minPrice()"
+            (ngModelChange)="v.setMinPrice($event)"
+            class="feria-field w-24"
+          />
+          <span class="text-sm text-stone-400">a</span>
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            placeholder="$ máx"
+            aria-label="Precio máximo"
+            [ngModel]="v.maxPrice()"
+            (ngModelChange)="v.setMaxPrice($event)"
+            class="feria-field w-24"
+          />
+        </div>
+
+        <select
+          aria-label="Ordenar"
+          [ngModel]="v.sortBy()"
+          (ngModelChange)="v.sortBy.set($event)"
+          class="feria-field w-full sm:w-auto"
+        >
+          <option value="novedades">Lo más nuevo</option>
+          <option value="precio-asc">Precio: de menor a mayor</option>
+          <option value="precio-desc">Precio: de mayor a menor</option>
+        </select>
+
+        @if (v.hasActiveFilters()) {
+          <button
+            type="button"
+            (click)="v.clearFilters()"
+            class="self-start text-sm font-semibold text-brand-600 underline decoration-wavy underline-offset-4 hover:text-brand-700 sm:ml-auto sm:self-auto"
+          >
+            Sacar los filtros ✕
+          </button>
+        }
+      </div>
+
+      @if (v.publicoGroup(); as grupo) {
+        <div class="flex flex-wrap gap-2 border-t border-dashed border-brand-200 pt-4">
+          <button
+            type="button"
+            (click)="v.setParam(grupo.id, '')"
+            class="feria-chip"
+            [class.feria-chip-on]="!v.paramValue(grupo.id)"
+          >
+            Todo
+          </button>
+          @for (opt of grupo.options; track opt.id) {
+            <button
+              type="button"
+              (click)="v.setParam(grupo.id, opt.id)"
+              class="feria-chip"
+              [class.feria-chip-on]="v.paramValue(grupo.id) === opt.id"
+            >
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+      <div class="pt-10">
+        <app-skeleton variant="card" [count]="8" />
+      </div>
+    } @else if (v.catalogStatus() === 'error') {
+      <div class="mt-10 rounded-2xl bg-white py-20 text-center ring-1 ring-brand-200">
+        <p class="font-display text-3xl text-brand-700">Se desarmó el puesto</p>
+        <p class="mt-2 text-sm text-stone-500">No se pudo cargar el catálogo.</p>
+        <button type="button" (click)="v.reloadCatalog()" class="feria-chip feria-chip-on mt-4">
+          Reintentar
+        </button>
+      </div>
+    } @else if (v.filteredProducts().length) {
+      <div class="mt-10 grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
+        @for (product of v.visibleProducts(); track product.id; let i = $index) {
+          <div appReveal [delay]="(i % 8) * 50">
+            <app-product-card [product]="product" variant="feria" />
+          </div>
+        }
+      </div>
+
+      @if (v.hasMore()) {
+        <div class="mt-10 text-center">
+          <button type="button" (click)="v.showMore()" class="feria-chip feria-chip-on px-6 py-2.5 text-sm">
+            Ver más ({{ v.filteredProducts().length - v.visibleProducts().length }} prendas más)
+          </button>
+        </div>
+      }
+    } @else {
+      <div class="mt-10 rounded-2xl bg-white py-20 text-center ring-1 ring-brand-200">
+        <p class="font-display text-3xl text-brand-700">No hay nada con eso</p>
+        <p class="mt-2 text-sm text-stone-500">Probá aflojando los filtros.</p>
+        <button type="button" (click)="v.clearFilters()" class="feria-chip feria-chip-on mt-4">
+          Ver todo el puesto
+        </button>
+      </div>
+    }
+  </section>
+}

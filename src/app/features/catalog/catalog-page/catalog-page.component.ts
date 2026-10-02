@@ -12,6 +12,14 @@ import { TemplateCarameloComponent } from '../templates/template-caramelo.compon
 import { TemplateCoheteComponent } from '../templates/template-cohete.component';
 import { TemplateJunglaComponent } from '../templates/template-jungla.component';
 import { TemplateCrayonComponent } from '../templates/template-crayon.component';
+import { TemplateBoutiqueComponent } from '../templates/template-boutique.component';
+import { TemplateFeriaComponent } from '../templates/template-feria.component';
+import { TemplatePeriodicoComponent } from '../templates/template-periodico.component';
+import { TemplateRetroComponent } from '../templates/template-retro.component';
+import { TemplateSuizoComponent } from '../templates/template-suizo.component';
+import { TemplateCanchaComponent } from '../templates/template-cancha.component';
+import { TemplateCineComponent } from '../templates/template-cine.component';
+import { TemplatePlayaComponent } from '../templates/template-playa.component';
 import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
 import { SizeScaleService } from '../../../core/services/size-scale.service';
@@ -46,6 +54,14 @@ import { CatalogView, PromoLine, SortOrder } from '../catalog-view';
     TemplateCoheteComponent,
     TemplateJunglaComponent,
     TemplateCrayonComponent,
+    TemplateBoutiqueComponent,
+    TemplateFeriaComponent,
+    TemplatePeriodicoComponent,
+    TemplateRetroComponent,
+    TemplateSuizoComponent,
+    TemplateCanchaComponent,
+    TemplateCineComponent,
+    TemplatePlayaComponent,
   ],
   templateUrl: './catalog-page.component.html',
   styleUrl: './catalog-page.component.css',

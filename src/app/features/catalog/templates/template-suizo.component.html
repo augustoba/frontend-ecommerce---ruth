@@ -1,0 +1,276 @@
+@if (vm(); as v) {
+  <!-- ===== Cabecera suiza: nombre gigante a la izquierda, datos numerados a
+       la derecha y la línea de compra apoyada en la retícula. El cuadradito
+       rojo es el único adorno de todo el diseño. ===== -->
+  <header class="border-b-2 border-stone-900 bg-white">
+    <div class="mx-auto max-w-6xl px-4 pb-0 pt-10 sm:px-6 sm:pt-14">
+      <div class="flex flex-col justify-between gap-6 sm:flex-row sm:items-start">
+        <div class="flex items-start gap-4">
+          <img
+            [src]="v.logoSrc() | cldImg: 160"
+            [alt]="v.storeName()"
+            class="h-14 w-14 border border-stone-300 object-cover sm:h-16 sm:w-16"
+          />
+          <div>
+            <p class="swiss-meta">Tienda de ropa para chicos</p>
+            <h1 class="font-display mt-2 text-5xl font-black uppercase leading-[0.9] tracking-tight sm:text-7xl">
+              {{ v.storeName() }}
+            </h1>
+          </div>
+        </div>
+
+        <div class="shrink-0 sm:text-right">
+          <p class="swiss-meta">01 — Catálogo</p>
+          <button
+            type="button"
+            (click)="v.scrollToCatalog()"
+            class="swiss-link mt-2 inline-block"
+          >
+            Ir al catálogo ↓
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-8 grid grid-cols-12 items-baseline gap-4 border-t border-stone-300 py-4">
+        <p class="col-span-12 text-sm leading-snug text-stone-700 sm:col-span-8">{{ compraLine() }}</p>
+        <p class="swiss-meta col-span-12 sm:col-span-4 sm:text-right">
+          {{ v.filteredProducts().length }} prendas en catálogo
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Promos: franja roja, versalita, separadas por barra vertical. Son
+       las vigentes reales; sin ninguna cargada la franja no existe. ===== -->
+  @if (v.promos().length) {
+    <section class="bg-brand-600 text-white">
+      <div class="mx-auto flex max-w-6xl flex-wrap items-baseline gap-x-8 gap-y-1 px-4 py-2.5 sm:px-6">
+        @for (promo of v.promos(); track promo.id; let last = $last) {
+          <p class="text-[13px] font-semibold uppercase tracking-[0.08em]">
+            {{ promo.text }}
+            @if (promo.detail) {
+              <span class="ml-2 font-normal normal-case tracking-normal text-white/75">{{ promo.detail }}</span>
+            }
+            @if (!last) {
+              <span class="ml-8 font-normal text-white/50" aria-hidden="true">|</span>
+            }
+          </p>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== Hero en dos bloques sobre la retícula de 12: la foto ocupa 8 y el
+       panel rojo 4 con la acción. Sin fotos cargadas, el hero entero no existe
+       (nada de bloques vacíos). ===== -->
+  @if (v.heroSlides().length) {
+    <section class="mx-auto max-w-6xl px-4 pt-10 sm:px-6">
+      <div class="grid grid-cols-12">
+        <div class="col-span-12 border-2 border-stone-900 sm:col-span-8">
+          <div class="relative aspect-[16/9] w-full overflow-hidden bg-stone-100 sm:aspect-[21/9]">
+            <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+          </div>
+        </div>
+        <div class="col-span-12 flex flex-col justify-between bg-brand-600 p-6 text-white sm:col-span-4 sm:p-8">
+          <p class="swiss-meta text-white/80">Fotos de la tienda</p>
+          <p class="font-display mt-8 text-3xl font-black uppercase leading-[0.95] sm:text-4xl">
+            Lo que hay<br />en el local
+          </p>
+          <button
+            type="button"
+            (click)="v.scrollToCatalog()"
+            class="mt-8 self-start border-2 border-white px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] transition-colors hover:bg-white hover:text-brand-600"
+          >
+            Ver catálogo
+          </button>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ===== 02 — Más vendidos: celdas pegadas sobre la grilla visible (sin
+       gap, con filetes), fotos que recuperan el color al pasar el mouse. ===== -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section class="mx-auto mt-14 max-w-6xl px-4 sm:px-6">
+      <div class="mb-4 flex items-baseline justify-between border-b border-stone-300 pb-2">
+        <h2 class="font-display text-2xl font-black uppercase tracking-tight">02 — Más vendidos</h2>
+        <span class="swiss-meta">Selección</span>
+      </div>
+
+      <div class="grid grid-cols-2 border-l border-t border-stone-200 sm:grid-cols-4">
+        @for (product of v.bestSellers(); track product.id; let i = $index) {
+          <div appReveal [delay]="(i % 4) * 60" class="border-b border-r border-stone-200 p-3 sm:p-4">
+            <app-product-card [product]="product" variant="suizo" />
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 03 — Catálogo: campos subrayados rotulados con letras, grilla de
+       celdas pegadas y los mismos estados que el resto de las plantillas. ===== -->
+  <section id="catalogo" class="mx-auto max-w-6xl scroll-mt-16 px-4 py-14 sm:px-6">
+    <div class="mb-4 flex items-baseline justify-between border-b border-stone-300 pb-2">
+      <h2 class="font-display text-2xl font-black uppercase tracking-tight">03 — Catálogo</h2>
+      <span class="swiss-meta">{{ v.filteredProducts().length }} resultados</span>
+    </div>
+
+    <div class="grid grid-cols-12 gap-x-6 gap-y-4 pb-8">
+      <label class="col-span-12 flex flex-col gap-1 sm:col-span-4">
+        <span class="swiss-meta">A — Buscar</span>
+        <input
+          type="search"
+          placeholder="Prenda, color…"
+          aria-label="Buscar producto"
+          [ngModel]="v.searchTerm()"
+          (ngModelChange)="v.searchTerm.set($event)"
+          class="swiss-field"
+        />
+      </label>
+
+      <label class="col-span-6 flex flex-col gap-1 sm:col-span-2">
+        <span class="swiss-meta">B — Talle</span>
+        <select
+          aria-label="Talle"
+          [ngModel]="v.selectedSize()"
+          (ngModelChange)="v.selectedSize.set($event)"
+          class="swiss-field"
+        >
+          <option value="todos">Todos</option>
+          @for (size of v.availableSizes(); track size) {
+            <option [value]="size">{{ size }}</option>
+          }
+        </select>
+      </label>
+
+      @if (v.publicoGroup(); as grupo) {
+        <label class="col-span-6 flex flex-col gap-1 sm:col-span-2">
+          <span class="swiss-meta">C — {{ grupo.name }}</span>
+          <select
+            [attr.aria-label]="grupo.name"
+            [ngModel]="v.paramValue(grupo.id)"
+            (ngModelChange)="v.setParam(grupo.id, $event)"
+            class="swiss-field"
+          >
+            <option value="">Todas</option>
+            @for (opt of grupo.options; track opt.id) {
+              <option [value]="opt.id">{{ opt.label }}</option>
+            }
+          </select>
+        </label>
+      }
+
+      @for (group of v.selectGroups(); track group.id) {
+        <label class="col-span-6 flex flex-col gap-1 sm:col-span-2">
+          <span class="swiss-meta">D — {{ group.name }}</span>
+          <select
+            [attr.aria-label]="group.name"
+            [ngModel]="v.paramValue(group.id)"
+            (ngModelChange)="v.setParam(group.id, $event)"
+            class="swiss-field"
+          >
+            <option value="">Todas</option>
+            @for (opt of group.options; track opt.id) {
+              <option [value]="opt.id">{{ opt.label }}</option>
+            }
+          </select>
+        </label>
+      }
+
+      <label class="col-span-12 flex flex-col gap-1 sm:col-span-3">
+        <span class="swiss-meta">E — Precio</span>
+        <span class="flex items-baseline gap-2">
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            placeholder="Mín"
+            aria-label="Precio mínimo"
+            [ngModel]="v.minPrice()"
+            (ngModelChange)="v.setMinPrice($event)"
+            class="swiss-field"
+          />
+          <span class="text-stone-400">/</span>
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            placeholder="Máx"
+            aria-label="Precio máximo"
+            [ngModel]="v.maxPrice()"
+            (ngModelChange)="v.setMaxPrice($event)"
+            class="swiss-field"
+          />
+        </span>
+      </label>
+
+      <label class="col-span-6 flex flex-col gap-1 sm:col-span-2">
+        <span class="swiss-meta">F — Orden</span>
+        <select
+          aria-label="Ordenar"
+          [ngModel]="v.sortBy()"
+          (ngModelChange)="v.sortBy.set($event)"
+          class="swiss-field"
+        >
+          <option value="novedades">Novedades</option>
+          <option value="precio-asc">Precio ↑</option>
+          <option value="precio-desc">Precio ↓</option>
+        </select>
+      </label>
+
+      @if (v.hasActiveFilters()) {
+        <div class="col-span-12 flex items-end sm:col-span-1">
+          <button type="button" (click)="v.clearFilters()" class="swiss-link pb-1">Limpiar ✕</button>
+        </div>
+      }
+    </div>
+
+    @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+      <app-skeleton variant="card" [count]="8" />
+    } @else if (v.catalogStatus() === 'error') {
+      <div class="border-2 border-stone-900 py-20 text-center">
+        <p class="font-display text-3xl font-black uppercase text-brand-600">Error</p>
+        <p class="mt-2 text-sm text-stone-500">No se pudo cargar el catálogo.</p>
+        <button
+          type="button"
+          (click)="v.reloadCatalog()"
+          class="mt-5 bg-stone-900 px-6 py-2.5 text-xs font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-brand-600"
+        >
+          Reintentar
+        </button>
+      </div>
+    } @else if (v.filteredProducts().length) {
+      <div class="grid grid-cols-2 border-l border-t border-stone-200 sm:grid-cols-3 lg:grid-cols-4">
+        @for (product of v.visibleProducts(); track product.id; let i = $index) {
+          <div appReveal [delay]="(i % 8) * 40" class="border-b border-r border-stone-200 p-3 sm:p-4">
+            <app-product-card [product]="product" variant="suizo" />
+          </div>
+        }
+      </div>
+
+      @if (v.hasMore()) {
+        <div class="mt-8 text-center">
+          <button
+            type="button"
+            (click)="v.showMore()"
+            class="border-2 border-stone-900 px-8 py-3 text-xs font-bold uppercase tracking-[0.16em] transition-colors hover:bg-stone-900 hover:text-white"
+          >
+            Ver más (+{{ v.filteredProducts().length - v.visibleProducts().length }})
+          </button>
+        </div>
+      }
+    } @else {
+      <div class="border-2 border-stone-900 py-20 text-center">
+        <p class="font-display text-3xl font-black uppercase text-stone-800">Sin resultados</p>
+        <p class="mt-2 text-sm text-stone-500">Ninguna prenda cumple esos criterios.</p>
+        <button
+          type="button"
+          (click)="v.clearFilters()"
+          class="mt-5 bg-brand-600 px-6 py-2.5 text-xs font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-stone-900"
+        >
+          Ver todo
+        </button>
+      </div>
+    }
+  </section>
+}

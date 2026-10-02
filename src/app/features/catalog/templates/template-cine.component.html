@@ -1,0 +1,277 @@
+@if (vm(); as v) {
+  <!-- ===== 1. La marquesina =====
+       El encabezado entero es el cartel del cine: fondo bordó, foquitos que
+       persiguen arriba y abajo del letrero, nombre en tipografía de afiche y
+       las cinco estrellas. Sin nav ni links: acá el espectáculo es entrar. ===== -->
+  <header class="cine-header">
+    <div class="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
+      <div class="cine-marquee">
+        <div class="cine-bulbs" aria-hidden="true"></div>
+
+        <div class="flex flex-col items-center gap-5 px-6 py-7 text-center sm:flex-row sm:gap-7 sm:text-left">
+          <img
+            [src]="v.logoSrc() | cldImg: 200"
+            [alt]="v.storeName()"
+            class="cine-logo"
+          />
+
+          <div class="min-w-0">
+            <p class="cine-kicker">Cine de barrio · ropa para chicos</p>
+            <h1 class="cine-title">{{ v.storeName() }}</h1>
+            <!-- Las estrellas de la crítica: decorativas, con el brillo escalonado
+                 desde CSS (nth-child + delay). -->
+            <p class="cine-stars" aria-hidden="true">
+              <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+            </p>
+          </div>
+
+          <!-- El número real de la sala: prendas en cartel. -->
+          <div class="cine-count sm:ml-auto">
+            <span class="cine-count-num">{{ v.filteredProducts().length }}</span>
+            <span class="cine-count-label">prendas<br />en cartel</span>
+          </div>
+        </div>
+
+        <div class="cine-bulbs" aria-hidden="true"></div>
+      </div>
+
+      <p class="cine-compra">{{ compraLine() }}</p>
+    </div>
+  </header>
+
+  <!-- ===== 2. Promos: "En cartelera" =====
+       Las promos vigentes de verdad, separadas por estrellas doradas. Si no
+       hay ninguna cargada, la banda no existe. ===== -->
+  @if (v.promos().length) {
+    <section class="cine-band">
+      <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-6 gap-y-1.5 px-4 py-3 sm:px-6">
+        <span class="cine-band-tag">En cartelera</span>
+        @for (promo of v.promos(); track promo.id; let last = $last) {
+          <p class="text-sm">
+            <span class="font-display uppercase tracking-wide text-brand-400">{{ promo.text }}</span>
+            @if (promo.detail) {
+              <span class="ml-2 text-xs text-white/55">{{ promo.detail }}</span>
+            }
+          </p>
+          @if (!last) {
+            <span class="cine-star-sm" aria-hidden="true">★</span>
+          }
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 3. El escenario: el carrusel administrable con cortina y
+       foquitos. La cortina cuelga arriba y los foquitos marcan el piso. ===== -->
+  @if (v.heroSlides().length) {
+    <section class="mx-auto mt-8 max-w-6xl px-4 sm:px-6">
+      <div class="cine-stage">
+        <div class="cine-curtain" aria-hidden="true"></div>
+        <div class="relative aspect-[16/9] w-full overflow-hidden bg-brand-200 sm:aspect-[21/9]">
+          <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+        </div>
+        <div class="cine-bulbs" aria-hidden="true"></div>
+      </div>
+      <p class="cine-caption">La cartelera, pasando ahora — deslizá →</p>
+    </section>
+  }
+
+  <!-- ===== 4. Público: elegir la función, chips con aro dorado. ===== -->
+  @if (v.publicoGroup(); as grupo) {
+    <section class="mx-auto mt-9 max-w-6xl px-4 sm:px-6">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="cine-kicker mr-1">Elegí la función:</span>
+        <button
+          type="button"
+          (click)="v.setParam(grupo.id, '')"
+          class="cine-chip"
+          [class.cine-chip-on]="!v.paramValue(grupo.id)"
+        >
+          Todas
+        </button>
+        @for (opt of grupo.options; track opt.id) {
+          <button
+            type="button"
+            (click)="v.setParam(grupo.id, opt.id)"
+            class="cine-chip"
+            [class.cine-chip-on]="v.paramValue(grupo.id) === opt.id"
+          >
+            {{ opt.label }}
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 5. Taquilla: los más vendidos como afiches de estreno. ===== -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section class="mx-auto mt-12 max-w-6xl px-4 sm:px-6">
+      <div class="cine-section-head">
+        <h2 class="cine-title-lg">Taquilla</h2>
+        <span class="cine-pill">Las más pedidas de la semana</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
+        @for (product of v.bestSellers(); track product.id; let i = $index) {
+          <div appReveal [delay]="i * 60">
+            <app-product-card [product]="product" variant="cine" />
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 6. Función continuada: el catálogo completo, con los mismos
+       estados que el resto de las plantillas. ===== -->
+  <section id="catalogo" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-14 sm:px-6">
+    <div class="cine-section-head">
+      <h2 class="cine-title-lg">Función continuada</h2>
+      <span class="cine-pill">{{ v.filteredProducts().length }} prendas en cartel</span>
+    </div>
+
+    <div class="cine-panel">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <input
+          type="search"
+          placeholder="Buscar en la cartelera…"
+          aria-label="Buscar producto"
+          [ngModel]="v.searchTerm()"
+          (ngModelChange)="v.searchTerm.set($event)"
+          class="cine-field w-full sm:w-64"
+        />
+
+        <select
+          aria-label="Talle"
+          [ngModel]="v.selectedSize()"
+          (ngModelChange)="v.selectedSize.set($event)"
+          class="cine-field w-full sm:w-auto"
+        >
+          <option value="todos">Todos los talles</option>
+          @for (size of v.availableSizes(); track size) {
+            <option [value]="size">Talle {{ size }}</option>
+          }
+        </select>
+
+        @for (group of v.selectGroups(); track group.id) {
+          <select
+            [attr.aria-label]="group.name"
+            [ngModel]="v.paramValue(group.id)"
+            (ngModelChange)="v.setParam(group.id, $event)"
+            class="cine-field w-full sm:w-auto"
+          >
+            <option value="">{{ group.name }}: todas</option>
+            @for (opt of group.options; track opt.id) {
+              <option [value]="opt.id">{{ opt.label }}</option>
+            }
+          </select>
+        }
+
+        <div class="flex items-center gap-2">
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            placeholder="$ mín"
+            aria-label="Precio mínimo"
+            [ngModel]="v.minPrice()"
+            (ngModelChange)="v.setMinPrice($event)"
+            class="cine-field w-24"
+          />
+          <span class="text-sm text-white/40">a</span>
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            placeholder="$ máx"
+            aria-label="Precio máximo"
+            [ngModel]="v.maxPrice()"
+            (ngModelChange)="v.setMaxPrice($event)"
+            class="cine-field w-24"
+          />
+        </div>
+
+        <select
+          aria-label="Ordenar"
+          [ngModel]="v.sortBy()"
+          (ngModelChange)="v.sortBy.set($event)"
+          class="cine-field w-full sm:w-auto"
+        >
+          <option value="novedades">Novedades</option>
+          <option value="precio-asc">Precio: de menor a mayor</option>
+          <option value="precio-desc">Precio: de mayor a menor</option>
+        </select>
+
+        @if (v.hasActiveFilters()) {
+          <button
+            type="button"
+            (click)="v.clearFilters()"
+            class="self-start text-sm font-bold uppercase tracking-wide text-brand-400 hover:text-brand-300 sm:ml-auto sm:self-auto"
+          >
+            Limpiar ✕
+          </button>
+        }
+      </div>
+
+      @if (v.publicoGroup(); as grupo) {
+        <div class="mt-4 flex flex-wrap gap-2 border-t border-dashed border-white/15 pt-4">
+          <button
+            type="button"
+            (click)="v.setParam(grupo.id, '')"
+            class="cine-chip"
+            [class.cine-chip-on]="!v.paramValue(grupo.id)"
+          >
+            Todas
+          </button>
+          @for (opt of grupo.options; track opt.id) {
+            <button
+              type="button"
+              (click)="v.setParam(grupo.id, opt.id)"
+              class="cine-chip"
+              [class.cine-chip-on]="v.paramValue(grupo.id) === opt.id"
+            >
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+      <div class="pt-10">
+        <app-skeleton variant="card" [count]="8" />
+      </div>
+    } @else if (v.catalogStatus() === 'error') {
+      <div class="cine-state mt-10">
+        <p class="cine-title-lg text-brand-400">Se cortó la película</p>
+        <p class="mt-2 text-sm text-white/50">No se pudo cargar el catálogo.</p>
+        <button type="button" (click)="v.reloadCatalog()" class="cine-chip cine-chip-on mt-5">
+          Reintentar
+        </button>
+      </div>
+    } @else if (v.filteredProducts().length) {
+      <div class="mt-10 grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
+        @for (product of v.visibleProducts(); track product.id; let i = $index) {
+          <div appReveal [delay]="(i % 8) * 50">
+            <app-product-card [product]="product" variant="cine" />
+          </div>
+        }
+      </div>
+
+      @if (v.hasMore()) {
+        <div class="mt-10 text-center">
+          <button type="button" (click)="v.showMore()" class="cine-chip cine-chip-on px-6 py-3">
+            Ver más ({{ v.filteredProducts().length - v.visibleProducts().length }} más)
+          </button>
+        </div>
+      }
+    } @else {
+      <div class="cine-state mt-10">
+        <p class="cine-title-lg">Sin función</p>
+        <p class="mt-2 text-sm text-white/50">No hay afiches con esos filtros.</p>
+        <button type="button" (click)="v.clearFilters()" class="cine-chip cine-chip-on mt-5">
+          Ver toda la cartelera
+        </button>
+      </div>
+    }
+  </section>
+}

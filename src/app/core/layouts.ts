@@ -137,6 +137,78 @@ export const LAYOUTS: LayoutOption[] = [
     fontsHref:
       'https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Comfortaa:wght@400;500;600;700&display=swap',
   },
+  {
+    id: 'boutique',
+    label: 'Boutique',
+    blurb:
+      'Casa de moda: mucho aire, tipografía serif, filetes finos y dorado apenas, sin una sola caja de color.',
+    previewColor: '#b08d57',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Jost:wght@300;400;500;600&display=swap',
+  },
+  {
+    id: 'feria',
+    label: 'Feria',
+    blurb:
+      'Puesto de feria: toldo rayado, carteles de cartón con cinta adhesiva, tipografía de sello y papel kraft.',
+    previewColor: '#c2571d',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Work+Sans:wght@300;400;500;600;700&display=swap',
+  },
+  {
+    id: 'periodico',
+    label: 'Periódico',
+    blurb:
+      'Primera plana: cabecera de diario, doble filete, columnas y el catálogo como ranking numerado en vez de grilla.',
+    previewColor: '#26221c',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Libre+Franklin:wght@300;400;500;600;700&display=swap',
+  },
+  {
+    id: 'retro',
+    label: 'Retro 90',
+    blurb:
+      'Memphis noventoso: violeta eléctrico, figuras geométricas que flotan, calcomanías con sombra dura y cinta que corre.',
+    previewColor: '#7c3aed',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Rammetto+One&family=DM+Sans:wght@400;500;700&display=swap',
+  },
+  {
+    id: 'suizo',
+    label: 'Suizo',
+    blurb:
+      'Grilla suiza estricta: números de sección, tipografía grotesca, rojo de acento y cero adornos.',
+    previewColor: '#d92b1e',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap',
+  },
+  {
+    id: 'cancha',
+    label: 'Cancha',
+    blurb:
+      'Club de barrio: tablero de LED con el conteo real, pizarra de vestuario, red de arco y chips con número de camiseta.',
+    previewColor: '#1e7f3c',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Russo+One&family=Titillium+Web:wght@300;400;600;700&display=swap',
+  },
+  {
+    id: 'cine',
+    label: 'Cine',
+    blurb:
+      'Función de tarde: marquesina con foquitos que persiguen, cortina de terciopelo, estrellas de la crítica y letras de afiche.',
+    previewColor: '#8c1030',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700&display=swap',
+  },
+  {
+    id: 'playa',
+    label: 'Playa',
+    blurb:
+      'Verano: degradé de mar, sol que flota, olas que cortan las secciones, promos color coral y fotos con marco blanco.',
+    previewColor: '#0ea5a0',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Pacifico&family=Outfit:wght@300;400;500;600;700&display=swap',
+  },
 ];
 
 export function isKnownLayout(id: string | null | undefined): boolean {

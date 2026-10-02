@@ -1481,6 +1481,1240 @@ body {
   color: #2b2b2b;
 }
 
+/* ==========================================================================
+   DISEÑO "BOUTIQUE" — lujo sobrio
+   Marfil, tinta y oro: filetes de un píxel, serif fina (Cormorant) para los
+   títulos y Jost para el resto. Sin sombras ni esquinas redondeadas.
+   ========================================================================== */
+
+[data-layout="boutique"],
+.tpl-boutique {
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Jost", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #faf7f1;
+  --color-brand-100: #f4efe6;
+  --color-brand-200: #e7ddc9;
+  --color-brand-300: #d9c8a9;
+  --color-brand-400: #c9ae83;
+  --color-brand-500: #b08d57;
+  --color-brand-600: #96733f;
+  --color-brand-700: #6f5426;
+  --color-brand-800: #4a3717;
+}
+
+/* El nombre de la tienda, con un filete de oro centrado debajo. */
+.bou-underline {
+  position: relative;
+  padding-bottom: 1rem;
+}
+.bou-underline::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 84px;
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-brand-400) 25%,
+    var(--color-brand-400) 75%,
+    transparent
+  );
+}
+
+/* Link de salón: versalitas chicas y subrayado sólo al pasar el mouse.
+   Sin color propio: hereda, así los `text-stone-*` de la plantilla mandan. */
+.bou-link {
+  font-size: 11px;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  text-underline-offset: 5px;
+  transition: color .25s ease;
+}
+.bou-link:hover {
+  color: var(--color-brand-600);
+  text-decoration: underline;
+}
+
+/* El punto de oro que separa los links del nav. */
+.bou-dot {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-brand-400);
+  vertical-align: middle;
+}
+
+/* Etiqueta de sección. Sin color propio: hereda y acepta `text-stone-*`. */
+.bou-label {
+  font-size: 10px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+}
+
+/* Renglón de sección: número/etiqueta a la izquierda, dato a la derecha. */
+.bou-rule {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: .8rem;
+  border-bottom: 1px solid #d6d3d1;
+}
+
+/* Campo de formulario: sólo un renglón, como en un libro de visitas. */
+.bou-field {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #d6d3d1;
+  border-radius: 0;
+  background: transparent;
+  padding: .45rem .1rem;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  outline: none;
+  transition: border-color .25s ease;
+}
+.bou-field:focus {
+  border-bottom-color: var(--color-brand-500);
+}
+
+/* Botón "ver más": marco de tinta que se rellena al pasar el mouse. */
+.bou-more {
+  border: 1px solid #1c1917;
+  background: transparent;
+  padding: .75rem 2rem;
+  font-size: 11px;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  transition: background .3s ease, color .3s ease;
+}
+.bou-more:hover {
+  background: #1c1917;
+  color: #faf7f1;
+}
+
+/* ==========================================================================
+   DISEÑO "FERIA" — puesto de mercado
+   Papel kraft, toldo rayado, madera y cintas adhesivas: todo un poco torcido
+   a mano. Alfa Slab One para los carteles, Work Sans para leer.
+   ========================================================================== */
+
+[data-layout="feria"],
+.tpl-feria {
+  --font-display: "Alfa Slab One", Georgia, serif;
+  --font-sans: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #fdf6ec;
+  --color-brand-100: #f9ead7;
+  --color-brand-200: #f0d9b8;
+  --color-brand-300: #e2bd8c;
+  --color-brand-400: #d18f4f;
+  --color-brand-500: #c2571d;
+  --color-brand-600: #a34413;
+  --color-brand-700: #7c3410;
+  --color-brand-800: #5a250b;
+}
+
+/* El toldo del puesto, de rayas, hecho con gradiente: se estira a lo ancho. */
+.feria-awning {
+  height: 16px;
+  background: repeating-linear-gradient(90deg, #c2571d 0 26px, #fdf6ec 26px 52px);
+  border-bottom: 2px solid #7c3410;
+}
+.feria-awning-short {
+  height: 10px;
+  border-bottom-width: 1px;
+}
+
+/* El cartel del nombre: madera clara, borde grueso, sombra dura y un grado
+   de inclinación como si estuviera colgado. */
+.feria-board {
+  display: inline-block;
+  transform: rotate(-2deg);
+  border: 3px solid #7c3410;
+  border-radius: 4px;
+  background: #f9ead7;
+  padding: .6rem;
+  box-shadow: 5px 6px 0 rgba(124, 52, 16, .35);
+}
+
+.feria-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: #a34413;
+}
+
+/* El papelito prendido al puesto: hoja clara con sombra corrida. */
+.feria-note {
+  border: 1px solid #e2bd8c;
+  border-radius: 4px;
+  background: #fffdf8;
+  padding: .5rem .9rem;
+  box-shadow: 3px 4px 0 rgba(162, 68, 19, .18);
+}
+
+/* La cinta adhesiva que pega el papelito (dentro de un `relative`). */
+.feria-tape {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 64px;
+  height: 20px;
+  transform: translateX(-50%) rotate(-3deg);
+  background: rgba(240, 217, 184, .92);
+  border-left: 1px dashed rgba(124, 52, 16, .28);
+  border-right: 1px dashed rgba(124, 52, 16, .28);
+}
+
+/* Doble clase a propósito: los papeles y las tarjetas van dentro de
+   `appReveal`, y `.reveal.is-visible { transform: none }` (0,2,0) pisaría
+   un `.feria-tilt-a` limpio (0,1,0). */
+.feria-tilt-a.feria-tilt-a { transform: rotate(-1.4deg); }
+.feria-tilt-b.feria-tilt-b { transform: rotate(1.2deg); }
+
+/* Marco del hero: como un listón de madera con la sombra del toldo. */
+.feria-frame {
+  border: 4px solid #7c3410;
+  border-radius: 8px;
+  background: #fffdf8;
+  padding: .6rem;
+  box-shadow: 6px 7px 0 rgba(124, 52, 16, .28);
+}
+
+.feria-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  border: 1.5px solid #7c3410;
+  border-radius: 999px;
+  background: #fffdf8;
+  padding: .4rem .95rem;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5a250b;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.feria-chip-on {
+  background: #c2571d;
+  border-color: #a34413;
+  color: #fff8ef;
+}
+
+/* Renglón punteado, como el borde de un remito. */
+.feria-rule {
+  margin-bottom: 1.6rem;
+  padding-bottom: .9rem;
+  border-bottom: 2px dashed #e2bd8c;
+}
+
+/* Riel horizontal: los favoritos se deslizan como en la feria. */
+.feria-rail {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: .75rem;
+  scroll-snap-type: x proximity;
+}
+.feria-rail > * { scroll-snap-align: start; }
+
+.feria-panel {
+  border: 2px solid #e2bd8c;
+  border-radius: 6px;
+  background: #fffdf8;
+  box-shadow: 4px 5px 0 rgba(162, 68, 19, .12);
+  padding: 1.25rem;
+}
+
+.feria-field {
+  border: 2px solid #e2bd8c;
+  border-radius: 6px;
+  background: #fffdf8;
+  padding: .45rem .7rem;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: #5a250b;
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.feria-field:focus {
+  border-color: #c2571d;
+  box-shadow: 0 0 0 3px rgba(194, 87, 29, .15);
+}
+
+/* ==========================================================================
+   DISEÑO "PERIÓDICO" — la tapa del diario
+   Papel viejo, reglas dobles, versalitas y clasificados. Old Standard para
+   leer; la gótica (UnifrakturMaguntia) queda sólo para la cabecera porque
+   `--font-display` también viste los nombres de producto.
+   ========================================================================== */
+
+[data-layout="periodico"],
+.tpl-periodico {
+  --font-display: "Old Standard TT", "Times New Roman", Georgia, serif;
+  --font-sans: "Libre Franklin", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #f7f2e7;
+  --color-brand-100: #f1e9d8;
+  --color-brand-200: #e4d8bf;
+  --color-brand-300: #cbb896;
+  --color-brand-400: #a98f66;
+  --color-brand-500: #57503f;
+  --color-brand-600: #3d3729;
+  --color-brand-700: #26221c;
+  --color-brand-800: #1a1611;
+}
+
+/* La cabecera (sólo el h1 del nombre) va en gótica de diario. */
+[data-layout="periodico"] header h1,
+.tpl-periodico header h1 {
+  font-family: "UnifrakturMaguntia", "Old Standard TT", serif;
+  font-weight: 400;
+  letter-spacing: .01em;
+}
+
+/* Línea de datos del tope: fecha, edición, precio. */
+.per-topline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .4rem 1.5rem;
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+/* La regla doble de la tapa: 3px + 1px, como un separador de sección. */
+.per-double-rule {
+  position: relative;
+  height: 3px;
+  background: #26221c;
+}
+.per-double-rule::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #26221c;
+}
+
+/* "Último momento": la volanta con etiqueta negra. */
+.per-extra {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1.45;
+}
+.per-extra-tag {
+  display: inline-block;
+  margin-right: .5rem;
+  padding: .15rem .5rem;
+  background: #26221c;
+  color: #f7f2e7;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+/* Epígrafe de la foto de tapa. */
+.per-caption {
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #57503f;
+}
+
+/* Título de sección: versalitas y regla de diario. */
+.per-section-title {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  padding-bottom: .35rem;
+  border-bottom: 3px double #26221c;
+}
+
+/* "Lo más leído": el número del ranking, bien grande y en serif. */
+.per-rank {
+  min-width: 2ch;
+  font-family: var(--font-display);
+  font-size: 34px;
+  line-height: 1;
+  text-align: center;
+  color: #a98f66;
+}
+
+/* Cada fila del ranking: se lee como una columna de diario. */
+.per-read {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  padding: .7rem .25rem;
+  border-bottom: 1px dotted #cbb896;
+  transition: background .2s ease;
+}
+.per-read:hover { background: rgba(203, 184, 150, .18); }
+
+/* Campos y chips de los clasificados: marco negro, cero adornos. */
+.per-field {
+  border: 1px solid #26221c;
+  border-radius: 0;
+  background: #fffdf6;
+  padding: .4rem .6rem;
+  font-size: 13px;
+  outline: none;
+  transition: box-shadow .2s ease;
+}
+.per-field:focus { box-shadow: 3px 3px 0 rgba(38, 34, 28, .22); }
+
+.per-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #26221c;
+  background: transparent;
+  padding: .3rem .8rem;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: #26221c;
+  transition: background .2s ease, color .2s ease;
+}
+.per-chip-on {
+  background: #26221c;
+  color: #f7f2e7;
+}
+
+/* ==========================================================================
+   DISEÑO "RETRO 90s" — Memphis
+   Violeta, amarillo, verde y coral; formas geométricas flotando y sombras
+   duras. Rammetto One para los títulos, DM Sans para leer.
+   ========================================================================== */
+
+[data-layout="retro"],
+.tpl-retro {
+  --font-display: "Rammetto One", "Archivo Black", system-ui, sans-serif;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #f4f1fa;
+  --color-brand-100: #ece5fb;
+  --color-brand-200: #ddd0f7;
+  --color-brand-300: #c4aef2;
+  --color-brand-400: #a583ea;
+  --color-brand-500: #8b5cf6;
+  --color-brand-600: #7c3aed;
+  --color-brand-700: #5b21b6;
+  --color-brand-800: #4c1d95;
+}
+
+/* Formas de Memphis: círculo, triángulo y cuadrado flotando en el header
+   (la posición la ponen las utilidades `absolute` + `top/left` del markup). */
+.mel-shape {
+  display: block;
+  pointer-events: none;
+}
+.mel-circle {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: #fbbf24;
+  opacity: .85;
+}
+.mel-triangle {
+  width: 0;
+  height: 0;
+  border-left: 38px solid transparent;
+  border-right: 38px solid transparent;
+  border-bottom: 62px solid #34d399;
+  opacity: .8;
+}
+.mel-square {
+  width: 58px;
+  height: 58px;
+  background: #fb7185;
+  opacity: .85;
+}
+
+/* La llave `spin-slow` ya existía; la utilidad no. Gira lentísimo, sin ruido. */
+.spin-slow { animation: spin-slow 44s linear infinite; }
+
+/* El sticker de la cabecera: amarillo, torcido y con sombra dura. */
+.mel-sticker {
+  display: inline-block;
+  transform: rotate(-2deg);
+  border: 2px solid #1c1917;
+  border-radius: 999px;
+  background: #fbbf24;
+  padding: .2rem .9rem;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  box-shadow: 3px 3px 0 #1c1917;
+}
+
+/* La banda violeta con la cinta infinita de promos. */
+.mel-band {
+  overflow: hidden;
+  background: #7c3aed;
+  border-top: 3px solid #1c1917;
+  border-bottom: 3px solid #1c1917;
+}
+/* El markup duplica el contenido: por eso `-50%` cierra perfecto el ciclo. */
+.mel-ticker {
+  display: flex;
+  width: max-content;
+  animation: marquee 24s linear infinite;
+}
+
+/* Chips estilo sticker: borde de tinta y sombra corrida. */
+.mel-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  border: 2px solid #1c1917;
+  border-radius: 999px;
+  padding: .4rem 1rem;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1c1917;
+  box-shadow: 4px 4px 0 #1c1917;
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.mel-chip:hover {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 #1c1917;
+}
+.mel-chip-a { background: #fbbf24; }
+.mel-chip-b { background: #6ee7b7; }
+.mel-chip-c { background: #fda4af; }
+/* Va al final: tiene que ganarle a los colores de arriba. */
+.mel-chip-on {
+  background: #7c3aed;
+  color: #fff;
+}
+
+.mel-title {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+
+/* La barra rayada que acompaña a los títulos de sección. */
+.mel-rule {
+  flex: 1;
+  height: 10px;
+  align-self: center;
+  background: repeating-linear-gradient(90deg, #7c3aed 0 12px, transparent 12px 22px);
+  opacity: .45;
+}
+
+/* Doble clase a propósito: van dentro de `appReveal variant="bounce"`, y
+   `.reveal-bounce.is-visible { transform: none }` (0,2,0) pisaría un
+   `.mel-tilt-a` limpio (0,1,0). */
+.mel-tilt-a.mel-tilt-a { transform: rotate(-1.6deg); }
+.mel-tilt-b.mel-tilt-b { transform: rotate(1.4deg); }
+
+.mel-field {
+  border: 2px solid #1c1917;
+  border-radius: 12px;
+  background: #fff;
+  padding: .45rem .75rem;
+  font-size: 14px;
+  outline: none;
+  box-shadow: 3px 3px 0 #ddd0f7;
+  transition: box-shadow .2s ease;
+}
+.mel-field:focus { box-shadow: 3px 3px 0 #c4aef2; }
+
+/* ==========================================================================
+   DISEÑO "SUIZO" — retícula estricta
+   Blanco, negro y un único rojo. Archivo para todo, Space Mono para las
+   fichas técnicas, campos que son apenas un renglón.
+   ========================================================================== */
+
+[data-layout="suizo"],
+.tpl-suizo {
+  --font-display: "Archivo", "Helvetica Neue", Helvetica, sans-serif;
+  --font-sans: "Archivo", "Helvetica Neue", Helvetica, sans-serif;
+
+  --color-brand-50: #ffffff;
+  --color-brand-100: #f5f5f5;
+  --color-brand-200: #e5e5e5;
+  --color-brand-300: #d4d4d4;
+  --color-brand-400: #f87171;
+  --color-brand-500: #ef4444;
+  --color-brand-600: #dc2626;
+  --color-brand-700: #991b1b;
+  --color-brand-800: #7f1d1d;
+}
+
+/* La ficha técnica: mono, versalitas y sin color propio, así hereda blanco
+   dentro de la franja roja y negro fuera. */
+.swiss-meta {
+  font-family: "Space Mono", ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.swiss-link {
+  font-family: "Space Mono", ui-monospace, SFMono-Regular, monospace;
+  font-size: 12px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: color .2s ease;
+}
+.swiss-link:hover { color: var(--color-brand-600); }
+
+.swiss-field {
+  border: 0;
+  border-bottom: 2px solid #a3a3a3;
+  border-radius: 0;
+  background: transparent;
+  padding: .4rem .1rem;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  outline: none;
+  transition: border-color .2s ease;
+}
+.swiss-field:focus { border-bottom-color: var(--color-brand-600); }
+
+/* Dentro de la tarjeta de prenda: los datos técnicos van en monoespaciada,
+   como el pie de una ficha. */
+.swiss-card-meta {
+  font-family: "Space Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #a3a3a3;
+}
+.swiss-card-price {
+  font-family: "Space Mono", ui-monospace, monospace;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-brand-600);
+}
+
+/* ==========================================================================
+   DISEÑO "CANCHA" — club de barrio
+   Verde de campo, líneas de cal, tablero de LED y chips numerados como una
+   formación. Russo One para los carteles, Titillium Web para leer.
+   ========================================================================== */
+
+[data-layout="cancha"],
+.tpl-cancha {
+  --font-display: "Russo One", "Archivo Black", system-ui, sans-serif;
+  --font-sans: "Titillium Web", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #f4faf4;
+  --color-brand-100: #e3f3e6;
+  --color-brand-200: #c6e6cd;
+  --color-brand-300: #8fd39d;
+  --color-brand-400: #4fae67;
+  --color-brand-500: #1e7f3c;
+  --color-brand-600: #166534;
+  --color-brand-700: #14532d;
+  --color-brand-800: #0b2e17;
+}
+
+.cancha-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: #14532d;
+}
+
+/* El tablero del estadio: fondo oscuro y dígitos de LED. */
+.cancha-board {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  border: 2px solid #0b2e17;
+  border-radius: 8px;
+  background: #0f1a12;
+  padding: .45rem .9rem;
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, .55);
+}
+.cancha-board-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: #8fd39d;
+}
+.cancha-board-num {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  line-height: 1;
+  color: #6ee7a0;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 10px rgba(110, 231, 160, .55);
+}
+
+/* El pizarrón del vestuario: las promos van en tiza. */
+.cancha-chalkboard {
+  background: #0f1a12;
+  border-top: 3px solid #0b2e17;
+  border-bottom: 3px solid #0b2e17;
+  color: #e3f3e6;
+}
+
+/* Marco de la red: el borde verde lo pone el markup (`border-4 border-brand-600`);
+   acá va la malla en diagonal que asoma por el margen. */
+.cancha-net {
+  border-radius: 14px;
+  background:
+    repeating-linear-gradient(45deg, rgba(22, 101, 52, .22) 0 2px, transparent 2px 10px),
+    repeating-linear-gradient(-45deg, rgba(22, 101, 52, .22) 0 2px, transparent 2px 10px);
+}
+
+/* La cancha: césped cortado, línea de medio y círculo central, todo con
+   gradientes (sin imágenes). */
+.cancha-pitch {
+  position: relative;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 61px, rgba(255, 255, 255, .45) 61px 63px, transparent 63px),
+    linear-gradient(90deg, transparent calc(50% - 1px), rgba(255, 255, 255, .45) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)),
+    repeating-linear-gradient(90deg, #166534 0 44px, #145c2f 44px 88px);
+}
+.cancha-pitch-title {
+  color: #f4faf4;
+  letter-spacing: .06em;
+}
+
+/* Chip de convocatoria: círculo numerado + etiqueta. */
+.cancha-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  border: 2px solid #166534;
+  border-radius: 999px;
+  background: #fff;
+  padding: .3rem .9rem;
+  font-size: 13px;
+  font-weight: 600;
+  color: #14532d;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.cancha-chip-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #166534;
+  color: #f4faf4;
+  font-size: 11px;
+  font-weight: 700;
+}
+.cancha-chip-on {
+  background: #166534;
+  border-color: #14532d;
+  color: #f4faf4;
+}
+.cancha-chip-on .cancha-chip-num {
+  background: #f4faf4;
+  color: #14532d;
+}
+
+.cancha-field {
+  border: 2px solid #c6e6cd;
+  border-radius: 8px;
+  background: #fff;
+  padding: .45rem .7rem;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.cancha-field:focus {
+  border-color: #1e7f3c;
+  box-shadow: 0 0 0 3px rgba(30, 127, 60, .14);
+}
+
+/* ==========================================================================
+   DISEÑO "CINE" — sala de barrio
+   Bordó oscuro, oro y foquitos de marquesina. Bebas Neue para los afiches,
+   Poppins para leer. Como en Neón, la rampa de marca va invertida: el 50 es
+   el fondo oscuro y el 300/400 el dorado.
+   ========================================================================== */
+
+/* Los foquitos de la marquesina corren de a un punto por vez. */
+@keyframes cine-chase {
+  from { background-position-x: 0; }
+  to   { background-position-x: 22px; }
+}
+
+/* El parpadeo de las estrellas de la crítica. */
+@keyframes cine-twinkle {
+  0%, 100% { opacity: .35; text-shadow: none; }
+  50%      { opacity: 1; text-shadow: 0 0 12px rgba(245, 217, 140, .8); }
+}
+
+[data-layout="cine"],
+.tpl-cine {
+  --font-display: "Bebas Neue", "Archivo Black", system-ui, sans-serif;
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+
+  /* Rampa oscura: el 50 es el fondo bordó, el 300/400 el dorado de textos y
+     acentos, y el 700 queda bien oscuro para el pie. */
+  --color-brand-50: #150a10;
+  --color-brand-100: #221019;
+  --color-brand-200: #2f1622;
+  --color-brand-300: #f5d98c;
+  --color-brand-400: #e0b95c;
+  --color-brand-500: #c9973f;
+  --color-brand-600: #a87b2e;
+  --color-brand-700: #2a0e18;
+  --color-brand-800: #5c3d10;
+}
+
+/* --- El chrome compartido, oscurecido sólo para este diseño --- */
+
+[data-layout="cine"] body { color: #f6ead2; }
+
+[data-layout="cine"] app-header header {
+  background: rgba(21, 10, 16, .88);
+  border-bottom-color: rgba(201, 151, 63, .28);
+  box-shadow: none;
+}
+[data-layout="cine"] app-header header nav a { color: #d8c39a; }
+/* El botón del carrito queda dorado: el texto claro no se leería. */
+[data-layout="cine"] app-header header .bg-brand-500 { color: #150a10; }
+
+[data-layout="cine"] app-footer footer { background: #1d0c13; }
+[data-layout="cine"] app-footer footer p,
+[data-layout="cine"] app-footer footer span,
+[data-layout="cine"] app-footer footer a { color: #e6d3ac; }
+
+/* --- Piezas del diseño --- */
+
+/* El frente de la sala: un resplandor cálido detrás de la marquesina. */
+.cine-header {
+  background: radial-gradient(120% 90% at 50% 0%, #2a1019 0%, transparent 70%);
+}
+
+/* La marquesina: marco dorado, fondo bordó y foquitos arriba y abajo. */
+.cine-marquee {
+  position: relative;
+  overflow: hidden;
+  border: 3px solid #c9973f;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #2f1622, #1a0b12);
+  box-shadow: 0 22px 60px -34px rgba(201, 151, 63, .55);
+}
+
+/* La tira de foquitos: puntos dorados que persiguen alrededor del cartel. */
+.cine-bulbs {
+  height: 14px;
+  background-image: radial-gradient(circle, #f5d98c 2.5px, transparent 3.5px);
+  background-size: 22px 14px;
+  background-position: 0 50%;
+  background-repeat: repeat-x;
+  animation: cine-chase 1.6s linear infinite;
+  opacity: .9;
+}
+
+/* Logo de la sala: en un círculo con aro dorado. */
+.cine-logo {
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #c9973f;
+  box-shadow: 0 0 26px -6px rgba(245, 217, 140, .7);
+}
+@media (min-width: 640px) {
+  .cine-logo { width: 92px; height: 92px; }
+}
+
+.cine-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: #c9973f;
+}
+
+/* El nombre en tipografía de afiche, dorado con resplandor. */
+.cine-title {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  line-height: .95;
+  letter-spacing: .03em;
+  color: #f5d98c;
+  text-shadow: 0 0 18px rgba(245, 217, 140, .35), 0 4px 0 rgba(0, 0, 0, .35);
+}
+
+/* Las cinco estrellas de la crítica, parpadeando escalonadas. */
+.cine-stars {
+  display: flex;
+  gap: .4rem;
+  font-size: 20px;
+  line-height: 1;
+  color: #f5d98c;
+}
+.cine-stars span { animation: cine-twinkle 2.4s ease-in-out infinite; }
+.cine-stars span:nth-child(2) { animation-delay: .3s; }
+.cine-stars span:nth-child(3) { animation-delay: .6s; }
+.cine-stars span:nth-child(4) { animation-delay: .9s; }
+.cine-stars span:nth-child(5) { animation-delay: 1.2s; }
+
+/* El contador de la sala: marco de puntos dorados. */
+.cine-count {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  border: 2px dashed rgba(201, 151, 63, .6);
+  border-radius: 12px;
+  padding: .6rem 1rem;
+}
+.cine-count-num {
+  font-family: var(--font-display);
+  font-size: 2.6rem;
+  line-height: 1;
+  color: #f5d98c;
+}
+.cine-count-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: #c9973f;
+}
+
+.cine-compra {
+  margin-top: 1rem;
+  font-size: 13px;
+  letter-spacing: .04em;
+  color: #c9a86a;
+}
+
+/* "En cartelera": la banda de promos, separada por estrellitas. */
+.cine-band {
+  background: #1a0b12;
+  border-top: 1px solid rgba(201, 151, 63, .3);
+  border-bottom: 1px solid rgba(201, 151, 63, .3);
+}
+.cine-band-tag {
+  border: 1px solid #c9973f;
+  border-radius: 999px;
+  padding: .2rem .8rem;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: #f5d98c;
+}
+.cine-star-sm {
+  font-size: 11px;
+  color: #c9973f;
+}
+
+/* El escenario: cortina de terciopelo arriba y foquitos al pie. */
+.cine-stage {
+  position: relative;
+  overflow: hidden;
+  border: 3px solid #c9973f;
+  border-radius: 14px;
+  background: #1a0b12;
+  box-shadow: 0 22px 60px -34px rgba(201, 151, 63, .5);
+}
+
+/* La cortina: pliegues de terciopelo en gradiente repetido. */
+.cine-curtain {
+  height: 26px;
+  background: repeating-linear-gradient(
+    90deg,
+    #5c1020 0 13px,
+    #7a1428 13px 26px,
+    #4a0c1a 26px 39px
+  );
+  border-bottom: 2px solid #c9973f;
+}
+
+.cine-caption {
+  margin-top: .8rem;
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #c9973f;
+}
+
+/* Chips: aro dorado; el seleccionado se rellena de oro. */
+.cine-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid #c9973f;
+  border-radius: 999px;
+  background: transparent;
+  padding: .35rem .95rem;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e0b95c;
+  transition: background .2s ease, color .2s ease;
+}
+.cine-chip-on {
+  background: #c9973f;
+  border-color: #e0b95c;
+  color: #1a0b12;
+}
+
+/* Cabecera de sección: título de afiche + píldora con el conteo. */
+.cine-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .6rem 1rem;
+  margin-bottom: 1.6rem;
+}
+.cine-title-lg {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1;
+  letter-spacing: .04em;
+  color: #f5d98c;
+}
+.cine-pill {
+  border: 1px solid rgba(201, 151, 63, .45);
+  border-radius: 999px;
+  padding: .25rem .8rem;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #c9973f;
+}
+
+/* El panel de filtros: superficie oscura con filete dorado. */
+.cine-panel {
+  border: 1px solid rgba(201, 151, 63, .35);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #221019, #180a10);
+  padding: 1.1rem 1.25rem;
+}
+
+.cine-field {
+  border: 1px solid rgba(201, 151, 63, .4);
+  border-radius: 8px;
+  background: rgba(21, 10, 16, .6);
+  padding: .45rem .7rem;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: #f6ead2;
+  color-scheme: dark;
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.cine-field:focus {
+  border-color: #c9973f;
+  box-shadow: 0 0 0 3px rgba(201, 151, 63, .18);
+}
+.cine-field::placeholder { color: rgba(246, 234, 210, .4); }
+/* Las opciones del select nativo no heredan el fondo: van oscuras a mano. */
+.cine-field option { background: #221019; color: #f6ead2; }
+
+/* El estado vacío/error: como una función suspendida, enmarcada. */
+.cine-state {
+  border: 2px dashed rgba(201, 151, 63, .4);
+  border-radius: 14px;
+  padding: 4rem 1.5rem;
+  text-align: center;
+}
+
+/* ==========================================================================
+   DISEÑO "PLAYA" — verano todo el año
+   Turquesa y coral, olas que separan las secciones y postales enmarcadas.
+   Pacifico para los títulos (como escrito en la arena), Outfit para leer.
+   ========================================================================== */
+
+[data-layout="playa"],
+.tpl-playa {
+  --font-display: "Pacifico", "Comic Sans MS", cursive;
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #f0fbfa;
+  --color-brand-100: #d8f3f0;
+  --color-brand-200: #b5e8e3;
+  --color-brand-300: #7fd8d1;
+  --color-brand-400: #45c2b9;
+  --color-brand-500: #0d9488;
+  --color-brand-600: #0f766e;
+  --color-brand-700: #115e59;
+  --color-brand-800: #0d3d3a;
+}
+
+/* El cielo del header: degradé turquesa de arriba abajo. */
+.playa-sky {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0b7d72 0%, #0d9488 45%, #45c2b9 100%);
+}
+
+/* El sol: círculo difuso que respira (usa la llave `float-y` de siempre). */
+.playa-sun {
+  position: absolute;
+  top: 14px;
+  right: 8%;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff7cf 0%, rgba(255, 214, 130, .85) 45%, rgba(255, 214, 130, 0) 72%);
+  animation: float-y 7s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* El logo, en un aro blanco como un medallón. */
+.playa-logo {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid rgba(255, 255, 255, .92);
+  box-shadow: 0 10px 26px -12px rgba(9, 60, 55, .6);
+}
+@media (min-width: 640px) {
+  .playa-logo { width: 96px; height: 96px; }
+}
+
+.playa-kicker {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+/* Sobre el cielo turquesa, el kicker va blanco. */
+.playa-sky .playa-kicker { color: rgba(255, 255, 255, .92); }
+
+/* El nombre, en script como escrito con el dedo en la arena. */
+.playa-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 7vw, 4.6rem);
+  line-height: 1.15;
+  color: #fff;
+  text-shadow: 0 4px 0 rgba(13, 148, 136, .35), 0 14px 34px rgba(6, 60, 55, .45);
+}
+
+.playa-note {
+  display: inline-block;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .18);
+  padding: .35rem 1.1rem;
+  font-size: 13px;
+  color: #fff;
+  backdrop-filter: blur(4px);
+}
+
+/* La ola: el svg llena con `currentColor`, así el color lo pone la utilidad
+   `text-brand-*` del markup. El -1px evita la costura entre secciones. */
+.playa-wave {
+  display: block;
+  line-height: 0;
+  margin-bottom: -1px;
+}
+
+/* La sombrilla coral de las promos. */
+.playa-promos {
+  background: linear-gradient(90deg, #ff6f61, #f2724f 55%, #ff8a5c);
+}
+
+/* La postal del hero: marco blanco, sombra turquesa y un grado de inclinación. */
+.playa-frame {
+  border: 8px solid #fff;
+  border-radius: 1.75rem;
+  background: #fff;
+  transform: rotate(-.8deg);
+  box-shadow: 0 26px 60px -34px rgba(13, 148, 136, .65);
+}
+
+.playa-caption {
+  margin-top: .9rem;
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+
+/* Chips de marea. */
+.playa-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid #b5e8e3;
+  border-radius: 999px;
+  background: #fff;
+  padding: .35rem .95rem;
+  font-size: 13px;
+  font-weight: 600;
+  color: #115e59;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.playa-chip-on {
+  background: #0d9488;
+  border-color: #0f766e;
+  color: #fff;
+}
+
+/* Títulos de sección en script y píldora de conteo. */
+.playa-title-lg {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+  line-height: 1.15;
+  color: #115e59;
+}
+.playa-pill {
+  border-radius: 999px;
+  background: #d8f3f0;
+  padding: .25rem .85rem;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f766e;
+}
+
+/* La franja donde vive el catálogo: la playa baja hasta acá. */
+.playa-shore { background: #d8f3f0; }
+
+/* Desfase alternado de los destacados (como puestos en la arena). */
+@media (min-width: 640px) {
+  .playa-offset { margin-top: 1.4rem; }
+}
+
+.playa-field {
+  border: 2px solid #b5e8e3;
+  border-radius: 12px;
+  background: #fff;
+  padding: .45rem .7rem;
+  font-size: 14px;
+  color: #134e4a;
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.playa-field:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, .15);
+}
+
 /* Accesibilidad: quien pide menos movimiento ve todo en su lugar, sin animar.
    Va al final y con !important porque es el interruptor general. */
 @media (prefers-reduced-motion: reduce) {
@@ -1524,6 +2758,11 @@ body {
   .wobble-slow,
   .wobble-on-hover:hover,
   .sheen:hover::after,
+  .cine-bulbs,
+  .cine-stars span,
+  .mel-ticker,
+  .playa-sun,
+  .spin-slow,
   [data-layout="nova"] app-hero-carousel img,
   .tpl-nova app-hero-carousel img {
     animation: none !important;
