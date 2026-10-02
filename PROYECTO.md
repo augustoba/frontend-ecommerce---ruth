@@ -7,7 +7,8 @@
 >
 > **Última actualización: 2026-10-02** (21 diseños de tienda — los 8 nuevos
 > Boutique / Feria / Periódico / Retro 90 / Suizo / Cancha / Cine / Playa —,
-> vista `/promos` y título de pestaña dinámico; historial #61–#63).
+> vista `/promos`, título de pestaña dinámico y **vocabulario de tienda en las
+> etiquetas funcionales** de las plantillas temáticas; historial #61–#64).
 > El 2026-09-20 se puso al día este
 > documento, que había quedado del **2026-09-08** y describía un proyecto de 12
 > días antes: decía que no había pasarela de pago (Mercado Pago Checkout Pro
@@ -23,7 +24,9 @@
 > (historial #57–#60) y las novedades de esa fecha: la **tanda de ocho diseños**
 > (ya son **21**, secciones 2, 6 y 7bis), la **vista `/promos`** con el marcado
 > manual "Mostrar en promos" (nueva sección 7ter) y el **título de pestaña
-> dinámico** (secciones 7ter y 9sexies) — historial #61–#63.
+> dinámico** (secciones 7ter y 9sexies) — historial #61–#63. La última pasada
+> devolvió las **etiquetas funcionales** de las plantillas temáticas al
+> vocabulario de tienda (regla en §7bis, historial #64).
 
 ## 1. Qué es esto
 
@@ -444,9 +447,9 @@ otra estructura visual.
   - **Cine** (2026-10-02): función de tarde, **el tercer diseño oscuro**.
     **Marquesina con foquitos que persiguen** (keyframes `cine-chase` y
     `cine-twinkle`), cortina de terciopelo, estrellas decorativas (`aria-hidden`)
-    y letras de afiche, con el **conteo real** de prendas "en cartel". Lleva las
-    mismas reglas acotadas de header/footer que Neón y Cohete. Bebas Neue +
-    Poppins.
+    y letras de afiche, con el **conteo real** de prendas del catálogo filtrado.
+    Lleva las mismas reglas acotadas de header/footer que Neón y Cohete.
+    Bebas Neue + Poppins.
   - **Playa** (2026-10-02): verano. Degradé de mar (`.playa-sky`), **sol que
     flota**, **olas que cortan las secciones** (`.playa-wave`), promos vigentes
     en banda **coral** (`.playa-promos`, de `/api/discounts`) y fotos con **marco
@@ -458,6 +461,20 @@ otra estructura visual.
     interés, favoritos, newsletter y "cupones" anunciados: no hay tabla ni
     endpoint que los respalde —de los cupones sólo existe la validación por
     código que tipea el cliente—.
+- **Vocabulario estándar en las etiquetas funcionales (2026-10-02):** los
+  diseños se diferencian **sólo por lo visual**; todo texto que cumple una
+  función de tienda usa las palabras de Ruth. Títulos de sección ("Lo más
+  vendido", "El catálogo", "Promos", "Promos vigentes"), conteos ("N prendas"),
+  kickers de filtros ("Elegí tu categoría:"), buscador ("Buscar producto..."),
+  vacíos ("Sin resultados") y CTAs ("Ver todo el catálogo") **no se traducen a
+  la jerga del tema**: "Función continuada", "Plantel completo" o "en cartel"
+  no significan nada para quien entra a comprar. La personalidad queda en lo
+  decorativo (kickers del hero, epígrafes de sección, frases de cierre y los
+  chistes de los estados de error, siempre con la aclaración en castellano
+  simple debajo). Se admiten variantes ya en llano con el mismo significado
+  ("Los más elegidos" en Jungla, "Lo que más sale" en Crayón, "Recién
+  llegados" en Caramelo, "Se están agotando" en Neón y Cohete). Al agregar un
+  diseño nuevo, no volver a "traducir" las etiquetas funcionales.
 - **Movimiento** (sin dependencias nuevas: CSS + cuatro directivas):
   - `shared/directives/reveal.directive.ts` (`appReveal`): IntersectionObserver
     que agrega la clase de entrada cuando el elemento aparece en pantalla;
@@ -2085,6 +2102,42 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       7bis, 7ter, 8, 9sexies y este historial) y CLAUDE.md; además se corrigió
       la ruta del backend (en esta máquina la carpeta es `../backend/`, el repo
       en GitHub se llama `backend-ecommer-ruth`).
+
+64. **Vocabulario de tienda en las etiquetas funcionales de las plantillas temáticas (2026-10-02).**
+    - **Qué se corrigió:** varios diseños renombraban títulos y estados con
+      jerga del tema —Cine decía "Función continuada" y contaba prendas "en
+      cartel"; Cancha hablaba de "Plantel completo"— y quien entra a comprar no
+      entiende qué está mirando. Regla adoptada desde acá (documentada en
+      §7bis): **los textos funcionales usan siempre el vocabulario de tienda
+      de Ruth** y la personalidad del diseño queda sólo en lo decorativo.
+    - **Qué se cambió (31 ediciones en 9 plantillas):** títulos de sección →
+      "Lo más vendido" / "El catálogo" / "Promos vigentes" (Cine, Cancha,
+      Jungla, Periódico, Playa, Feria, Retro 90, Boutique y Cohete); conteos →
+      "N prendas" (Cine, Cancha); kicker de filtros → "Elegí tu categoría:"
+      (Cine); buscador → "Buscar producto..." (Cine, Cancha, Periódico,
+      Feria); estados vacíos → "Sin resultados" + "No encontramos productos
+      con esos filtros." / "Probá con otros filtros." + CTA "Ver todo el
+      catálogo" (Cine, Cancha, Periódico, Playa, Feria, Retro 90); "Ver más
+      productos (N más)" (Periódico); y en Cohete la urgencia de stock pasó al
+      mismo texto que Neón ("Se están agotando").
+    - **Qué se mantuvo a propósito (lo decorativo):** kickers del hero ("Cine
+      de barrio · ropa para chicos", "Club de ropa para chicos"), epígrafes
+      ("La cartelera, pasando ahora — deslizá →", "Deslizá para ver la
+      cancha"), frases de cierre ("Te esperamos en la selva. 🌴") y los
+      chistes de los estados de error ("Se cortó la película", "Suspendido",
+      "Se cortó la música"), que ya traían la aclaración en castellano simple
+      debajo. También quedaron las variantes honestas ya en llano: "Los más
+      elegidos" (Jungla), "Lo que más sale" (Crayón), "Recién llegados"
+      (Caramelo).
+    - **Verificación:** grep sobre las 21 plantillas sin restos de las cadenas
+      viejas (sólo coincidencias benignas en comentarios internos);
+      compilación limpia; en navegador Cine, Cancha y Periódico completos
+      (incluido el vacío con "Sin resultados" y el CTA "Ver todo el catálogo",
+      y el riel de más vendidos que se esconde al filtrar) + las miniaturas
+      del panel para Jungla y Cohete. La tienda quedó en **Pop**, como estaba.
+    - **Commit:** frontend `39f1740` (9 archivos, 63+/63−). Esta pasada de
+      documentación actualizó §7bis (regla nueva + mención "en cartel" del
+      bullet de Cine corregida), el encabezado y este historial.
 
 ## 12. Backend (`../backend/`) — resumen
 

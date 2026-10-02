@@ -80,6 +80,14 @@ si conviene tocar también este archivo o el `README.md`).
   mismo para Cohete y Cine), que es lo único que ningún otro diseño toca. Los
   últimos cuatro "para chicos" (Caramelo, Cohete, Jungla y Crayón) tienen
   movimiento propio cada uno.
+- **Vocabulario de tienda en las etiquetas funcionales** (2026-10-02, commit
+  `39f1740`): los diseños se diferencian **sólo por lo visual**. Títulos de
+  sección ("Lo más vendido", "El catálogo", "Promos"), conteos, buscador
+  ("Buscar producto..."), vacíos ("Sin resultados") y CTAs ("Ver todo el
+  catálogo") usan siempre las palabras de Ruth aunque el tema sea cine, cancha
+  o selva; la jerga queda sólo en textos decorativos (kickers del hero,
+  epígrafes, frases de cierre, chistes de error con aclaración simple debajo).
+  No volver a "traducir" etiquetas funcionales a la jerga del tema.
 - **Vista `/promos`** (2026-10-02): muestra las prendas marcadas a mano con
   "Mostrar en promos" (`featuredInPromos` en el form de producto) o, si no hay
   ninguna, las de descuento vigente por parametría —mismo % que aplica el
@@ -94,7 +102,7 @@ si conviene tocar también este archivo o el `README.md`).
   **diferido** (`Injector.get` en la primera navegación + `effect` con guarda),
   nunca con `inject()` en el constructor — si no, el request de
   `/api/settings` muere en silencio (NG0200). Ver PROYECTO.md §9sexies y #63.
-  Ver PROYECTO.md §7bis, §7ter, §9sexies, #56–#63.
+  Ver PROYECTO.md §7bis, §7ter, §9sexies, #56–#64.
 - El logo real del comercio (sombrilla + corazones, paleta pastel
   rosa/celeste/durazno) está en `public/logo.jpeg` — lo pasó el cliente,
   coincide con su marca real de WhatsApp/redes. Es el **fallback**: desde
