@@ -2,11 +2,12 @@
 
 > Documento vivo del proyecto (overview general + detalle del frontend).
 > El detalle del backend (entidades, endpoints, auth) está en
-> `../backend-ecommer-ruth/PROYECTO.md` (esa es la carpeta real; este documento
-> la llamaba `../backend/`).
+> `../backend/PROYECTO.md` (esa es la carpeta real en esta máquina; el repo en
+> GitHub se llama `backend-ecommer-ruth`).
 >
-> **Última actualización: 2026-09-30** (plantillas de tienda intercambiables,
-> historial #56).
+> **Última actualización: 2026-10-02** (21 diseños de tienda — los 8 nuevos
+> Boutique / Feria / Periódico / Retro 90 / Suizo / Cancha / Cine / Playa —,
+> vista `/promos` y título de pestaña dinámico; historial #61–#63).
 > El 2026-09-20 se puso al día este
 > documento, que había quedado del **2026-09-08** y describía un proyecto de 12
 > días antes: decía que no había pasarela de pago (Mercado Pago Checkout Pro
@@ -15,9 +16,14 @@
 > hechas. Se corrigieron las secciones 2, 3, 3bis, 5 y 12. **Las demás secciones
 > (6 a 11) siguen con la redacción del 2026-09-08** y pueden tener detalles
 > atrasados — para lo del backend, la fuente de verdad es
-> `../backend-ecommer-ruth/PROYECTO.md`.
+> `../backend/PROYECTO.md`.
 > El 2026-09-30 se aggiornaron 2, 5, 6, 7, 8, 9sexies y 12 por las **plantillas
 > de diseño intercambiables** (nueva sección 7bis, historial #56).
+> El 2026-10-02 quedaron documentados también los 10 diseños de la tanda larga
+> (historial #57–#60) y las novedades de esa fecha: la **tanda de ocho diseños**
+> (ya son **21**, secciones 2, 6 y 7bis), la **vista `/promos`** con el marcado
+> manual "Mostrar en promos" (nueva sección 7ter) y el **título de pestaña
+> dinámico** (secciones 7ter y 9sexies) — historial #61–#63.
 
 ## 1. Qué es esto
 
@@ -46,7 +52,7 @@ Mercado Pago para coordinar el pago manualmente.
 | Backend | Java 21 + Spring Boot 3.3 + MySQL 8 + JWT (Maven) | Node/Nest, Quarkus, Gradle, Postgres/H2 |
 | Alcance v1 | Catálogo+filtros, carrito+checkout WhatsApp, panel admin, API backend | — |
 | Pasarela de pago | **Mercado Pago Checkout Pro** (desde 2026-09-17), además del checkout por WhatsApp con alias/link manual | — |
-| Diseño de la tienda | **13 plantillas intercambiables** — Ruth / Editorial / Pop (2026-09-30) + Vidriera / Ofertas / Fichero / Mosaico / Nova / Neón (2026-10-01) + Caramelo / Cohete / Jungla / Crayón (2026-10-01) — elegibles desde el panel (sección 7bis) | Un solo diseño fijo en código; temas sólo de colores |
+| Diseño de la tienda | **21 plantillas intercambiables** — Ruth / Editorial / Pop (2026-09-30) + Vidriera / Ofertas / Fichero / Mosaico / Nova / Neón + Caramelo / Cohete / Jungla / Crayón (2026-10-01) + Boutique / Feria / Periódico / Retro 90 / Suizo / Cancha / Cine / Playa (2026-10-02) — elegibles desde el panel (sección 7bis) | Un solo diseño fijo en código; temas sólo de colores |
 
 **Ojo:** la pasarela de pago **sí** existe. El sitio arrancó sin ninguna (checkout
 por WhatsApp + alias manual), pero desde el 2026-09-17 tiene **Mercado Pago
@@ -60,22 +66,23 @@ no se ofrecen para la venta online.
 ## 3. Cómo correr el proyecto en local
 
 **Necesitás los dos: backend + frontend, y MySQL corriendo.** Rutas reales en
-esta máquina (el nombre de la carpeta del backend no coincide con lo que dice
-este documento en otros lados — `../backend/` — es así de una tanda vieja):
+esta máquina: backend en `../backend/` (el repo en GitHub se llama
+`backend-ecommer-ruth`; la carpeta local es `backend`), frontend en esta
+carpeta (`frontend-ecommerce---ruth`).
 
 ```bash
 # 0) (sólo la primera vez) config local del backend — gitignored, no se sube
-cd "C:\proyectos\ecommerce ruth\backend-ecommer-ruth"
+cd "C:\Users\august0\Desktop\proyectos\ecommerce ruth\backend"
 copy src\main\resources\application-local.yml.example src\main\resources\application-local.yml
 # Editá application-local.yml: usuario/contraseña de tu MySQL, un JWT secret
 # largo, y (opcional pero recomendado) tu cuenta superadmin — ver más abajo.
 
 # 1) backend (con MySQL corriendo)
-cd "C:\proyectos\ecommerce ruth\backend-ecommer-ruth"
+cd "C:\Users\august0\Desktop\proyectos\ecommerce ruth\backend"
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=local     # http://localhost:8080
 
 # 2) frontend
-cd "C:\proyectos\ecommerce ruth\frontend"
+cd "C:\Users\august0\Desktop\proyectos\ecommerce ruth\frontend-ecommerce---ruth"
 npm start                                                    # http://localhost:4200
 ```
 
@@ -142,7 +149,7 @@ la idea es que armar un sitio nuevo sea **configurar, no programar**.
    tienda, WhatsApp, dirección, redes, medios de pago, "sobre nosotros",
    mensaje de WhatsApp, carrusel.
 6. Si querés datos de ejemplo para ver las pantallas con volumen (métricas,
-   balance, campañas), hay un seed de demo: ver `../backend-ecommer-ruth/database/README.md`.
+   balance, campañas), hay un seed de demo: ver `../backend/database/README.md`.
 
 ## 4. Configurar servicios externos (Cloudinary, mail)
 
@@ -252,7 +259,11 @@ el backend no responde: `src/app/core/services/settings.service.ts` →
   Fichero (IBM Plex Mono + IBM Plex Sans), Mosaico (Sora + Manrope),
   Nova (Bricolage Grotesque + Plus Jakarta Sans), Neón (Orbitron + Rubik),
   Caramelo (Grandstander + Quicksand), Cohete (Bungee + Varela Round),
-  Jungla (Luckiest Guy + Comic Neue) y Crayón (Patrick Hand + Comfortaa).
+  Jungla (Luckiest Guy + Comic Neue), Crayón (Patrick Hand + Comfortaa),
+  Boutique (Cormorant Garamond + Jost), Feria (Alfa Slab One + Work Sans),
+  Periódico (UnifrakturMaguntia + Old Standard TT + Libre Franklin), Retro 90
+  (Rammetto One + DM Sans), Suizo (Archivo + Space Mono), Cancha (Russo One +
+  Titillium Web), Cine (Bebas Neue + Poppins) y Playa (Pacifico + Outfit).
 
 ## 7. Página de inicio (`/`, `CatalogPageComponent`)
 
@@ -286,10 +297,12 @@ otra estructura visual.
 
 - **Qué es:** el dueño puede elegir el **diseño de la tienda** desde
   `/admin/config/diseno` (sección 9sexies), sin tocar código ni redesplegar.
-  Hoy hay trece: **Ruth** (el original), **Editorial**, **Pop**, **Vidriera**,
-  **Ofertas**, **Fichero**, **Mosaico**, **Nova**, **Neón**, **Caramelo**,
-  **Cohete**, **Jungla** y **Crayón**. La elección
-  queda guardada en `site_settings.layout` y la tienda la levanta al cargar.
+  Hoy hay **veintiuno**: **Ruth** (el original), **Editorial**, **Pop**,
+  **Vidriera**, **Ofertas**, **Fichero**, **Mosaico**, **Nova**, **Neón**,
+  **Caramelo**, **Cohete**, **Jungla**, **Crayón**, **Boutique**, **Feria**,
+  **Periódico**, **Retro 90**, **Suizo**, **Cancha**, **Cine** y **Playa**.
+  La elección queda guardada en `site_settings.layout` y la tienda la levanta
+  al cargar.
 - **Por qué esta arquitectura:** en el intento anterior (el SaaS) todas las
   plantillas salían iguales porque sólo variaba el hero y el resto —grilla,
   header, footer, fichas— era compartido. Acá **cada plantilla es dueña de su
@@ -307,15 +320,17 @@ otra estructura visual.
     promos vigentes en `promos` y el `discountPercentFor` de cada prenda). Cada
     plantilla recibe un único `view = input.required<CatalogView>()`.
   - `features/catalog/catalog-page/` — el contenedor: carga los datos, expone
-    `vm: CatalogView = this` y hace `@switch (layout())` sobre las tres
-    plantillas. Acepta `layoutOverride` (forzar un diseño ignorando el elegido)
+    `vm: CatalogView = this` y hace `@switch (layout())` sobre las **21
+    plantillas**. Acepta `layoutOverride` (forzar un diseño ignorando el elegido)
     y `preview` (4 productos, sin "más vendidos" ni "ver más") — los usa la
     pantalla de Diseño para las miniaturas vivas.
-  - `features/catalog/templates/template-{ruth,editorial,pop}.component.*` — las
-    tres plantillas. La de Ruth es el markup viejo **portado literal**, así el
-    diseño original quedó píxel por píxel igual al de siempre.
-  - `shared/components/product-card` — variantes `classic | editorial | pop |
-    vidriera | oferta | mosaico`
+  - `features/catalog/templates/template-{id}.component.*` — una plantilla por
+    diseño (21 archivos). La de Ruth es el markup viejo **portado literal**, así
+    el diseño original quedó píxel por píxel igual al de siempre.
+  - `shared/components/product-card` — veinte variantes (`classic | editorial |
+    pop | vidriera | oferta | mosaico | nova | neon | caramelo | cohete | jungla
+    | crayon | boutique | feria | periodico | retro | suizo | cancha | cine |
+    playa`; Fichero, que usa filas, va con `classic`)
     (un `Record<ProductCardVariant, CardClasses>` con las clases de cada parte
     de la tarjeta). Es lo único que se comparte: la tarjeta, no la página.
   - `styles.css` — tokens por diseño (`[data-layout="editorial"], .tpl-editorial
@@ -364,9 +379,9 @@ otra estructura visual.
     `showMore()`, con "Ver más" de respaldo). Cierra con una franja oscura con
     los datos reales del local y el botón de WhatsApp. Bricolage Grotesque +
     Plus Jakarta Sans.
-  - **Neón** (2026-10-01): el disruptivo, y uno de los **dos diseños oscuros**
-    (el otro es Cohete). Fondo casi negro con una **grilla luminosa que se mueve
-    sola**,
+  - **Neón** (2026-10-01): el disruptivo, y uno de los **tres diseños oscuros**
+    (Cohete y Cine son los otros). Fondo casi negro con una **grilla luminosa que
+    se mueve sola**,
     tipografía arcade (Orbitron) y cian eléctrico + amarillo ácido. El nombre del
     hero entra **letra por letra**, hay **doble marquesina** cruzando en
     direcciones opuestas, **banners de promoción animados** (anillo de luz que
@@ -382,19 +397,20 @@ otra estructura visual.
       eso se oscurece toda la tienda. El header y el footer sí tienen superficies
       claras escritas a mano, así que llevan reglas acotadas en `styles.css`
       (`[data-layout="neon"] app-header header {…}` y lo mismo para `app-footer`)
-      que le ganan en especificidad a las utilidades de Tailwind. **Es el único
-      diseño que toca el chrome compartido**, y está aislado por el atributo del
-      diseño: ningún otro lo hereda.
+      que le ganan en especificidad a las utilidades de Tailwind. **Fue el primer
+      diseño que tocó el chrome compartido** (hoy también lo hacen Cohete y
+      Cine), siempre aislado por el atributo del diseño: ningún otro lo hereda.
   - **Caramelo** (2026-10-01): pastel y para los más chicos. **Rayos que giran**
     detrás del logo (`.candy-sun`), **manchas que flotan** con delays distintos
     (`.candy-blob`), ondas de nube que corren como separador (`.candy-scallop`) y
     piezas que **se aplastan como un caramelo** al pasar el mouse (`.jelly-hover`).
     Suma una sección de **"recién llegados"** ordenada por `createdAt`, que ningún
     otro diseño usa. Grandstander + Quicksand.
-  - **Cohete** (2026-10-01): viaje espacial, el otro diseño oscuro. **Cielo
-    estrellado que titila**, **órbitas punteadas que giran**, una **nave que cruza
-    la pantalla** y **estrellas fugaces**. Comparte con Neón las reglas acotadas
-    del chrome compartido. Bungee + Varela Round.
+  - **Cohete** (2026-10-01): viaje espacial, el segundo de los **tres diseños
+    oscuros** (con Neón y Cine). **Cielo estrellado que titila**, **órbitas
+    punteadas que giran**, una **nave que cruza la pantalla** y **estrellas
+    fugaces**. Comparte con Neón las reglas acotadas del chrome compartido.
+    Bungee + Varela Round.
   - **Jungla** (2026-10-01): aventura en la selva. **Arboleda que se mece** arriba
     y abajo (`.jungla-top` / `.jungla-bottom`), **huellas que marchan solas** como
     separador, **hojas** hechas sólo con `border-radius` y piezas que **se
@@ -404,12 +420,44 @@ otra estructura visual.
     **garabatos SVG que se dibujan solos** al entrar en pantalla
     (`stroke-dashoffset` animado: cada forma lleva `pathLength="1"`). Patrick Hand
     + Comfortaa.
-  - **Los diez últimos no inventan datos:** cada bloque sale de algo que el
-    backend ya tenía (parametrías del grupo "Público", `/api/discounts`,
-    `storePhotoUrl`, `aboutText`, `sizeStocks`, `description`, `bestSellers`).
-    Por eso quedaron afuera testimonios, reseñas, cuotas sin interés, favoritos,
-    newsletter y "cupones" anunciados: no hay tabla ni endpoint que los respalde
-    —de los cupones sólo existe la validación por código que tipea el cliente—.
+  - **Boutique** (2026-10-02): casa de moda en marfil, negro y dorado. La más
+    silenciosa: mucho aire, tipografía serif, filetes finos y **ni una sola caja
+    de color**. Cormorant Garamond + Jost.
+  - **Feria** (2026-10-02): puesto de feria. **Toldo rayado** (`.feria-awning`),
+    **carteles de cartón pegados con cinta adhesiva** (`.feria-board` +
+    `.feria-tape`), tipografía de sello y papel kraft. Alfa Slab One + Work Sans.
+  - **Periódico** (2026-10-02): primera plana. **Cabecera de diario** con doble
+    filete (`.per-double-rule`), columnas y el catálogo como **ranking numerado**
+    (`.per-rank`) en vez de grilla — es la única con esa estructura de lista.
+    UnifrakturMaguntia + Old Standard TT + Libre Franklin.
+  - **Retro 90** (2026-10-02): Memphis noventoso. Violeta eléctrico, **figuras
+    geométricas que flotan**, calcomanías con sombra dura y **cinta que corre**.
+    Rammetto One + DM Sans.
+  - **Suizo** (2026-10-02): grilla suiza estricta. **Números de sección**,
+    tipografía grotesca (Archivo + Space Mono), rojo de acento y cero adornos —
+    con las **fotos en gris que se colorean** al pasar el mouse, único diseño que
+    desatura las fotos del catálogo.
+  - **Cancha** (2026-10-02): club de barrio. **Tablero de LED** (`.cancha-board`)
+    con el **conteo real** de prendas del catálogo filtrado, **pizarra de
+    vestuario**, **red de arco** y **chips con número de camiseta**. Russo One +
+    Titillium Web.
+  - **Cine** (2026-10-02): función de tarde, **el tercer diseño oscuro**.
+    **Marquesina con foquitos que persiguen** (keyframes `cine-chase` y
+    `cine-twinkle`), cortina de terciopelo, estrellas decorativas (`aria-hidden`)
+    y letras de afiche, con el **conteo real** de prendas "en cartel". Lleva las
+    mismas reglas acotadas de header/footer que Neón y Cohete. Bebas Neue +
+    Poppins.
+  - **Playa** (2026-10-02): verano. Degradé de mar (`.playa-sky`), **sol que
+    flota**, **olas que cortan las secciones** (`.playa-wave`), promos vigentes
+    en banda **coral** (`.playa-promos`, de `/api/discounts`) y fotos con **marco
+    blanco** (`.playa-frame`). Pacifico + Outfit.
+  - **Ninguno de los diseños nuevos inventa datos:** cada bloque sale de algo que
+    el backend ya tenía (parametrías del grupo "Público", `/api/discounts`,
+    `storePhotoUrl`, `aboutText`, `sizeStocks`, `description`, `bestSellers`,
+    `featuredInPromos`). Por eso quedaron afuera testimonios, reseñas, cuotas sin
+    interés, favoritos, newsletter y "cupones" anunciados: no hay tabla ni
+    endpoint que los respalde —de los cupones sólo existe la validación por
+    código que tipea el cliente—.
 - **Movimiento** (sin dependencias nuevas: CSS + cuatro directivas):
   - `shared/directives/reveal.directive.ts` (`appReveal`): IntersectionObserver
     que agrega la clase de entrada cuando el elemento aparece en pantalla;
@@ -455,14 +503,46 @@ otra estructura visual.
 - **Verificado en navegador (2026-09-30):** ciclo completo
   ruth → editorial → pop → ruth; cada cambio persiste y se ve en la tienda con
   sólo recargar, consola limpia. La tienda quedó en **Ruth** (el del cliente).
+- **Verificado con las tandas de octubre (2026-10-01/02):** los 21 diseños se
+  ven en las miniaturas vivas de `/admin/config/diseno`, el cambio de diseño
+  se probó de punta a punta contra el backend real (`PUT apariencia` → 200 y el
+  `GET /api/settings` lo refleja) y en el navegador. La tienda quedó en **Pop**
+  (el elegido para probar; el default sigue siendo Ruth).
+
+## 7ter. Vista de promociones (`/promos`) y marcado "Mostrar en promos"
+
+- **Qué es:** página pública que muestra las prendas en promoción. Es el destino
+  natural del **banner promocional** (sección 9sexies: el campo link admite
+  `/promos`, `/producto/xxxxx` o una URL) y de los links del diseño **Neón**
+  (chip "Ver promos" en el hero + "Ver las prendas en promo →" en la sección de
+  ofertas).
+- **Qué muestra, por prioridad** (2026-10-02):
+  1. Las prendas **marcadas a mano** con el checkbox **"Mostrar en promos"** del
+     form de producto (`featuredInPromos`).
+  2. Si no hay ninguna marcada, **fallback automático**: las prendas con
+     **descuento por parametría vigente** —las mismas que devuelve
+     `/api/discounts` y que aplica el carrito—, ordenadas de mayor a menor %.
+  El chip "-N%" sale de `DiscountService.percentForProduct` (mismo cálculo que el
+  carrito: nada se descuenta dos veces ni se anuncia un % que no se aplique).
+- **Tarjeta por diseño:** la página vive **fuera** del `CatalogView`, así que no
+  recibe `vm`; elige la variante de `ProductCard` con un mapa propio
+  (`VARIANT_BY_LAYOUT`, duplicado a propósito) para no desentonar con el diseño
+  activo. Fichero no tiene variante propia (usa filas) → `classic`.
+- **Backend:** columna `featured_in_promos` (boolean, default `false`) en
+  `product` —la crea sola `ddl-auto: update`—; los 4 DTOs de producto la llevan,
+  `ProductService.apply()` la setea y el formulario del panel la edita.
+- **Verificado en navegador + API (2026-10-02):** con y sin prendas marcadas
+  (fallback), y con el banner apuntando a `/promos`. Hoy no hay ninguna marcada
+  a mano: la vista muestra el fallback (las prendas con descuento vigente).
 
 ## 8. Estructura del código
 
 ```
 src/app/
   core/
-    config/site-config.ts       # storeName, apiBaseUrl, WhatsApp, redes + helper apiUrl()
-    layouts.ts                  # registro de diseños de tienda (LAYOUTS) + ensureLayoutFonts()
+    config/site-config.ts       # sólo apiBaseUrl + helper apiUrl(); el resto de los datos del local viven en el backend (SettingsService)
+    layouts.ts                  # registro de los 21 diseños de tienda (LAYOUTS) + ensureLayoutFonts()
+    store-title.strategy.ts     # título de pestaña "<página> | <tienda>" con el storeName real (sección 9sexies)
     http/                       # auth.interceptor (Bearer en /api/admin/**), error.interceptor (401→login, toasts)
     state/collection-store.ts   # store genérico: items + status(loading/error) + saving + reload; lo componen los services
     utils/image-resize.ts       # redimensiona fotos del carrusel antes de subirlas
@@ -480,12 +560,13 @@ src/app/
       auth.service.ts           # POST /api/auth/login → JWT en localStorage; isAuthenticated()
       toast.service.ts          # cola de toasts (éxito/error)
     guards/admin.guard.ts       # protege /admin/* (isAuthenticated)
-  shared/components/            # header, footer, product-card (variantes classic/editorial/pop/vidriera/oferta/mosaico/nova), quantity-stepper, hero-carousel, toast, skeleton, site-preview
+  shared/components/            # header, footer, product-card (20 variantes: classic/editorial/pop/vidriera/oferta/mosaico/nova/neon/caramelo/cohete/jungla/crayon/boutique/feria/periodico/retro/suizo/cancha/cine/playa), quantity-stepper, hero-carousel, toast, skeleton, site-preview
   shared/directives/            # appReveal / appTilt / appScrollProgress / appAutoMore — el movimiento (sección 7bis)
   features/
     catalog/catalog-page/       # home = CONTENEDOR: carga los datos y elige plantilla (@switch sobre layout)
     catalog/catalog-view.ts     # contrato CatalogView: lo que el contenedor le pasa a cada plantilla
-    catalog/templates/          # template-ruth / editorial / pop / vidriera / ofertas / fichero / mosaico / nova — markup completo de cada diseño
+    catalog/templates/          # template-ruth / editorial / pop / vidriera / ofertas / fichero / mosaico / nova / neon / caramelo / cohete / jungla / crayon / boutique / feria / periodico / retro / suizo / cancha / cine / playa — markup completo de cada diseño (21)
+    promos/promos-page/         # vista /promos: prendas marcadas "Mostrar en promos" o, si no hay, las de descuento vigente (sección 7ter)
     product-detail/             # ficha de producto (talle con stock, cantidad, agregar al carrito)
     cart/cart-page/             # carrito + entrega (retiro/envío) + pago + "Comprar por WhatsApp"
     admin/                      # login, layout, productos, pedidos, carrusel, admin-config/ (hub + secciones + Diseño) — ver 9bis y 9sexies
@@ -645,7 +726,7 @@ src/app/
 - **Diseño de la tienda (`/admin/config/diseno`, desde 2026-09-30):** es la
   primera tarjeta del hub. Va en un componente aparte (`AdminDesignComponent`),
   no como `data.section` de `AdminConfigSectionComponent`, porque no edita
-  campos: muestra las tres plantillas (sección 7bis) como **miniaturas vivas** —
+  campos: muestra las **21 plantillas** (sección 7bis) como **miniaturas vivas** —
   la home real renderizada a `w-[1440px]` y escalada a 0.32, con
   `pointer-events-none` y `[preview]="true"`. O sea: los productos, las fotos y
   los textos **de ese sitio** dibujados por cada diseño, no una ilustración.
@@ -653,6 +734,12 @@ src/app/
   `PUT /api/admin/settings/apariencia`; la tarjeta activa queda marcada con un
   anillo y la leyenda "EN USO", y el cambio se ve en la tienda con sólo
   recargar. Ruta con `permissionGuard` + `PLATFORM_SETTINGS_MANAGE`.
+  **Ojo con los permisos:** la cuenta de Ruth (`11111111`) **no tiene**
+  `PLATFORM_SETTINGS_MANAGE` (ver #46), así que hoy el diseño lo cambia sólo
+  la cuenta superadmin (`33756194`); si Ruth tiene que elegir el diseño hay
+  que darle el permiso editando su rol en `/admin/usuarios` (o darle un rol
+  que lo tenga). A la tienda el cambio le llega igual: `GET /api/settings`
+  no pide permiso.
   **Pendiente:** sumarla al menú lateral (grupo "Configuración del sitio"); hoy
   se entra por el hub.
 - **Previsualización en vivo:** cada sub-página muestra al costado un
@@ -685,6 +772,23 @@ src/app/
 - **Frontend:** `SettingsService` (signal-based, `providedIn: 'root'`) carga
   `/api/settings` al arrancar la app y expone `settings()`, `logoSrc()`,
   `whatsappUrl()`, `instagramUrl()`. Si el backend no responde, usa `DEFAULTS`.
+- **Título de pestaña dinámico (2026-10-02):** `StoreTitleStrategy`
+  (`core/store-title.strategy.ts`, registrada como `TitleStrategy` en
+  `app.config.ts`) arma `<página> | <nombre de la tienda>` en las páginas
+  públicas, con el `storeName` real de `/api/settings`: cambiar la marca no
+  obliga a tocar rutas ni redeployar. En el panel (`/admin`) el título queda
+  como lo define cada ruta (`X | Admin`), sin el nombre de la tienda.
+  `SettingsService` se resuelve **diferido** (primera navegación + `effect` con
+  guarda `inAdmin`): construir el servicio en el constructor de la estrategia
+  dispara el request de `/api/settings`, cuyo interceptor vuelve a pedir el
+  Router → ciclo de DI que rompía el fetch en silencio (ver historial #63).
+- **Banner promocional (popup, sección "Sobre nosotros"):** `promoBannerEnabled`
+  + imagen (**Cloudinary**, carpeta `estilos-pequenos/marketing`) + link
+  opcional. `PromoBannerComponent` (`shared/components/promo-banner/`, montado
+  en `AppComponent`) lo muestra **una vez por pestaña** al entrar al sitio
+  (`sessionStorage: promoBannerDismissed`), se cierra con la X o tocando afuera,
+  y sólo aparece si está activado *y* tiene imagen. El link admite `/promos`
+  (lleva a la vista de promociones, sección 7ter), `/producto/xxxxx` o una URL.
 - **Validación** del número: solo dígitos, 8 a 15 (sin `+`, espacios ni `15`).
   Mismo `@Pattern` en el DTO del backend y en el form; el preview marca en rojo
   el link `wa.me` si el número no valida.
@@ -768,7 +872,7 @@ src/app/
 > "mis pedidos", "cómo comprar" + FAQ, CSV, compras a proveedor, "lo más
 > vendido", modal propio, rate-limiting, multi-admin, métricas por
 > talle/proveedor, devoluciones/cambios). La lista **al día** de lo que falta,
-> verificada contra el código, está en `../backend-ecommer-ruth/PROYECTO.md`
+> verificada contra el código, está en `../backend/PROYECTO.md`
 > §11bis.
 
 Hechos: galería de fotos por producto · dashboard `/admin` + stock bajo ·
@@ -1361,9 +1465,9 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       vars, o en `application-local.yml` en local — hay un ejemplo comentado en
       `application-local.yml.example`) con tu usuario y una contraseña fuerte;
       sin eso no se siembra ninguna cuenta superadmin y `/admin/superadmin/**`
-      queda inaccesible para todos. Nota aparte: este archivo dice `../backend/`
-      pero la carpeta real en esta máquina es `../backend-ecommer-ruth/` — quedó
-      así de antes, no lo tocamos en esta tanda.
+      queda inaccesible para todos. Nota aparte: este archivo decía `../backend/`
+      y una corrección posterior lo pasó a `../backend-ecommer-ruth/`; hoy la
+      carpeta en esta máquina se llama, de nuevo, `../backend/` (ver #63).
 50. **Nombre/apellido/DNI en AdminUser, primer paso de login por DNI
     (2026-09-11):** arranque del ítem 2 de la cola (usuarios con nombre/apellido/
     DNI, login por DNI, recuperación por mail). Hecho en esta tanda:
@@ -1447,7 +1551,7 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
 
 52. **Puesta al día de este documento + arreglo del esquema de deploy
     (2026-09-20).** No se tocó código del frontend; fue documentación y backend.
-    - **Backend (repo `../backend-ecommer-ruth/`, commit `4f4dadc`):** el
+    - **Backend (repo `../backend/`, commit `4f4dadc`):** el
       esquema de deploy estaba roto — `mysql < database/setup.sql` cortaba a la
       mitad por un `INSERT` sobre la tabla `discount_config` que ya no existía,
       faltaban las tablas `marketing_config`/`marketing_send` y 11 columnas, y
@@ -1467,8 +1571,9 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       un aviso en **10** aclarando que esa lista de pendientes es del 2026-09-08.
       Las secciones 6 a 11 quedaron como estaban.
     - **`CLAUDE.md`** también decía que el checkout era 100% client-side por
-      WhatsApp; actualizado, y corregida la ruta del backend (decía
-      `../backend/`, la carpeta real es `../backend-ecommer-ruth/`).
+      WhatsApp; actualizado, y corregida la ruta del backend (en ese momento se
+      pasó a `../backend-ecommer-ruth/`; hoy la carpeta local es `../backend/`,
+      ver #63).
     - **Probado en el navegador** (Playwright, con back y front levantados): la
       home (hero + carrusel), el catálogo (19 productos, filtros por
       parametría, badges de "última unidad" y "sin stock"), el login por DNI, el
@@ -1479,7 +1584,7 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       todas concentradas en septiembre, así que los gráficos de "facturación por
       mes" y las comparativas se ven casi vacíos (julio y agosto en $0). No es
       un bug, es falta de datos — motivo por el que se agregó un seed de demo
-      (ver `../backend-ecommer-ruth/database/README.md`).
+      (ver `../backend/database/README.md`).
 
 53. **Bug: las barras de ganancia del gráfico de Balance eran invisibles
     (2026-09-20).** Lo reportó el cliente mirando `/admin/balance`.
@@ -1897,13 +2002,96 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       (que es la solución de fondo, porque hoy las utilidades de los 13 viajan en
       el bundle inicial).
 
-## 12. Backend (`../backend-ecommer-ruth/`) — resumen
+61. **Ocho diseños más: Boutique, Feria, Periódico, Retro 90, Suizo, Cancha,
+    Cine y Playa — ya son 21 (2026-10-02).** Pedido: "8 templates más, así de
+    disruptivos y diferentes" (y la pregunta de cómo se adapta la tienda si el
+    cliente sube otro logo u otro nombre). Respuesta corta: el nombre, el logo y
+    los textos ya salen de `/api/settings`, así que cambiar de marca no toca
+    ninguna plantilla; y para la parte "seleccionar prendas en promoción" se
+    sumó la vista de #62.
+    - **Cada diseño tiene UN recurso visual propio** (detalle en 7bis): Boutique
+      (marfil/negro/dorado, nada de cajas de color), Feria (toldo rayado,
+      carteles de cartón con cinta), Periódico (catálogo como **ranking
+      numerado**, cabecera de diario a doble filete), Retro 90 (Memphis),
+      Suizo (grilla, números de sección, fotos **gris → color** al pasar el
+      mouse), Cancha (tablero LED + pizarra + red), Cine (**el tercer diseño
+      oscuro**, marquesina con foquitos y cortina) y Playa (degradé de mar,
+      sol, olas y promos coral).
+    - **Los 8 no inventan datos:** todo sale de lo que el backend ya tenía
+      (parametrías, `/api/discounts`, `storePhotoUrl`, `aboutText`,
+      `sizeStocks`, `description`, `bestSellers`).
+    - **`ProductCard`** sumó `boutique`, `feria`, `periodico`, `retro`, `suizo`,
+      `cancha`, `cine` y `playa`: **20 variantes** (Fichero sigue usando
+      `classic` porque su home usa filas).
+    - **Backend:** los 8 ids sumados al `@Pattern` de `AppearanceRequest`
+      (commit `b36c5a2`); commit del frontend `ffd23fc`.
+    - **Verificación:** los 21 diseños se ven en las miniaturas vivas de
+      `/admin/config/diseno` y el cambio de diseño se probó de punta a punta
+      contra el backend real y en el navegador. La tienda quedó en **Pop** (el
+      elegido para probar; el default sigue siendo Ruth).
+    - **Build (medición del día, con los tres cambios de la fecha):**
+      `ng build` OK; initial **565,82 kB** / 140,18 kB de transferencia; el CSS
+      global pasó de 122,55 kB a **145,6 kB (149.056 bytes)** — y por primera
+      vez **aparece el aviso de presupuesto**: se pasó por 15,82 kB del umbral
+      de 550 kB (era el pendiente que #60 había dejado anotado). Sigue pendiente
+      decidir entre subir el umbral o separar el CSS por diseño.
 
-> **Ruta real:** la carpeta del backend en esta máquina es
-> `../backend-ecommer-ruth/` (este documento la llamaba `../backend/` en varios
-> lados — sea `backend-ecommer-ruth`). **Detalle completo en
-> `../backend-ecommer-ruth/PROYECTO.md`**, que es el documento vivo del backend;
-> lo de acá es un resumen y puede quedar atrás.
+62. **Vista `/promos`: marcado manual "Mostrar en promos" con fallback a los
+    descuentos vigentes (2026-10-02).** Nació de la pregunta del cliente:
+    "¿poder seleccionar prendas en promoción para que aparezcan en otra vista
+    que es la que aparezca en el banner de liquidación o promoción?".
+    - **Cómo funciona:** el form de producto suma el tilde **"Mostrar en
+      promos"** (`featuredInPromos`, columna nueva que crea sola
+      `ddl-auto: update`). La vista `/promos` muestra, por prioridad: (1) las
+      prendas marcadas a mano; (2) si no hay ninguna, **las prendas con
+      descuento por parametría vigente** (las mismas de `/api/discounts`),
+      ordenadas de mayor a menor %. El chip **"-N%"** sale de
+      `DiscountService.percentForProduct` — el mismo cálculo que aplica el
+      carrito, así que nunca se anuncia un % que no se descuente.
+    - **Integración:** el **banner promocional** acepta `/promos` como link
+      (placeholder del campo actualizado) y los links del diseño **Neón**
+      ("Ver promos" del hero y "Ver las prendas en promo →") apuntan ahí.
+      La página vive fuera del `CatalogView`, así que elige la variante de
+      tarjeta con un `VARIANT_BY_LAYOUT` propio (duplicado a propósito) para no
+      desentonar con el diseño activo.
+    - **Commits:** frontend `bcea9d2`, backend `ba63338` (columna + 4 DTOs +
+      `ProductService.apply()` + form).
+    - **Verificación:** en navegador con y sin prendas marcadas (fallback) y
+      con el banner apuntando a `/promos`. Al cerrar se desmarcó la prenda que
+      había quedado de la prueba anterior ("Zapatillas urbanas velcro"): hoy no
+      hay ninguna marcada a mano y `/promos` muestra el fallback.
+
+63. **Título de pestaña dinámico: "Página | Nombre de la tienda" (2026-10-02).**
+    - **Qué hace:** `StoreTitleStrategy` (`core/store-title.strategy.ts`,
+      registrada como `TitleStrategy` en `app.config.ts`) arma el título de las
+      páginas públicas como `<página> | <storeName real de /api/settings>`: si
+      la dueña cambia el nombre de la tienda desde el panel, la pestaña lo sigue
+      sin redeployar. En el panel (`/admin`) el título queda como lo define cada
+      ruta (`X | Admin`).
+    - **El bug que apareció y cómo se resolvió:** resolver `SettingsService` con
+      `inject()` en el constructor de la estrategia dispara el request de
+      `/api/settings` mientras el Router todavía se está construyendo; el
+      interceptor de ese request vuelve a pedir el Router → **ciclo de DI
+      (NG0200)**. Lo grave es que el error se tiraba sincrónicamente dentro del
+      subscribe del interceptor y **moría en silencio**: `/api/settings` no se
+      resolvía nunca y la tienda quedaba con los `DEFAULTS`. Se resolvió
+      **diferido**: `Injector.get(SettingsService)` en la primera navegación
+      (cuando el Router ya terminó de construirse) + `effect` con guarda
+      `inAdmin` para no pisar el título del panel.
+    - **Verificación:** se renombró la tienda temporalmente desde el panel para
+      ver la pestaña cambiar en vivo y se revirtió: quedó como estaba,
+      "Estilos Pequeños". Commit `18a7b28`.
+    - **Documentación:** esta pasada actualizó PROYECTO.md (encabezado, 2, 6,
+      7bis, 7ter, 8, 9sexies y este historial) y CLAUDE.md; además se corrigió
+      la ruta del backend (en esta máquina la carpeta es `../backend/`, el repo
+      en GitHub se llama `backend-ecommer-ruth`).
+
+## 12. Backend (`../backend/`) — resumen
+
+> **Ruta real:** en esta máquina la carpeta del backend es `../backend/` (el
+> repo en GitHub se llama `backend-ecommer-ruth`). **Detalle completo en
+> `../backend/PROYECTO.md`**, que es el documento vivo del backend; lo de acá
+> es un resumen y puede quedar atrás.
 
 - **Qué es:** API REST en Java 21 / Spring Boot 3.3 / MySQL 8. Repo git propio.
   Docs interactivas en `http://localhost:8080/swagger-ui.html`.
@@ -1921,15 +2109,20 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
   (**sin caché de navegador** desde 2026-09-30, historial #56),
   `POST /api/orders` (checkout), `GET /api/orders/lookup` (mis pedidos),
   `GET /api/coupons/{code}`, y el **webhook de Mercado Pago**.
-- **Diseño de la tienda (2026-09-30, ampliado el 2026-10-01):**
-  `SiteSettings.layout` (`ruth` | `editorial` | `pop` | `vidriera` | `ofertas` |
-  `fichero` | `mosaico` | `nova` | `neon` | `caramelo` | `cohete` | `jungla` |
-  `crayon`, validado con `@Pattern` en
-  `AppearanceRequest`) +
+- **Diseño de la tienda (2026-09-30, ampliado el 2026-10-01 y el 2026-10-02):**
+  `SiteSettings.layout` — los **21 ids** (`ruth` | `editorial` | `pop` |
+  `vidriera` | `ofertas` | `fichero` | `mosaico` | `nova` | `neon` |
+  `caramelo` | `cohete` | `jungla` | `crayon` | `boutique` | `feria` |
+  `periodico` | `retro` | `suizo` | `cancha` | `cine` | `playa`), validados con
+  `@Pattern` en `AppearanceRequest`) +
   `PUT /api/admin/settings/apariencia` con
   `@PreAuthorize("hasAnyAuthority('PLATFORM_SETTINGS_MANAGE',
   'CAROUSEL_MANAGE')")` — lo puede cambiar el dueño de la tienda, no sólo el
   superadmin. `ddl-auto=update` creó la columna sola. Ver sección 7bis.
+- **Producto promocionable (2026-10-02):** `Product.featuredInPromos`
+  (boolean, default `false`, la crea `ddl-auto=update`) — lo edita el form del
+  panel y lo expone `GET /api/products`; lo usa la vista `/promos`. Ambos se
+  pueden tocar también por `PUT /api/admin/products/{id}`. Ver sección 7ter.
 - **Entidades principales:** AdminUser, Role/Permission, SiteSettings (fila
   única), PlatformMailSettings, Product (+ `params`, `sizeStocks`, `images`,
   `barcode`, `videoUrl`, `costPrice`, `supplierId`), ParamGroup/ParamOption,
@@ -1945,7 +2138,7 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
 - **Código de pedido:** `PED-0001`… derivado de un correlativo `number`.
 - **Seed:** al primer arranque carga parametrías, escalas, 2 descuentos y 10
   productos de ejemplo (`DataSeeder`). Se apaga con `SEED_ENABLED=false`.
-- **Correr:** `cd ../backend-ecommer-ruth && ./mvnw spring-boot:run` con
+- **Correr:** `cd ../backend && ./mvnw spring-boot:run` con
   `DB_USER`/`DB_PASSWORD` (MySQL) y `JWT_SECRET` (o `application-local.yml`).
 - **DB:** en desarrollo `ddl-auto=update` (Hibernate crea/actualiza el esquema).
   En `database/` hay scripts SQL a mano (`schema.sql`, `seed.sql`, `reset.sql`,

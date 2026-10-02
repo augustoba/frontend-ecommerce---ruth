@@ -30,9 +30,9 @@ si conviene tocar también este archivo o el `README.md`).
 - **Frontend:** Angular 19 (standalone components + signals) + Tailwind
   CSS v4. Repo actual (`frontend/`), ya desarrollado.
 - **Backend:** Java 21 + Spring Boot 3 + MySQL 8 + JWT, en la carpeta hermana
-  `../backend-ecommer-ruth/` (repo git propio; la doc lo llamaba `../backend/`).
-  Package-by-layer. Ver `../backend-ecommer-ruth/README.md`.
-- Correr en local: backend (`cd ../backend-ecommer-ruth && ./mvnw spring-boot:run`)
+  `../backend/` (repo git propio; en GitHub se llama `backend-ecommer-ruth`).
+  Package-by-layer. Ver `../backend/README.md`.
+- Correr en local: backend (`cd ../backend && ./mvnw spring-boot:run`)
   **y** frontend (`npm start` → `http://localhost:4200`). El carrito y el token
   son lo único que sigue en `localStorage`.
 
@@ -55,9 +55,10 @@ si conviene tocar también este archivo o el `README.md`).
 
 ## Detalles que no están en el código y conviene recordar
 
-- **La home tiene 13 diseños intercambiables** (Ruth / Editorial / Pop desde
+- **La home tiene 21 diseños intercambiables** (Ruth / Editorial / Pop desde
   2026-09-30; + Vidriera / Ofertas / Fichero / Mosaico / Nova / Neón / Caramelo /
-  Cohete / Jungla / Crayón desde 2026-10-01):
+  Cohete / Jungla / Crayón desde 2026-10-01; + Boutique / Feria / Periódico /
+  Retro 90 / Suizo / Cancha / Cine / Playa desde 2026-10-02):
   `CatalogPageComponent` es un **contenedor** que carga los datos
   y los pasa como un único `CatalogView` (`features/catalog/catalog-view.ts`) a
   la plantilla elegida (`@switch (layout())` sobre
@@ -72,14 +73,28 @@ si conviene tocar también este archivo o el `README.md`).
   El movimiento vive en cuatro directivas compartidas (`appReveal` con las
   variantes up/mask/bounce/blur/left/right/zoom, `appTilt`, `appScrollProgress` y
   `appAutoMore`) + keyframes en `styles.css`; **Nova** es la que más las usa.
-  **Neón** (arcade) y **Cohete** (espacial) son los dos diseños oscuros: la
-  oscuridad sale de invertir la rampa `brand-*` (el `body` usa `brand-50` como
-  fondo) más reglas acotadas en `styles.css` para el header y el footer
-  compartidos (`[data-layout="neon"] app-header header {…}` y lo mismo para
-  Cohete), que es lo único que ningún otro diseño toca. Los últimos cuatro
-  (Caramelo, Cohete, Jungla y Crayón) son los "para chicos", con movimiento
-  propio cada uno.
-  Ver PROYECTO.md §7bis, #56, #57, #58, #59 y #60.
+  **Neón** (arcade), **Cohete** (espacial) y **Cine** (marquesina) son los tres
+  diseños oscuros: la oscuridad sale de invertir la rampa `brand-*` (el `body`
+  usa `brand-50` como fondo) más reglas acotadas en `styles.css` para el header
+  y el footer compartidos (`[data-layout="neon"] app-header header {…}` y lo
+  mismo para Cohete y Cine), que es lo único que ningún otro diseño toca. Los
+  últimos cuatro "para chicos" (Caramelo, Cohete, Jungla y Crayón) tienen
+  movimiento propio cada uno.
+- **Vista `/promos`** (2026-10-02): muestra las prendas marcadas a mano con
+  "Mostrar en promos" (`featuredInPromos` en el form de producto) o, si no hay
+  ninguna, las de descuento vigente por parametría —mismo % que aplica el
+  carrito vía `DiscountService.percentForProduct`—. Es el destino del link del
+  banner promocional y de los links del diseño Neón. La página elige la
+  variante de tarjeta con un `VARIANT_BY_LAYOUT` propio (vive fuera del
+  `CatalogView`). Ver PROYECTO.md §7ter.
+- **Título de pestaña dinámico** (2026-10-02): `StoreTitleStrategy`
+  (`core/store-title.strategy.ts`) arma `<página> | <storeName>` en las
+  páginas públicas con el nombre real de `/api/settings` (en `/admin` queda
+  `X | Admin`). Ojo con el ciclo de DI que tuvo: `SettingsService` se resuelve
+  **diferido** (`Injector.get` en la primera navegación + `effect` con guarda),
+  nunca con `inject()` en el constructor — si no, el request de
+  `/api/settings` muere en silencio (NG0200). Ver PROYECTO.md §9sexies y #63.
+  Ver PROYECTO.md §7bis, §7ter, §9sexies, #56–#63.
 - El logo real del comercio (sombrilla + corazones, paleta pastel
   rosa/celeste/durazno) está en `public/logo.jpeg` — lo pasó el cliente,
   coincide con su marca real de WhatsApp/redes. Es el **fallback**: desde
