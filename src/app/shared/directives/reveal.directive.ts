@@ -9,13 +9,24 @@ import {
   signal,
 } from '@angular/core';
 
-export type RevealVariant = 'up' | 'mask' | 'bounce' | 'blur' | 'left' | 'right' | 'zoom';
+export type RevealVariant =
+  | 'up'
+  | 'mask'
+  | 'bounce'
+  | 'blur'
+  | 'left'
+  | 'right'
+  | 'zoom'
+  | 'fold'
+  | 'flip';
 
 /**
  * Aparición al hacer scroll: el elemento empieza invisible y entra cuando llega
  * al viewport. Sin dependencias — `IntersectionObserver` + las clases `.reveal`,
  * `.reveal-mask`, `.reveal-bounce`, `.reveal-blur`, `.reveal-left`,
- * `.reveal-right` y `.reveal-zoom` definidas en `styles.css`.
+ * `.reveal-right` y `.reveal-zoom` definidas en `styles.css`. `fold` (se
+ * despliega desde arriba como un papel doblado) y `flip` (se da vuelta como una
+ * hoja) son las de Origami.
  *
  * `[delay]` sirve para el efecto escalonado: en un `@for` se pasa `i * 60`.
  * Con `prefers-reduced-motion` el CSS ya deja todo visible, así que acá no hace
@@ -31,6 +42,8 @@ export type RevealVariant = 'up' | 'mask' | 'bounce' | 'blur' | 'left' | 'right'
     '[class.reveal-left]': 'variant() === "left"',
     '[class.reveal-right]': 'variant() === "right"',
     '[class.reveal-zoom]': 'variant() === "zoom"',
+    '[class.reveal-fold]': 'variant() === "fold"',
+    '[class.reveal-flip]': 'variant() === "flip"',
     '[class.is-visible]': 'visible()',
     '[style.transition-delay.ms]': 'delay()',
   },

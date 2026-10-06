@@ -1,0 +1,223 @@
+@if (vm(); as v) {
+  <!-- ===== 1. Apertura =====
+       El título es el hero. Cada letra sube desde atrás de su renglón con un
+       retraso propio; `appScrollScene="exit"` escribe `--s` en el h1 a medida
+       que el hero se va y el CSS afina las letras. El nombre real va en
+       `aria-label`: las letras sueltas son decorativas. ===== -->
+  <section class="kinetico-hero">
+    <div class="mx-auto max-w-7xl px-5 pb-10 pt-8 sm:px-8 lg:pt-12">
+      <p class="kinetico-kicker">Ropa que se mueve</p>
+
+      <h1 class="kinetico-title mt-3" [style.--len]="palabraGrande().length" appScrollScene="exit" sceneOf=".kinetico-hero" [attr.aria-label]="v.storeName()">
+        @for (palabra of palabras(); track $index; let w = $index) {
+          <span class="kinetico-word" aria-hidden="true">
+            @for (letra of palabra; track $index; let l = $index) {
+              <span class="kinetico-letter" [style.animation-delay.ms]="(w * 5 + l) * 45">{{ letra }}</span>
+            }
+          </span>
+        }
+      </h1>
+
+      <div class="mt-8 flex flex-wrap items-end justify-between gap-6">
+        <p appReveal [delay]="300" class="max-w-md text-base leading-relaxed text-stone-600">{{ compraLine() }}</p>
+        <div appReveal [delay]="380" class="flex flex-wrap items-center gap-4">
+          <span class="text-xs font-bold uppercase tracking-[0.2em] text-stone-500 tabular-nums">
+            {{ v.filteredProducts().length }} prendas · {{ v.availableSizes().length }} talles
+          </span>
+          <button type="button" (click)="v.scrollToCatalog()" class="kinetico-btn">Ver catálogo ↓</button>
+        </div>
+      </div>
+    </div>
+
+    @if (v.heroSlides().length) {
+      <div class="mx-auto max-w-7xl px-5 pb-10 sm:px-8">
+        <div appReveal variant="zoom" class="relative aspect-[4/3] w-full overflow-hidden bg-brand-100 sm:aspect-[21/8]">
+          <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- ===== 2. Las dos cintas, cruzadas y en sentidos opuestos. Con datos
+       reales (promos o categorías); sin ninguno de los dos no se dibujan. ===== -->
+  @if (cinta().length) {
+    <div class="kinetico-ribbons" aria-label="Promos y categorías">
+      <div class="kinetico-ribbon kinetico-ribbon-lime">
+        <div class="anim-marquee">
+          @for (text of cintaLoop(); track $index; let i = $index) {
+            <span class="kinetico-ribbon-item" [attr.aria-hidden]="i >= cinta().length ? true : null">{{ text }} <span aria-hidden="true">✺</span></span>
+          }
+        </div>
+      </div>
+      <div class="kinetico-ribbon kinetico-ribbon-ink" aria-hidden="true">
+        <div class="anim-marquee-reverse">
+          @for (text of cintaLoop(); track $index) {
+            <span class="kinetico-ribbon-item">{{ text }} <span>✺</span></span>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ===== 3. Promos reales: el porcentaje, enorme. ===== -->
+  @if (v.promos().length) {
+    <section class="mx-auto max-w-7xl px-5 py-12 sm:px-8">
+      <div class="flex items-end justify-between gap-4">
+        <h2 class="kinetico-h2">Promos</h2>
+        <a routerLink="/promos" class="kinetico-link">Ver prendas en promo</a>
+      </div>
+      <div class="mt-6 grid gap-px border border-stone-900 bg-stone-900 sm:grid-cols-2 lg:grid-cols-3">
+        @for (promo of v.promos(); track promo.id; let i = $index) {
+          <article appReveal [delay]="i * 70" class="bg-brand-50 p-5">
+            <p class="kinetico-percent">{{ promo.percent ? promo.percent + '%' : '★' }}</p>
+            <p class="mt-2 text-base font-semibold leading-snug">{{ promo.text }}</p>
+            @if (promo.detail) {
+              <p class="mt-1 text-sm text-stone-500">{{ promo.detail }}</p>
+            }
+            @if (promo.endsLabel) {
+              <p class="mt-2 text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500">{{ promo.endsLabel }}</p>
+            }
+          </article>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 4. Una foto real vista por dentro de las letras. La palabra se
+       ensancha mientras cruza la pantalla (`appScrollScene="view"`). ===== -->
+  @if (fotoLetras(); as foto) {
+    <div class="kinetico-clip-wrap" aria-hidden="true">
+      <p class="kinetico-clip" appScrollScene="view" [style.background-image]="'url(' + (foto | cldImg: 1600) + ')'">
+        {{ palabraGrande() }}
+      </p>
+    </div>
+  }
+
+  <!-- ===== 5. Categorías: renglones gigantes. ===== -->
+  @if (categorias().length) {
+    <section class="mx-auto max-w-7xl px-5 py-12 sm:px-8">
+      <h2 class="kinetico-h2">Elegí por categoría</h2>
+      <div class="mt-4 border-t-2 border-stone-900">
+        @for (opt of categorias(); track opt.id; let i = $index) {
+          @let total = totalDeCategoria()[opt.id];
+          <button appReveal [delay]="i * 60" type="button" (click)="elegirCategoria(opt.id)" class="kinetico-row">
+            <span class="kinetico-row-label">{{ opt.label }}</span>
+            <span class="flex items-center gap-4 text-xs font-bold uppercase tracking-[0.18em] text-stone-500">
+              @if (total) {
+                <span class="tabular-nums">{{ total }} {{ total === 1 ? 'prenda' : 'prendas' }}</span>
+              }
+              <span class="kinetico-row-arrow" aria-hidden="true">→</span>
+            </span>
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 6. Lo más vendido: riel con número de orden. ===== -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section id="mas-vendido" class="kinetico-ink scroll-mt-24 py-12">
+      <div class="mx-auto max-w-7xl px-5 sm:px-8">
+        <h2 class="kinetico-h2 text-white">Lo más vendido</h2>
+        <div class="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          @for (p of v.bestSellers(); track p.id; let i = $index) {
+            <div appReveal [delay]="i * 60" class="kinetico-top w-56 shrink-0 snap-start sm:w-64">
+              <span class="kinetico-top-num" aria-hidden="true">{{ pad(i + 1) }}</span>
+              <app-product-card [product]="p" variant="kinetico" />
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ===== Catálogo ===== -->
+  <section id="catalogo" class="scroll-mt-24">
+    <div class="mx-auto max-w-7xl px-5 pb-16 pt-12 sm:px-8">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <h2 class="kinetico-h2">El catálogo</h2>
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-stone-500 tabular-nums">
+          {{ v.filteredProducts().length }} {{ v.filteredProducts().length === 1 ? 'prenda' : 'prendas' }}
+        </p>
+      </div>
+
+      <!-- Filtros: campos de una sola línea, como un formulario impreso. -->
+      <div class="mt-6 flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          [ngModel]="v.searchTerm()"
+          (ngModelChange)="v.searchTerm.set($event)"
+          placeholder="Buscar producto..."
+          aria-label="Buscar producto"
+          class="kinetico-field min-w-[10rem] flex-1"
+        />
+        <select [ngModel]="v.selectedSize()" (ngModelChange)="v.selectedSize.set($event)" aria-label="Filtrar por talle" class="kinetico-field">
+          <option value="todos">Talle: todos</option>
+          @for (size of v.availableSizes(); track size) {
+            <option [value]="size">Talle {{ size }}</option>
+          }
+        </select>
+        @for (group of v.selectGroups(); track group.id) {
+          <select [ngModel]="v.paramValue(group.id)" (ngModelChange)="v.setParam(group.id, $event)" [attr.aria-label]="group.name" class="kinetico-field">
+            <option value="">{{ group.name }}: todas</option>
+            @for (option of group.options; track option.id) {
+              <option [value]="option.id">{{ option.label }}</option>
+            }
+          </select>
+        }
+        <input type="number" inputmode="numeric" min="0" placeholder="$ mín" aria-label="Precio mínimo" [ngModel]="v.minPrice()" (ngModelChange)="v.setMinPrice($event)" class="kinetico-field w-24" />
+        <input type="number" inputmode="numeric" min="0" placeholder="$ máx" aria-label="Precio máximo" [ngModel]="v.maxPrice()" (ngModelChange)="v.setMaxPrice($event)" class="kinetico-field w-24" />
+        <select [ngModel]="v.sortBy()" (ngModelChange)="v.sortBy.set($event)" aria-label="Ordenar" class="kinetico-field">
+          <option value="novedades">Orden: novedades</option>
+          <option value="precio-asc">Precio: menor a mayor</option>
+          <option value="precio-desc">Precio: mayor a menor</option>
+        </select>
+      </div>
+
+      @if (v.publicoGroup(); as publico) {
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <button type="button" (click)="v.setParam(publico.id, '')" class="kinetico-chip" [class.is-on]="!v.paramValue(publico.id)">Todas</button>
+          @for (option of publico.options; track option.id) {
+            <button type="button" (click)="v.setParam(publico.id, option.id)" class="kinetico-chip" [class.is-on]="v.paramValue(publico.id) === option.id">
+              {{ option.label }}
+            </button>
+          }
+          @if (v.hasActiveFilters()) {
+            <button type="button" (click)="v.clearFilters()" class="kinetico-link ml-auto">Limpiar filtros ✕</button>
+          }
+        </div>
+      }
+
+      <div class="mt-8">
+        @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+          <app-skeleton variant="card" [count]="8" />
+        } @else if (v.catalogStatus() === 'error') {
+          <div class="py-20 text-center">
+            <p class="kinetico-h2">No se pudo cargar el catálogo.</p>
+            <button type="button" (click)="v.reloadCatalog()" class="kinetico-link mt-3">Reintentar</button>
+          </div>
+        } @else if (v.filteredProducts().length) {
+          <div class="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-6">
+            @for (product of v.visibleProducts(); track product.id; let i = $index) {
+              <div appReveal [delay]="(i % 4) * 70">
+                <app-product-card [product]="product" variant="kinetico" />
+              </div>
+            }
+          </div>
+
+          @if (v.hasMore()) {
+            <div class="mt-12 text-center">
+              <button type="button" (click)="v.showMore()" class="kinetico-btn">Ver más prendas</button>
+            </div>
+          }
+        } @else {
+          <div class="py-20 text-center">
+            <p class="kinetico-h2">Sin resultados</p>
+            <p class="mt-1 text-sm opacity-70">No encontramos prendas con esos filtros.</p>
+            <button type="button" (click)="v.clearFilters()" class="kinetico-link mt-3">Ver todo el catálogo</button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}

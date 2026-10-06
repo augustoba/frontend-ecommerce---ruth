@@ -45,7 +45,16 @@ export type ProductCardVariant =
   | 'suizo'
   | 'cancha'
   | 'cine'
-  | 'playa';
+  | 'playa'
+  | 'pasarela'
+  | 'baraja'
+  | 'liquido'
+  | 'kinetico'
+  | 'orbita'
+  | 'estela'
+  | 'origami'
+  | 'historias'
+  | 'portal';
 
 /**
  * Interfaz y no `Record<string, string>`: con un índice el compilador obliga a
@@ -266,6 +275,96 @@ const CLASSES: Record<ProductCardVariant, CardClasses> = {
     name: 'text-[15px] font-semibold leading-snug text-brand-800 line-clamp-2',
     age: 'text-[11px] text-brand-600',
     price: 'mt-auto pt-2 text-base font-bold text-brand-600 tabular-nums',
+  },
+  pasarela: {
+    root: 'group flex flex-col',
+    media: 'relative aspect-[3/4] overflow-hidden bg-stone-200',
+    img: 'h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]',
+    badge: 'absolute left-0 top-3 bg-stone-900 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white',
+    body: 'mt-2.5 flex flex-1 flex-col gap-0.5 border-t-2 border-stone-900 pt-2.5',
+    name: 'font-display text-[15px] font-bold uppercase leading-tight tracking-tight text-stone-900 line-clamp-2',
+    age: 'text-[11px] uppercase tracking-[0.16em] text-stone-500',
+    price: 'mt-auto pt-1.5 text-base font-bold text-brand-600 tabular-nums',
+  },
+  baraja: {
+    root: 'group flex h-full flex-col overflow-hidden rounded-[1.4rem] border border-[#e6dcc4] bg-white p-2 shadow-[0_18px_30px_-22px_rgba(10,68,53,.55)] transition-transform duration-200 ease-out hover:-translate-y-1.5 hover:-rotate-1',
+    media: 'relative aspect-[3/4] overflow-hidden rounded-[1rem] bg-brand-100',
+    img: 'h-full w-full object-cover',
+    badge: 'absolute left-2 top-2 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-700',
+    body: 'flex flex-1 flex-col items-center gap-0.5 px-2 pb-2 pt-3 text-center',
+    name: 'font-display text-lg leading-tight text-brand-800 line-clamp-2',
+    age: 'text-[11px] text-stone-500',
+    price: 'mt-auto pt-1.5 text-base font-extrabold text-brand-600 tabular-nums',
+  },
+  liquido: {
+    root: 'group flex flex-col items-center text-center',
+    media: 'liquido-media relative aspect-square w-full',
+    img: 'h-full w-full object-cover',
+    badge: 'absolute left-1/2 top-4 -translate-x-1/2 rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold text-brand-700',
+    body: 'flex flex-col items-center gap-0.5 pt-3',
+    name: 'font-display text-base font-bold leading-snug text-brand-800 line-clamp-2',
+    age: 'text-xs text-brand-800/60',
+    price: 'mt-1 rounded-full bg-brand-600 px-3 py-1 text-sm font-bold text-white tabular-nums',
+  },
+  kinetico: {
+    root: 'group flex flex-col',
+    media: 'relative aspect-[4/5] overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105',
+    badge: 'absolute left-0 top-0 bg-[#d4ff3a] px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-stone-900',
+    body: 'flex flex-1 flex-col gap-0.5 pt-3',
+    name: 'font-display text-lg font-extrabold uppercase leading-none text-stone-900 line-clamp-2',
+    age: 'text-[11px] uppercase tracking-widest text-stone-500',
+    price: 'mt-auto pt-2 text-base font-bold text-stone-900 tabular-nums',
+  },
+  orbita: {
+    root: 'group flex h-full flex-col overflow-hidden rounded-3xl bg-white ring-1 ring-brand-200 shadow-[0_20px_40px_-28px_rgba(18,74,86,.7)]',
+    media: 'relative aspect-square overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105',
+    badge: 'absolute left-2 top-2 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold text-brand-700',
+    body: 'flex flex-1 flex-col gap-0.5 p-3',
+    name: 'font-display text-[13px] font-semibold leading-snug text-brand-800 line-clamp-2',
+    age: 'text-[11px] text-stone-500',
+    price: 'mt-auto pt-1.5 text-base font-bold text-brand-600 tabular-nums',
+  },
+  estela: {
+    root: 'group flex flex-col',
+    media: 'relative aspect-[3/4] overflow-hidden rounded-[1.25rem] bg-brand-100 transition-[clip-path] duration-500 ease-out [clip-path:inset(0_round_1.25rem)] group-hover:[clip-path:inset(3%_round_1.25rem)]',
+    img: 'h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110',
+    badge: 'absolute left-3 top-3 rounded-full bg-brand-50/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-700',
+    body: 'flex flex-1 flex-col gap-0.5 pt-3',
+    name: 'font-display text-xl leading-tight text-stone-900 line-clamp-2',
+    age: 'text-xs text-stone-500',
+    price: 'mt-auto pt-1 text-sm font-semibold text-brand-700 tabular-nums',
+  },
+  origami: {
+    root: 'group flex flex-col bg-white',
+    media: 'relative aspect-[4/5] overflow-hidden bg-brand-100 [clip-path:polygon(0_0,calc(100%-1.6rem)_0,100%_1.6rem,100%_100%,0_100%)]',
+    img: 'h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105',
+    badge: 'absolute left-0 top-3 bg-brand-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white',
+    body: 'flex flex-1 flex-col gap-0.5 p-3',
+    name: 'font-display text-base leading-snug text-brand-800 line-clamp-2',
+    age: 'text-xs text-stone-500',
+    price: 'mt-auto pt-1.5 text-base font-bold text-brand-600 tabular-nums',
+  },
+  historias: {
+    root: 'group flex h-full flex-col overflow-hidden rounded-[1.6rem] bg-white shadow-[0_14px_30px_-22px_rgba(71,26,141,.6)] transition-transform duration-150 ease-out active:scale-[0.97]',
+    media: 'relative aspect-[4/5] overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover',
+    badge: 'absolute left-2.5 top-2.5 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold text-brand-700',
+    body: 'flex flex-1 flex-col gap-0.5 p-3',
+    name: 'font-display text-sm font-semibold leading-snug text-stone-900 line-clamp-2',
+    age: 'text-[11px] text-stone-500',
+    price: 'mt-auto pt-1.5 font-display text-base font-extrabold text-brand-600 tabular-nums',
+  },
+  portal: {
+    root: 'group flex flex-col items-center text-center',
+    media: 'relative aspect-[3/4] w-full overflow-hidden rounded-t-full bg-brand-100',
+    img: 'h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110',
+    badge: 'absolute bottom-3 right-3 rounded-full bg-brand-50/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-700',
+    body: 'flex flex-1 flex-col items-center gap-0.5 pt-3',
+    name: 'font-display text-lg leading-tight text-brand-800 line-clamp-2',
+    age: 'text-xs text-stone-500',
+    price: 'mt-auto pt-1 text-sm font-bold text-brand-600 tabular-nums',
   },
 };
 

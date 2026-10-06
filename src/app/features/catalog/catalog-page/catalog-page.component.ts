@@ -20,6 +20,15 @@ import { TemplateSuizoComponent } from '../templates/template-suizo.component';
 import { TemplateCanchaComponent } from '../templates/template-cancha.component';
 import { TemplateCineComponent } from '../templates/template-cine.component';
 import { TemplatePlayaComponent } from '../templates/template-playa.component';
+import { TemplatePasarelaComponent } from '../templates/template-pasarela.component';
+import { TemplateBarajaComponent } from '../templates/template-baraja.component';
+import { TemplateLiquidoComponent } from '../templates/template-liquido.component';
+import { TemplateKineticoComponent } from '../templates/template-kinetico.component';
+import { TemplateOrbitaComponent } from '../templates/template-orbita.component';
+import { TemplateEstelaComponent } from '../templates/template-estela.component';
+import { TemplateOrigamiComponent } from '../templates/template-origami.component';
+import { TemplateHistoriasComponent } from '../templates/template-historias.component';
+import { TemplatePortalComponent } from '../templates/template-portal.component';
 import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
 import { SizeScaleService } from '../../../core/services/size-scale.service';
@@ -62,6 +71,15 @@ import { CatalogView, PromoLine, SortOrder } from '../catalog-view';
     TemplateCanchaComponent,
     TemplateCineComponent,
     TemplatePlayaComponent,
+    TemplatePasarelaComponent,
+    TemplateBarajaComponent,
+    TemplateLiquidoComponent,
+    TemplateKineticoComponent,
+    TemplateOrbitaComponent,
+    TemplateEstelaComponent,
+    TemplateOrigamiComponent,
+    TemplateHistoriasComponent,
+    TemplatePortalComponent,
   ],
   templateUrl: './catalog-page.component.html',
   styleUrl: './catalog-page.component.css',

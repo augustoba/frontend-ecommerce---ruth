@@ -209,6 +209,87 @@ export const LAYOUTS: LayoutOption[] = [
     fontsHref:
       'https://fonts.googleapis.com/css2?family=Pacifico&family=Outfit:wght@300;400;500;600;700&display=swap',
   },
+  {
+    id: 'pasarela',
+    label: 'Pasarela',
+    blurb:
+      'Lo más vendido desfila: al bajar, la página se clava y las prendas pasan de costado como en una pasarela, con una barra que marca el avance.',
+    previewColor: '#f2543d',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Figtree:wght@300;400;500;600;700&display=swap',
+  },
+  {
+    id: 'baraja',
+    label: 'Baraja',
+    blurb:
+      'Un mazo de cartas: lo más vendido se pasa arrastrando la carta de arriba, las categorías se abren en abanico y cada sección tapa a la anterior.',
+    previewColor: '#0b7355',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap',
+  },
+  {
+    id: 'liquido',
+    label: 'Líquido',
+    blurb:
+      'Nada tiene esquinas: manchas que se deforman solas, fotos dentro de gotas que cambian de forma, olas que corren y botones que se llenan como un vaso.',
+    previewColor: '#1f7ae0',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Gabarito:wght@500;600;700;800;900&family=Mulish:wght@400;500;600;700;800&display=swap',
+  },
+  {
+    id: 'kinetico',
+    label: 'Kinético',
+    blurb:
+      'La tipografía es la que se mueve: el nombre se arma letra por letra y se afina al bajar, una palabra gigante deja ver una foto por dentro y dos cintas de texto se cruzan.',
+    previewColor: '#111110',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,100..900&family=Space+Grotesk:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'orbita',
+    label: 'Órbita',
+    blurb:
+      'Las prendas giran: un anillo 3D que da vueltas solo, se arrastra con el dedo y agranda la prenda que queda de frente, con categorías que flotan como planetas.',
+    previewColor: '#127385',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800&family=Onest:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'estela',
+    label: 'Estela',
+    blurb:
+      'El puntero deja rastro: en el índice de categorías la foto persigue al mouse con su estela, los botones son magnéticos y todo va en serif enorme.',
+    previewColor: '#5c612f',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'origami',
+    label: 'Origami',
+    blurb:
+      'Papel doblado: las secciones se despliegan desde arriba, las piezas se dan vuelta como hojas, las esquinas vienen dobladas y cada prenda abre una solapa con sus talles.',
+    previewColor: '#c23664',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Young+Serif&family=Albert+Sans:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'historias',
+    label: 'Historias',
+    blurb:
+      'Pensado para el celular: el hero es un visor de historias con barritas de progreso, las categorías son círculos con aro, y los filtros salen en una hoja desde abajo.',
+    previewColor: '#8b3dff',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'portal',
+    label: 'Portal',
+    blurb:
+      'Se entra atravesando una foto: una ventana en arco crece al bajar hasta ocupar toda la pantalla, y al tocar una prenda su foto viaja hasta la ficha del producto.',
+    previewColor: '#7f512b',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Marcellus&family=Hanken+Grotesk:wght@400;500;600;700&display=swap',
+  },
 ];
 
 export function isKnownLayout(id: string | null | undefined): boolean {

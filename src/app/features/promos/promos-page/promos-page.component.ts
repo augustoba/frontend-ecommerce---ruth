@@ -38,6 +38,15 @@ const VARIANT_BY_LAYOUT: Record<string, ProductCardVariant> = {
   cancha: 'cancha',
   cine: 'cine',
   playa: 'playa',
+  pasarela: 'pasarela',
+  baraja: 'baraja',
+  liquido: 'liquido',
+  kinetico: 'kinetico',
+  orbita: 'orbita',
+  estela: 'estela',
+  origami: 'origami',
+  historias: 'historias',
+  portal: 'portal',
 };
 
 /**

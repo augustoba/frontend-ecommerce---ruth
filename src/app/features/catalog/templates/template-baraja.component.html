@@ -1,0 +1,237 @@
+@if (vm(); as v) {
+  <!-- ===== 1. Apertura =====
+       Queda pegada arriba (`.baraja-hero` es `sticky` en pantallas altas) y la
+       sección siguiente le pasa por encima con las esquinas redondeadas: la
+       primera carta del mazo es el propio hero. ===== -->
+  <section class="baraja-hero">
+    <div class="mx-auto grid max-w-6xl items-center gap-8 px-5 py-10 sm:px-8 lg:grid-cols-2 lg:py-14">
+      <div class="min-w-0">
+        <p appReveal class="baraja-kicker">Barajá y elegí</p>
+        <h1 appReveal [delay]="90" class="mt-3 font-display text-[clamp(2.4rem,12vw,3rem)] leading-[0.95] text-brand-800 [overflow-wrap:anywhere] [text-wrap:balance] sm:text-6xl lg:text-7xl">
+          {{ v.storeName() }}
+        </h1>
+        <p appReveal [delay]="180" class="mt-5 max-w-md text-base leading-relaxed text-stone-600">{{ compraLine() }}</p>
+        <div appReveal [delay]="270" class="mt-7 flex flex-wrap items-center gap-3">
+          <button type="button" (click)="v.scrollToCatalog()" class="baraja-btn">Ver catálogo</button>
+          <span class="text-sm text-stone-500 tabular-nums">
+            {{ v.filteredProducts().length }} prendas · {{ v.availableSizes().length }} talles
+          </span>
+        </div>
+      </div>
+
+      <!-- Las fotos del carrusel van dentro de una carta, con otras dos
+           asomando por atrás. -->
+      <div appReveal variant="zoom" [delay]="140" class="baraja-heap mx-auto w-full max-w-sm">
+        <span class="baraja-ghost baraja-ghost-a" aria-hidden="true"></span>
+        <span class="baraja-ghost baraja-ghost-b" aria-hidden="true"></span>
+        <div class="baraja-face relative aspect-[3/4] overflow-hidden">
+          @if (v.heroSlides().length) {
+            <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+          } @else {
+            <div class="absolute inset-0 grid place-items-center bg-brand-100">
+              <img [src]="v.logoSrc() | cldImg: 400" [alt]="v.storeName()" class="h-36 w-36 rounded-full object-cover" />
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Todo lo que sigue es una "carta" que sube y tapa al hero. -->
+  <div class="baraja-over">
+    <!-- ===== 2. Promos reales: cartas que se dan vuelta al entrar. ===== -->
+    @if (v.promos().length) {
+      <section class="mx-auto max-w-6xl px-5 pt-12 sm:px-8">
+        <div class="flex items-end justify-between gap-4">
+          <h2 class="font-display text-3xl text-brand-800 sm:text-4xl">Promos</h2>
+          <a routerLink="/promos" class="baraja-link">Ver prendas en promo</a>
+        </div>
+        <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          @for (promo of v.promos(); track promo.id; let i = $index) {
+            <article appReveal variant="flip" [delay]="i * 90" class="baraja-promo">
+              <span class="baraja-pip" aria-hidden="true">{{ promo.percent ? promo.percent + '%' : '★' }}</span>
+              <div>
+                <p class="font-display text-xl leading-snug text-brand-800">{{ promo.text }}</p>
+                @if (promo.detail) {
+                  <p class="mt-1 text-sm text-stone-500">{{ promo.detail }}</p>
+                }
+                @if (promo.endsLabel) {
+                  <p class="mt-2 text-xs font-semibold uppercase tracking-widest text-stone-400">{{ promo.endsLabel }}</p>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- ===== 3. El mazo de lo más vendido =====
+         Cada carta sabe su lugar en la pila (`--pos`); sólo las cuatro de
+         arriba se ven. La de arriba se arrastra (`appSwipe`) y al soltarla
+         lejos pasa al fondo. Los botones hacen lo mismo para teclado y para
+         quien no quiera arrastrar. ===== -->
+    @if (mazo().length) {
+      <section id="mas-vendido" class="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 sm:px-8 lg:grid-cols-[.9fr_1.1fr]">
+        <div>
+          <p class="baraja-kicker">El mazo de la casa</p>
+          <h2 class="mt-2 font-display text-4xl leading-none text-brand-800 sm:text-5xl">{{ destacadas().titulo }}</h2>
+          <p class="mt-4 max-w-sm text-sm leading-relaxed text-stone-600">
+            Arrastrá la carta de arriba para pasar a la siguiente, o usá las flechas.
+          </p>
+          @if (mazo().length > 1) {
+            <div class="mt-6 flex items-center gap-3">
+              <button type="button" (click)="volver()" aria-label="Carta anterior" class="baraja-round">←</button>
+              <span class="min-w-[4.5rem] text-center text-sm font-semibold tabular-nums text-stone-600">
+                {{ cartaActual() }} / {{ mazo().length }}
+              </span>
+              <button type="button" (click)="pasar()" aria-label="Carta siguiente" class="baraja-round">→</button>
+            </div>
+          }
+        </div>
+
+        <div class="baraja-deck">
+          @for (p of mazo(); track p.id; let i = $index) {
+            @let pos = posOf(i);
+            <div
+              class="baraja-card"
+              [style.--pos]="pos"
+              [class.is-top]="pos === 0"
+              [class.is-out]="pos > 3"
+              [attr.aria-hidden]="pos === 0 ? null : true"
+              [attr.inert]="pos === 0 ? null : ''"
+              appSwipe
+              (appSwipe)="pasar()"
+            >
+              <app-product-card [product]="p" variant="baraja" />
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- ===== 4. Categorías en abanico =====
+         `--i` es la posición respecto del centro (-1.5, -0.5, 0.5…): el CSS
+         la usa para girar y bajar cada carta. En el celular el abanico se
+         vuelve un riel que se desliza. ===== -->
+    @if (categorias().length) {
+      <section class="baraja-felt">
+        <div class="mx-auto max-w-6xl px-5 py-14 sm:px-8">
+          <h2 class="text-center font-display text-3xl text-white sm:text-4xl">Elegí por categoría</h2>
+          <div class="baraja-fan mt-8">
+            @for (opt of categorias(); track opt.id; let i = $index) {
+              @let foto = fotoDeCategoria()[opt.id];
+              @let total = totalDeCategoria()[opt.id];
+              <button
+                type="button"
+                (click)="elegirCategoria(opt.id)"
+                class="baraja-fan-card group"
+                [style.--i]="i - (categorias().length - 1) / 2"
+              >
+                <span class="baraja-fan-photo">
+                  @if (foto) {
+                    <img [src]="foto | cldImg: 500" alt="" loading="lazy" class="h-full w-full object-cover" />
+                  }
+                </span>
+                <span class="mt-3 block font-display text-lg leading-tight text-brand-800">{{ opt.label }}</span>
+                @if (total) {
+                  <span class="block text-xs text-stone-500">{{ total }} {{ total === 1 ? 'prenda' : 'prendas' }}</span>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- ===== 5. Catálogo ===== -->
+    <section id="catalogo" class="scroll-mt-24">
+      <div class="mx-auto max-w-6xl px-5 pb-16 pt-12 sm:px-8">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <h2 class="font-display text-4xl leading-none text-brand-800 sm:text-5xl">El catálogo</h2>
+          <p class="text-sm text-stone-500 tabular-nums">
+            {{ v.filteredProducts().length }} {{ v.filteredProducts().length === 1 ? 'prenda' : 'prendas' }}
+          </p>
+        </div>
+
+        <!-- Filtros dentro de una carta apaisada. -->
+        <div class="baraja-filters mt-6">
+          <input
+            type="search"
+            [ngModel]="v.searchTerm()"
+            (ngModelChange)="v.searchTerm.set($event)"
+            placeholder="Buscar producto..."
+            aria-label="Buscar producto"
+            class="baraja-field col-span-2"
+          />
+          <select [ngModel]="v.selectedSize()" (ngModelChange)="v.selectedSize.set($event)" aria-label="Filtrar por talle" class="baraja-field">
+            <option value="todos">Talle: todos</option>
+            @for (size of v.availableSizes(); track size) {
+              <option [value]="size">Talle {{ size }}</option>
+            }
+          </select>
+          @for (group of v.selectGroups(); track group.id) {
+            <select [ngModel]="v.paramValue(group.id)" (ngModelChange)="v.setParam(group.id, $event)" [attr.aria-label]="group.name" class="baraja-field">
+              <option value="">{{ group.name }}: todas</option>
+              @for (option of group.options; track option.id) {
+                <option [value]="option.id">{{ option.label }}</option>
+              }
+            </select>
+          }
+          <input type="number" inputmode="numeric" min="0" placeholder="$ mín" aria-label="Precio mínimo" [ngModel]="v.minPrice()" (ngModelChange)="v.setMinPrice($event)" class="baraja-field" />
+          <input type="number" inputmode="numeric" min="0" placeholder="$ máx" aria-label="Precio máximo" [ngModel]="v.maxPrice()" (ngModelChange)="v.setMaxPrice($event)" class="baraja-field" />
+          <select [ngModel]="v.sortBy()" (ngModelChange)="v.sortBy.set($event)" aria-label="Ordenar" class="baraja-field">
+            <option value="novedades">Orden: novedades</option>
+            <option value="precio-asc">Precio: menor a mayor</option>
+            <option value="precio-desc">Precio: mayor a menor</option>
+          </select>
+        </div>
+
+        @if (v.publicoGroup(); as publico) {
+          <div class="mt-4 flex flex-wrap items-center gap-2">
+            <button type="button" (click)="v.setParam(publico.id, '')" class="baraja-chip" [class.is-on]="!v.paramValue(publico.id)">Todas</button>
+            @for (option of publico.options; track option.id) {
+              <button type="button" (click)="v.setParam(publico.id, option.id)" class="baraja-chip" [class.is-on]="v.paramValue(publico.id) === option.id">
+                {{ option.label }}
+              </button>
+            }
+            @if (v.hasActiveFilters()) {
+              <button type="button" (click)="v.clearFilters()" class="baraja-link ml-auto">Limpiar filtros ✕</button>
+            }
+          </div>
+        }
+
+        <div class="mt-8">
+          @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+            <app-skeleton variant="card" [count]="8" />
+          } @else if (v.catalogStatus() === 'error') {
+            <div class="py-20 text-center text-stone-500">
+              <p class="font-display text-2xl text-brand-800">No se pudo cargar el catálogo.</p>
+              <button type="button" (click)="v.reloadCatalog()" class="baraja-link mt-3">Reintentar</button>
+            </div>
+          } @else if (v.filteredProducts().length) {
+            <!-- Cada carta entra dándose vuelta, repartida de a cuatro. -->
+            <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+              @for (product of v.visibleProducts(); track product.id; let i = $index) {
+                <div appReveal variant="flip" [delay]="(i % 4) * 80">
+                  <app-product-card class="block h-full" [product]="product" variant="baraja" />
+                </div>
+              }
+            </div>
+
+            @if (v.hasMore()) {
+              <div class="mt-10 text-center">
+                <button type="button" (click)="v.showMore()" class="baraja-btn">Ver más prendas</button>
+              </div>
+            }
+          } @else {
+            <div class="py-20 text-center text-stone-500">
+              <p class="font-display text-2xl text-brand-800">Sin resultados</p>
+              <p class="mt-1 text-sm">No encontramos prendas con esos filtros.</p>
+              <button type="button" (click)="v.clearFilters()" class="baraja-link mt-3">Ver todo el catálogo</button>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  </div>
+}

@@ -5,7 +5,10 @@
 > `../backend/PROYECTO.md` (esa es la carpeta real en esta máquina; el repo en
 > GitHub se llama `backend-ecommer-ruth`).
 >
-> **Última actualización: 2026-10-02** (21 diseños de tienda — los 8 nuevos
+> **Última actualización: 2026-10-06** (30 diseños de tienda: se sumaron los
+> nueve "de movimiento" —Pasarela / Baraja / Líquido / Kinético / Órbita /
+> Estela / Origami / Historias / Portal—, §7bis e historial #65).
+> Antes, el 2026-10-02 (21 diseños de tienda — los 8 nuevos
 > Boutique / Feria / Periódico / Retro 90 / Suizo / Cancha / Cine / Playa —,
 > vista `/promos`, título de pestaña dinámico y **vocabulario de tienda en las
 > etiquetas funcionales** de las plantillas temáticas; historial #61–#64).
@@ -300,7 +303,8 @@ otra estructura visual.
 
 - **Qué es:** el dueño puede elegir el **diseño de la tienda** desde
   `/admin/config/diseno` (sección 9sexies), sin tocar código ni redesplegar.
-  Hoy hay **veintiuno**: **Ruth** (el original), **Editorial**, **Pop**,
+  Hoy hay **treinta** (los nueve últimos, "de movimiento", tienen su propio
+  bullet más abajo). Los primeros veintiuno: **Ruth** (el original), **Editorial**, **Pop**,
   **Vidriera**, **Ofertas**, **Fichero**, **Mosaico**, **Nova**, **Neón**,
   **Caramelo**, **Cohete**, **Jungla**, **Crayón**, **Boutique**, **Feria**,
   **Periódico**, **Retro 90**, **Suizo**, **Cancha**, **Cine** y **Playa**.
@@ -525,6 +529,59 @@ otra estructura visual.
   se probó de punta a punta contra el backend real (`PUT apariencia` → 200 y el
   `GET /api/settings` lo refleja) y en el navegador. La tienda quedó en **Pop**
   (el elegido para probar; el default sigue siendo Ruth).
+
+- **Los nueve diseños de movimiento (2026-10-06):** **Pasarela**, **Baraja**,
+  **Líquido**, **Kinético**, **Órbita**, **Estela**, **Origami**,
+  **Historias** y **Portal**. A diferencia de los 21 anteriores no se definen
+  por un tema (cine, selva, feria) sino por **cómo se mueven**:
+  - **Pasarela** — al bajar, la página se clava (`position: sticky`) y el
+    scroll vertical corre un riel horizontal de prendas, con barra de avance.
+  - **Baraja** — un mazo que se pasa arrastrando la carta de arriba (o con las
+    flechas), categorías en abanico y secciones que tapan a la anterior.
+  - **Líquido** — todo CSS: manchas que se deforman, la foto dentro de una
+    gota, olas que corren y botones que se llenan de abajo hacia arriba.
+  - **Kinético** — fuente variable (Anybody): el nombre se arma letra por
+    letra y se afina con el scroll; una palabra gigante deja ver una foto por
+    dentro; dos cintas de texto cruzadas.
+  - **Órbita** — anillo 3D de prendas que gira solo, se arrastra con inercia y
+    agranda la que queda de frente.
+  - **Estela** — en el índice de categorías la foto persigue al puntero con
+    tres copias a distinto ritmo; botones magnéticos. En táctil cada renglón
+    muestra su miniatura.
+  - **Origami** — secciones que se despliegan (`appReveal` `fold`/`flip`),
+    esquinas dobladas y una solapa por prenda con los talles en stock (abierta
+    siempre en táctil).
+  - **Historias** — visor tipo historias (fotos del carrusel + promos reales,
+    barritas de progreso, tocar para avanzar, mantener para pausar), carrete
+    que encastra y filtros en una hoja inferior (`<dialog>` nativo, se
+    arrastra para cerrar).
+  - **Portal** — hero clavado con una ventana en arco que crece hasta ocupar
+    la pantalla (`clip-path`), y la foto de la prenda "viaja" a la ficha con
+    una View Transition del router.
+
+  **Piezas compartidas nuevas** (`shared/directives/`): `appScrollScene`
+  (escribe `--s` 0..1 según el scroll; modos `pin`/`view`/`exit`), `appOrbit`,
+  `appCursorTrail`, `appMagnetic` y `appSwipe`; `appReveal` sumó las variantes
+  `fold` y `flip`. Sin librerías nuevas. Los nueve heredan de
+  `MotionTemplateBase` (`templates/motion-template.base.ts`), que sólo junta
+  helpers de presentación —el markup sigue siendo de cada plantilla—.
+  `destacadas()` de esa base resuelve qué muestra la pieza con movimiento
+  (desfile, mazo, anillo): "Lo más vendido" si hay 4 o más, y si no las
+  primeras del catálogo tituladas "Novedades" —nunca se llama "más vendido" a
+  algo que no lo es—.
+
+  **Reglas de movimiento de la tanda:** sólo se animan `transform`, `opacity`
+  y `clip-path` (la excepción documentada es el `font-variation-settings` del
+  título de Kinético); todo efecto de mouse va detrás de
+  `(hover: hover) and (pointer: fine)` y tiene versión táctil; con
+  `prefers-reduced-motion` las escenas clavadas se desarman (Pasarela queda
+  como riel, Portal como arco quieto), el anillo queda plano y las historias no
+  avanzan solas. Los gestos de arrastre frenan el clic en fase de captura para
+  no abrir la prenda por error.
+
+  **View Transitions:** `app.config.ts` ahora usa `withViewTransitions`. Sólo
+  Portal las muestra; para el resto de los diseños y `/admin`, `styles.css`
+  les saca la animación (`html:not([data-layout="portal"])::view-transition-*`).
 
 ## 7ter. Vista de promociones (`/promos`) y marcado "Mostrar en promos"
 
@@ -2138,6 +2195,64 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
     - **Commit:** frontend `39f1740` (9 archivos, 63+/63−). Esta pasada de
       documentación actualizó §7bis (regla nueva + mención "en cartel" del
       bullet de Cine corregida), el encabezado y este historial.
+
+65. **Nueve diseños "de movimiento": Pasarela, Baraja, Líquido, Kinético, Órbita, Estela, Origami, Historias y Portal (2026-10-06).**
+    - **Qué se pidió:** nueve diseños nuevos que no se parezcan a los 21
+      existentes, con movimiento, animaciones y transiciones, y que sigan
+      mostrando todo lo que la tienda ya tiene.
+    - **Decisión de diseño:** como los anteriores se diferencian por tema, estos
+      se diferencian por **mecánica de movimiento** (detalle de cada uno en
+      §7bis). Misma arquitectura: plantilla dueña de su markup, variante propia
+      de `ProductCard`, tokens `[data-layout="x"], .tpl-x` en `styles.css`,
+      entrada en `LAYOUTS`, variante en `/promos` y los nueve ids en el
+      `@Pattern` de `AppearanceRequest` (backend).
+    - **Qué se agregó:** 5 directivas (`appScrollScene`, `appOrbit`,
+      `appCursorTrail`, `appMagnetic`, `appSwipe`), 2 variantes de `appReveal`
+      (`fold`, `flip`), `MotionTemplateBase`, 9 plantillas (`.ts` + `.html`),
+      9 variantes de tarjeta, el bloque "DISEÑOS DE MOVIMIENTO" de
+      `styles.css` y `withViewTransitions` en `app.config.ts`.
+    - **Verificación en navegador (Playwright, 1440×900 y 390×780) contra el
+      backend real:** los nueve activados uno por uno con `PUT apariencia`
+      (200), recorridos de punta a punta sin errores de consola y sin scroll
+      horizontal. Probado puntualmente: el desfile de Pasarela (queda clavado y
+      el riel llega de punta a punta), el mazo de Baraja (flechas y arrastre,
+      sin navegar al arrastrar), el anillo de Órbita (gira solo, arrastre sin
+      navegar, clic sí navega), la estela de Estela, las historias (avance
+      manual y automático), la hoja de filtros de Historias (abre, filtra,
+      cierra con Escape, contador), el portal (progreso 0→1) y la navegación a
+      la ficha con el nombre de transición puesto. También: "Sin resultados" +
+      "Ver todo el catálogo" y `prefers-reduced-motion` (los dos, sólo en
+      Portal), las miniaturas de `/admin/config/diseno` (30 tarjetas; a la
+      vista las de la última tanda), y que con Pop la navegación sigue igual
+      con View Transitions activadas. Una segunda pasada confirmó los arreglos
+      hechos sobre la marcha: el título de Kinético entra entero en escritorio y
+      celular, los filtros de Baraja quedan en una fila, Pasarela no desborda en
+      el celular, la solapa de Origami se abre al pasar el mouse y muestra los
+      talles, y `/promos` dibuja las tarjetas con la variante nueva (probado con
+      Pasarela).
+    - **Bugs encontrados y corregidos en la verificación:** el arrastre del
+      anillo abría la prenda (ahora el clic se frena en captura); títulos que
+      desbordaban en el celular (cuerpos con `clamp` + `min-w-0`; en Kinético el
+      cuerpo sale del largo de la palabra más larga); el nombre de la tienda en
+      el header empujaba el carrito con las fuentes anchas de Pasarela y Órbita
+      (se achica sólo ahí, sólo en el celular); el visor de Historias no se veía
+      en escritorio (columna `auto` → `22rem`); `skipTransition()` ensuciaba la
+      consola (reemplazado por CSS).
+    - **No verificado:** dedo real en un teléfono (los gestos se probaron con
+      mouse y viewport de celular; la miniatura táctil de Estela y la solapa
+      abierta de Origami dependen de `(hover: none)` y no se vieron en un
+      dispositivo táctil de verdad); Safari y Firefox; fotos reales en el
+      carrusel (la base local no tiene, así que los heros se vieron con el logo
+      o con la foto de una prenda); el estado de error de carga del catálogo;
+      la animación del viaje de la foto de Portal cuadro por cuadro (se
+      comprobó que navega y que los nombres de transición coinciden, no cómo se
+      ve); `prefers-reduced-motion` en los otros ocho (sólo se probó Portal); y
+      el visor de Historias en escritorio después del arreglo, que sólo se vio
+      en la miniatura del panel.
+    - **Costo:** el bundle inicial pasó de 565,8 kB a 619,9 kB (140,2 → 149,0 kB
+      comprimido), casi todo CSS. Ya estaba por encima del aviso de 550 kB antes
+      de esta tanda; el límite de error (1 MB) sigue lejos.
+    - La tienda quedó en **Pop**, como estaba.
 
 ## 12. Backend (`../backend/`) — resumen
 

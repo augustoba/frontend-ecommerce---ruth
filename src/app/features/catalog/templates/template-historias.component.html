@@ -1,0 +1,270 @@
+@if (vm(); as v) {
+  <!-- ===== 1. El visor de historias =====
+       La barrita activa lleva una animación CSS de 5 s; cuando termina
+       (`animationend`) pasa a la siguiente. Mantener apretado la pausa
+       (`is-paused` frena la animación). Las dos zonas invisibles son botones
+       reales: izquierda vuelve, derecha avanza. ===== -->
+  <section class="historias-top">
+    <div class="mx-auto grid max-w-6xl items-center gap-8 px-4 pb-8 pt-6 sm:px-8 lg:grid-cols-[1fr_22rem] lg:py-12">
+      <div class="order-2 min-w-0 lg:order-1">
+        <p appReveal class="historias-kicker">Tocá, deslizá, elegí</p>
+        <h1 appReveal [delay]="90" class="mt-2 font-display text-[clamp(2.2rem,11vw,3rem)] font-extrabold leading-[1] text-brand-800 [overflow-wrap:anywhere] [text-wrap:balance] sm:text-6xl lg:text-7xl">
+          {{ v.storeName() }}
+        </h1>
+        <p appReveal [delay]="180" class="mt-4 max-w-md text-base leading-relaxed text-stone-600">{{ compraLine() }}</p>
+        <div appReveal [delay]="260" class="mt-6 flex flex-wrap items-center gap-4">
+          <button type="button" (click)="v.scrollToCatalog()" class="historias-btn">Ver catálogo</button>
+          <span class="text-sm font-semibold text-brand-700 tabular-nums">
+            {{ v.filteredProducts().length }} prendas · {{ v.availableSizes().length }} talles
+          </span>
+        </div>
+      </div>
+
+      <div
+        class="historias-viewer order-1 lg:order-2"
+        [class.is-paused]="pausada()"
+        (pointerdown)="pausada.set(true)"
+        (pointerup)="pausada.set(false)"
+        (pointercancel)="pausada.set(false)"
+        (pointerleave)="pausada.set(false)"
+        role="group"
+        aria-label="Historias de la tienda"
+      >
+        @for (h of historias(); track $index; let i = $index) {
+          <div class="historias-story" [class.is-on]="i === actual()" [attr.aria-hidden]="i === actual() ? null : true">
+            @switch (h.kind) {
+              @case ('foto') {
+                <img [src]="h.image | cldImg: 900" [alt]="h.alt" class="h-full w-full object-cover" />
+              }
+              @case ('promo') {
+                <div class="historias-promo">
+                  <p class="historias-promo-tag">Promo</p>
+                  @if (h.promo.percent) {
+                    <p class="historias-promo-num">{{ h.promo.percent }}%</p>
+                  }
+                  <p class="mt-3 font-display text-2xl font-bold leading-tight">{{ h.promo.text }}</p>
+                  @if (h.promo.detail) {
+                    <p class="mt-2 text-sm text-white/80">{{ h.promo.detail }}</p>
+                  }
+                  @if (h.promo.endsLabel) {
+                    <p class="mt-3 text-xs font-bold uppercase tracking-widest text-white/80">{{ h.promo.endsLabel }}</p>
+                  }
+                </div>
+              }
+              @default {
+                <div class="historias-promo">
+                  <img [src]="v.logoSrc() | cldImg: 400" [alt]="v.storeName()" class="mx-auto h-36 w-36 rounded-full object-cover ring-4 ring-white/50" />
+                </div>
+              }
+            }
+          </div>
+        }
+
+        <div class="historias-bars" aria-hidden="true">
+          @for (h of historias(); track $index; let i = $index) {
+            <span class="historias-bar" [class.is-done]="i < actual()" [class.is-active]="i === actual()">
+              <span (animationend)="siguiente()"></span>
+            </span>
+          }
+        </div>
+
+        <div class="historias-who">
+          <img [src]="v.logoSrc() | cldImg: 96" alt="" class="h-8 w-8 rounded-full object-cover ring-2 ring-white" />
+          <span class="text-sm font-bold text-white">{{ v.storeName() }}</span>
+        </div>
+
+        @if (historias().length > 1) {
+          <button type="button" class="historias-zone historias-zone-prev" aria-label="Historia anterior" (click)="anterior()"></button>
+          <button type="button" class="historias-zone historias-zone-next" aria-label="Historia siguiente" (click)="siguiente()"></button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. Categorías: círculos con aro, como las historias destacadas. ===== -->
+  @if (categorias().length) {
+    <section class="mx-auto max-w-6xl px-4 py-6 sm:px-8">
+      <h2 class="font-display text-xl font-extrabold text-brand-800">Elegí por categoría</h2>
+      <div class="mt-4 flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        @for (opt of categorias(); track opt.id; let i = $index) {
+          @let foto = fotoDeCategoria()[opt.id];
+          <button appReveal variant="zoom" [delay]="i * 60" type="button" (click)="elegirCategoria(opt.id)" class="historias-ring-btn">
+            <span class="historias-ring" [class.is-on]="v.publicoGroup() && v.paramValue(v.publicoGroup()!.id) === opt.id">
+              <span class="historias-ring-in">
+                @if (foto) {
+                  <img [src]="foto | cldImg: 200" alt="" loading="lazy" class="h-full w-full rounded-full object-cover" />
+                }
+              </span>
+            </span>
+            <span class="mt-1.5 block text-xs font-bold text-stone-700">{{ opt.label }}</span>
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 3. Lo más vendido: carrete que encastra de a una. ===== -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section id="mas-vendido" class="scroll-mt-24 py-6">
+      <div class="mx-auto max-w-6xl px-4 sm:px-8">
+        <h2 class="font-display text-xl font-extrabold text-brand-800">Lo más vendido</h2>
+      </div>
+      <div class="historias-reel mt-4">
+        @for (p of v.bestSellers(); track p.id) {
+          <div class="historias-reel-item">
+            <app-product-card class="block h-full" [product]="p" variant="historias" />
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 4. Catálogo =====
+       El buscador y el orden quedan a la vista; el resto de los filtros va en
+       la hoja de abajo. El botón muestra cuántos hay puestos. ===== -->
+  <section id="catalogo" class="scroll-mt-24">
+    <div class="mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-8">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <h2 class="font-display text-3xl font-extrabold text-brand-800 sm:text-4xl">El catálogo</h2>
+        <p class="text-sm font-semibold text-brand-700 tabular-nums">
+          {{ v.filteredProducts().length }} {{ v.filteredProducts().length === 1 ? 'prenda' : 'prendas' }}
+        </p>
+      </div>
+
+      <div class="mt-4 flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          [ngModel]="v.searchTerm()"
+          (ngModelChange)="v.searchTerm.set($event)"
+          placeholder="Buscar producto..."
+          aria-label="Buscar producto"
+          class="historias-field min-w-[9rem] flex-1"
+        />
+        <select [ngModel]="v.sortBy()" (ngModelChange)="v.sortBy.set($event)" aria-label="Ordenar" class="historias-field">
+          <option value="novedades">Orden: novedades</option>
+          <option value="precio-asc">Precio: menor a mayor</option>
+          <option value="precio-desc">Precio: mayor a menor</option>
+        </select>
+        <button type="button" (click)="sheet.showModal()" class="historias-filter-btn">
+          Filtros
+          @if (filtrosPuestos()) {
+            <span class="historias-count">{{ filtrosPuestos() }}</span>
+          }
+        </button>
+      </div>
+
+      @if (v.publicoGroup(); as publico) {
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+          <button type="button" (click)="v.setParam(publico.id, '')" class="historias-chip" [class.is-on]="!v.paramValue(publico.id)">Todas</button>
+          @for (option of publico.options; track option.id) {
+            <button type="button" (click)="v.setParam(publico.id, option.id)" class="historias-chip" [class.is-on]="v.paramValue(publico.id) === option.id">
+              {{ option.label }}
+            </button>
+          }
+          @if (v.hasActiveFilters()) {
+            <button type="button" (click)="v.clearFilters()" class="historias-link ml-auto">Limpiar filtros ✕</button>
+          }
+        </div>
+      }
+
+      <div class="mt-6">
+        @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+          <app-skeleton variant="card" [count]="8" />
+        } @else if (v.catalogStatus() === 'error') {
+          <div class="py-20 text-center">
+            <p class="font-display text-xl font-extrabold text-brand-800">No se pudo cargar el catálogo.</p>
+            <button type="button" (click)="v.reloadCatalog()" class="historias-link mt-3">Reintentar</button>
+          </div>
+        } @else if (v.filteredProducts().length) {
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+            @for (product of v.visibleProducts(); track product.id; let i = $index) {
+              <div appReveal variant="zoom" [delay]="(i % 4) * 60" class="h-full">
+                <app-product-card class="block h-full" [product]="product" variant="historias" />
+              </div>
+            }
+          </div>
+
+          @if (v.hasMore()) {
+            <div class="mt-10 text-center">
+              <button type="button" (click)="v.showMore()" class="historias-btn">Ver más prendas</button>
+            </div>
+          }
+        } @else {
+          <div class="py-20 text-center">
+            <p class="font-display text-xl font-extrabold text-brand-800">Sin resultados</p>
+            <p class="mt-1 text-sm text-stone-500">No encontramos prendas con esos filtros.</p>
+            <button type="button" (click)="v.clearFilters()" class="historias-link mt-3">Ver todo el catálogo</button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== La hoja de filtros =====
+       Es un `<dialog>` nativo abierto con `showModal()`: el foco queda adentro,
+       Escape la cierra y el fondo se oscurece sin una línea de JS. Tocar el
+       fondo la cierra (el clic llega al propio dialog) y la manija de arriba se
+       arrastra hacia abajo para cerrarla. ===== -->
+  <dialog #sheet class="historias-sheet" aria-label="Filtros" (click)="$event.target === sheet && sheet.close()">
+    <div
+      class="historias-handle"
+      (pointerdown)="onSheetDown($event)"
+      (pointermove)="onSheetMove($event, sheet)"
+      (pointerup)="onSheetUp($event, sheet)"
+      (pointercancel)="onSheetUp($event, sheet)"
+    >
+      <span></span>
+    </div>
+
+    <div class="px-5 pb-6">
+      <div class="flex items-center justify-between">
+        <h2 class="font-display text-xl font-extrabold text-brand-800">Filtros</h2>
+        <button type="button" (click)="sheet.close()" class="historias-link" aria-label="Cerrar filtros">Cerrar ✕</button>
+      </div>
+
+      <div class="mt-4 grid gap-3">
+        <label class="historias-label">
+          Talle
+          <select [ngModel]="v.selectedSize()" (ngModelChange)="v.selectedSize.set($event)" class="historias-field w-full">
+            <option value="todos">Todos</option>
+            @for (size of v.availableSizes(); track size) {
+              <option [value]="size">Talle {{ size }}</option>
+            }
+          </select>
+        </label>
+
+        @for (group of v.selectGroups(); track group.id) {
+          <label class="historias-label">
+            {{ group.name }}
+            <select [ngModel]="v.paramValue(group.id)" (ngModelChange)="v.setParam(group.id, $event)" class="historias-field w-full">
+              <option value="">Todas</option>
+              @for (option of group.options; track option.id) {
+                <option [value]="option.id">{{ option.label }}</option>
+              }
+            </select>
+          </label>
+        }
+
+        <div class="grid grid-cols-2 gap-3">
+          <label class="historias-label">
+            Precio mínimo
+            <input type="number" inputmode="numeric" min="0" placeholder="$ mín" [ngModel]="v.minPrice()" (ngModelChange)="v.setMinPrice($event)" class="historias-field w-full" />
+          </label>
+          <label class="historias-label">
+            Precio máximo
+            <input type="number" inputmode="numeric" min="0" placeholder="$ máx" [ngModel]="v.maxPrice()" (ngModelChange)="v.setMaxPrice($event)" class="historias-field w-full" />
+          </label>
+        </div>
+      </div>
+
+      <div class="mt-6 flex items-center gap-3">
+        @if (v.hasActiveFilters()) {
+          <button type="button" (click)="v.clearFilters()" class="historias-link">Limpiar filtros</button>
+        }
+        <button type="button" (click)="sheet.close()" class="historias-btn ml-auto">
+          Ver {{ v.filteredProducts().length }} {{ v.filteredProducts().length === 1 ? 'prenda' : 'prendas' }}
+        </button>
+      </div>
+    </div>
+  </dialog>
+}

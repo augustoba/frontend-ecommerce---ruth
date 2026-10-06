@@ -55,10 +55,12 @@ si conviene tocar también este archivo o el `README.md`).
 
 ## Detalles que no están en el código y conviene recordar
 
-- **La home tiene 21 diseños intercambiables** (Ruth / Editorial / Pop desde
+- **La home tiene 30 diseños intercambiables** (Ruth / Editorial / Pop desde
   2026-09-30; + Vidriera / Ofertas / Fichero / Mosaico / Nova / Neón / Caramelo /
   Cohete / Jungla / Crayón desde 2026-10-01; + Boutique / Feria / Periódico /
-  Retro 90 / Suizo / Cancha / Cine / Playa desde 2026-10-02):
+  Retro 90 / Suizo / Cancha / Cine / Playa desde 2026-10-02; + los nueve "de
+  movimiento" Pasarela / Baraja / Líquido / Kinético / Órbita / Estela /
+  Origami / Historias / Portal desde 2026-10-06):
   `CatalogPageComponent` es un **contenedor** que carga los datos
   y los pasa como un único `CatalogView` (`features/catalog/catalog-view.ts`) a
   la plantilla elegida (`@switch (layout())` sobre
@@ -80,6 +82,19 @@ si conviene tocar también este archivo o el `README.md`).
   mismo para Cohete y Cine), que es lo único que ningún otro diseño toca. Los
   últimos cuatro "para chicos" (Caramelo, Cohete, Jungla y Crayón) tienen
   movimiento propio cada uno.
+  Los nueve **de movimiento** (2026-10-06) se definen por cómo se mueven, no
+  por un tema, y heredan de `MotionTemplateBase` (sólo helpers; el markup sigue
+  siendo de cada una). Sumaron cinco directivas: `appScrollScene` (escribe `--s`
+  0..1 según el scroll: Pasarela, Portal, Kinético), `appOrbit` (anillo 3D),
+  `appCursorTrail` + `appMagnetic` (Estela) y `appSwipe` (mazo de Baraja), más
+  las variantes `fold`/`flip` de `appReveal`. Reglas: sólo `transform`,
+  `opacity` y `clip-path`; hover detrás de `(hover: hover) and (pointer: fine)`
+  con versión táctil; todo se apaga en el bloque final de
+  `prefers-reduced-motion`. Los gestos de arrastre frenan el clic **en
+  captura** (si no, `routerLink` abre la prenda). `app.config.ts` usa
+  `withViewTransitions` para el viaje de la foto de Portal; el resto de los
+  diseños lo tiene anulado por CSS — no "limpiar" esa regla. Ver PROYECTO.md
+  §7bis y #65.
 - **Vocabulario de tienda en las etiquetas funcionales** (2026-10-02, commit
   `39f1740`): los diseños se diferencian **sólo por lo visual**. Títulos de
   sección ("Lo más vendido", "El catálogo", "Promos"), conteos, buscador

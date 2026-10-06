@@ -1,0 +1,205 @@
+@if (vm(); as v) {
+  <!-- ===== 1. Apertura: serif enorme y el botón magnético. ===== -->
+  <section class="mx-auto grid max-w-6xl items-end gap-10 px-5 pb-12 pt-12 sm:px-8 lg:grid-cols-[1.15fr_.85fr] lg:pt-16">
+    <div class="min-w-0">
+      <p appReveal class="estela-kicker">Seguí el rastro</p>
+      <h1 appReveal variant="mask" [delay]="90" class="mt-3 font-display text-[clamp(2.8rem,14vw,4rem)] leading-[0.92] text-stone-900 [overflow-wrap:anywhere] [text-wrap:balance] sm:text-7xl lg:text-8xl">
+        <span class="block">{{ v.storeName() }}</span>
+      </h1>
+      <p appReveal [delay]="200" class="mt-6 max-w-md text-base leading-relaxed text-stone-600">{{ compraLine() }}</p>
+      <div appReveal [delay]="290" class="mt-8 flex flex-wrap items-center gap-5">
+        <button type="button" [appMagnetic]="0.35" (click)="v.scrollToCatalog()" class="estela-btn">Ver catálogo</button>
+        <span class="text-sm text-stone-500 tabular-nums">
+          {{ v.filteredProducts().length }} prendas · {{ v.availableSizes().length }} talles
+        </span>
+      </div>
+    </div>
+
+    <div appReveal variant="right" [delay]="150" class="relative aspect-[4/5] w-full min-w-0 overflow-hidden rounded-[2rem] bg-brand-100 sm:aspect-[5/4] lg:aspect-[4/5]">
+      @if (v.heroSlides().length) {
+        <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+      } @else {
+        <div class="absolute inset-0 grid place-items-center">
+          <img [src]="v.logoSrc() | cldImg: 400" [alt]="v.storeName()" class="h-40 w-40 rounded-full object-cover" />
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ===== 2. Promos reales: renglones con filete. ===== -->
+  @if (v.promos().length) {
+    <section class="mx-auto max-w-6xl px-5 py-8 sm:px-8">
+      <div class="flex items-end justify-between gap-4">
+        <h2 class="font-display text-3xl text-stone-900 sm:text-4xl">Promos</h2>
+        <a routerLink="/promos" class="estela-link">Ver prendas en promo</a>
+      </div>
+      <div class="mt-4 border-t border-brand-300">
+        @for (promo of v.promos(); track promo.id; let i = $index) {
+          <article appReveal [delay]="i * 60" class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-brand-300 py-3.5">
+            <p class="font-display text-xl leading-snug text-stone-900 sm:text-2xl">{{ promo.text }}</p>
+            <p class="text-sm text-stone-500">
+              @if (promo.detail) {
+                <span>{{ promo.detail }}</span>
+              }
+              @if (promo.endsLabel) {
+                <span class="ml-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-600">{{ promo.endsLabel }}</span>
+              }
+            </p>
+          </article>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== 3. El índice con estela =====
+       `activa` es el renglón bajo el puntero. Las tres copias de la foto llevan
+       `data-trail`: `appCursorTrail` las mueve, cada una a su ritmo. En táctil
+       la directiva no se engancha y cada renglón muestra su miniatura
+       (`.estela-row-thumb`). ===== -->
+  @if (categorias().length) {
+    <section class="estela-index" appCursorTrail (pointerleave)="activa.set(null)">
+      <div class="mx-auto max-w-6xl px-5 py-12 sm:px-8">
+        <h2 class="estela-kicker">Elegí por categoría</h2>
+        <div class="mt-4 border-t border-stone-900">
+          @for (opt of categorias(); track opt.id; let i = $index) {
+            @let foto = fotoDeCategoria()[opt.id];
+            @let total = totalDeCategoria()[opt.id];
+            <button
+              type="button"
+              class="estela-row"
+              (pointerenter)="activa.set(opt.id)"
+              (focus)="activa.set(opt.id)"
+              (click)="elegirCategoria(opt.id)"
+            >
+              <span class="estela-row-num" aria-hidden="true">{{ pad(i + 1) }}</span>
+              <span class="estela-row-label">{{ opt.label }}</span>
+              @if (foto) {
+                <img [src]="foto | cldImg: 200" alt="" loading="lazy" class="estela-row-thumb" />
+              }
+              <span class="estela-row-meta">
+                @if (total) {
+                  <span class="tabular-nums">{{ total }} {{ total === 1 ? 'prenda' : 'prendas' }}</span>
+                }
+                <span class="estela-row-arrow" aria-hidden="true">→</span>
+              </span>
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (fotoActiva(); as foto) {
+        @for (ease of estelas; track ease; let i = $index) {
+          <div class="estela-ghost" [class]="'estela-ghost-' + i" [attr.data-trail]="ease" aria-hidden="true">
+            <img [src]="foto | cldImg: 500" alt="" class="h-full w-full object-cover" />
+          </div>
+        }
+      }
+    </section>
+  }
+
+  <!-- ===== 4. Lo más vendido ===== -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section id="mas-vendido" class="estela-band scroll-mt-24 py-12">
+      <div class="mx-auto max-w-6xl px-5 sm:px-8">
+        <h2 class="font-display text-3xl text-stone-900 sm:text-4xl">Lo más vendido</h2>
+        <div class="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          @for (p of v.bestSellers(); track p.id; let i = $index) {
+            <div appReveal [delay]="i * 60" class="w-56 shrink-0 snap-start sm:w-64">
+              <app-product-card [product]="p" variant="estela" />
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ===== Catálogo ===== -->
+  <section id="catalogo" class="scroll-mt-24">
+    <div class="mx-auto max-w-6xl px-5 pb-16 pt-12 sm:px-8">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <h2 class="font-display text-4xl text-stone-900 sm:text-6xl">El catálogo</h2>
+        <p class="text-sm text-stone-500 tabular-nums">
+          {{ v.filteredProducts().length }} {{ v.filteredProducts().length === 1 ? 'prenda' : 'prendas' }}
+        </p>
+      </div>
+
+      <!-- Filtros: renglones finos, sin cajas. -->
+      <div class="mt-6 flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          [ngModel]="v.searchTerm()"
+          (ngModelChange)="v.searchTerm.set($event)"
+          placeholder="Buscar producto..."
+          aria-label="Buscar producto"
+          class="estela-field min-w-[10rem] flex-1"
+        />
+        <select [ngModel]="v.selectedSize()" (ngModelChange)="v.selectedSize.set($event)" aria-label="Filtrar por talle" class="estela-field">
+          <option value="todos">Talle: todos</option>
+          @for (size of v.availableSizes(); track size) {
+            <option [value]="size">Talle {{ size }}</option>
+          }
+        </select>
+        @for (group of v.selectGroups(); track group.id) {
+          <select [ngModel]="v.paramValue(group.id)" (ngModelChange)="v.setParam(group.id, $event)" [attr.aria-label]="group.name" class="estela-field">
+            <option value="">{{ group.name }}: todas</option>
+            @for (option of group.options; track option.id) {
+              <option [value]="option.id">{{ option.label }}</option>
+            }
+          </select>
+        }
+        <input type="number" inputmode="numeric" min="0" placeholder="$ mín" aria-label="Precio mínimo" [ngModel]="v.minPrice()" (ngModelChange)="v.setMinPrice($event)" class="estela-field w-24" />
+        <input type="number" inputmode="numeric" min="0" placeholder="$ máx" aria-label="Precio máximo" [ngModel]="v.maxPrice()" (ngModelChange)="v.setMaxPrice($event)" class="estela-field w-24" />
+        <select [ngModel]="v.sortBy()" (ngModelChange)="v.sortBy.set($event)" aria-label="Ordenar" class="estela-field">
+          <option value="novedades">Orden: novedades</option>
+          <option value="precio-asc">Precio: menor a mayor</option>
+          <option value="precio-desc">Precio: mayor a menor</option>
+        </select>
+      </div>
+
+      @if (v.publicoGroup(); as publico) {
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <button type="button" (click)="v.setParam(publico.id, '')" class="estela-chip" [class.is-on]="!v.paramValue(publico.id)">Todas</button>
+          @for (option of publico.options; track option.id) {
+            <button type="button" (click)="v.setParam(publico.id, option.id)" class="estela-chip" [class.is-on]="v.paramValue(publico.id) === option.id">
+              {{ option.label }}
+            </button>
+          }
+          @if (v.hasActiveFilters()) {
+            <button type="button" (click)="v.clearFilters()" class="estela-link ml-auto">Limpiar filtros ✕</button>
+          }
+        </div>
+      }
+
+      <div class="mt-8">
+        @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+          <app-skeleton variant="card" [count]="8" />
+        } @else if (v.catalogStatus() === 'error') {
+          <div class="py-20 text-center">
+            <p class="font-display text-3xl text-stone-900">No se pudo cargar el catálogo.</p>
+            <button type="button" (click)="v.reloadCatalog()" class="estela-link mt-3">Reintentar</button>
+          </div>
+        } @else if (v.filteredProducts().length) {
+          <div class="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+            @for (product of v.visibleProducts(); track product.id; let i = $index) {
+              <div appReveal [delay]="(i % 4) * 70">
+                <app-product-card [product]="product" variant="estela" />
+              </div>
+            }
+          </div>
+
+          @if (v.hasMore()) {
+            <div class="mt-12 text-center">
+              <button type="button" [appMagnetic]="0.35" (click)="v.showMore()" class="estela-btn">Ver más prendas</button>
+            </div>
+          }
+        } @else {
+          <div class="py-20 text-center">
+            <p class="font-display text-3xl text-stone-900">Sin resultados</p>
+            <p class="mt-1 text-sm opacity-70">No encontramos prendas con esos filtros.</p>
+            <button type="button" (click)="v.clearFilters()" class="estela-link mt-3">Ver todo el catálogo</button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}
