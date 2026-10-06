@@ -5,9 +5,11 @@
 > `../backend/PROYECTO.md` (esa es la carpeta real en esta máquina; el repo en
 > GitHub se llama `backend-ecommer-ruth`).
 >
-> **Última actualización: 2026-10-06** (30 diseños de tienda: se sumaron los
+> **Última actualización: 2026-10-06** (40 diseños de tienda: se sumaron los
 > nueve "de movimiento" —Pasarela / Baraja / Líquido / Kinético / Órbita /
-> Estela / Origami / Historias / Portal—, §7bis e historial #65).
+> Estela / Origami / Historias / Portal—, §7bis e historial #65, y una segunda
+> tanda de diez —Cascada / Acordeón / Persiana / Collage / Foco / Cinta /
+> Ruleta / Cubo / Espejo / Teletipo—, historial #66).
 > Antes, el 2026-10-02 (21 diseños de tienda — los 8 nuevos
 > Boutique / Feria / Periódico / Retro 90 / Suizo / Cancha / Cine / Playa —,
 > vista `/promos`, título de pestaña dinámico y **vocabulario de tienda en las
@@ -303,8 +305,8 @@ otra estructura visual.
 
 - **Qué es:** el dueño puede elegir el **diseño de la tienda** desde
   `/admin/config/diseno` (sección 9sexies), sin tocar código ni redesplegar.
-  Hoy hay **treinta** (los nueve últimos, "de movimiento", tienen su propio
-  bullet más abajo). Los primeros veintiuno: **Ruth** (el original), **Editorial**, **Pop**,
+  Hoy hay **cuarenta** (los diecinueve últimos, "de movimiento", tienen sus
+  propios bullets más abajo). Los primeros veintiuno: **Ruth** (el original), **Editorial**, **Pop**,
   **Vidriera**, **Ofertas**, **Fichero**, **Mosaico**, **Nova**, **Neón**,
   **Caramelo**, **Cohete**, **Jungla**, **Crayón**, **Boutique**, **Feria**,
   **Periódico**, **Retro 90**, **Suizo**, **Cancha**, **Cine** y **Playa**.
@@ -582,6 +584,51 @@ otra estructura visual.
   **View Transitions:** `app.config.ts` ahora usa `withViewTransitions`. Sólo
   Portal las muestra; para el resto de los diseños y `/admin`, `styles.css`
   les saca la animación (`html:not([data-layout="portal"])::view-transition-*`).
+
+- **Segunda tanda de movimiento, diez más (2026-10-06):** **Cascada**,
+  **Acordeón**, **Persiana**, **Collage**, **Foco**, **Cinta**, **Ruleta**,
+  **Cubo**, **Espejo** y **Teletipo**. Mismo criterio que la primera: cada uno
+  es una mecánica, no un tema.
+  - **Cascada** — las destacadas van en tres columnas que se mueven a distinta
+    velocidad al bajar (parallax); la foto del hero se corre más lento.
+  - **Acordeón** — las categorías son franjas angostas; la que se señala o se
+    toca se ensancha (`flex-grow`) y muestra foto, nombre y conteo. El clic
+    sobre la abierta filtra.
+  - **Persiana** — cada foto arranca tapada por seis tablillas que se recogen
+    escalonadas al entrar en pantalla (`appReveal variant="slats"`).
+  - **Collage** — una mesa de fotos de prendas, torcidas y con cinta, que se
+    agarran y se mueven (`appDrag`). No son links, a propósito.
+  - **Foco** — la home es oscura: la foto del hero está en penumbra y un
+    reflector que sigue al puntero le devuelve el color (`appSpotlight` +
+    máscara radial). En táctil el reflector se pasea solo.
+  - **Cinta** — las destacadas pasan solas en una cinta transportadora, con
+    otra de promos corriendo al revés; se frenan con el puntero o el foco.
+  - **Ruleta** — rueda de categorías que gira hasta la elegida (camino más
+    corto) y la muestra en grande al costado.
+  - **Cubo** — cubo 3D con las fotos del carrusel y las promos en sus caras;
+    rota solo (el tiempo lo marca una animación CSS, sin `setInterval`) o con
+    las flechas.
+  - **Espejo** — escena clavada con dos columnas que corren en sentidos
+    opuestos, el título fijo en el medio.
+  - **Teletipo** — el nombre de la tienda y los títulos de sección se escriben
+    letra por letra (`appTypewriter`), con el texto completo en `aria-label`.
+
+  **Directivas nuevas:** `appDrag`, `appSpotlight` y `appTypewriter`; `appReveal`
+  sumó `slats`. Las diez comparten el esqueleto de las secciones de promos y
+  categorías (clases `x-promo`, `x-promo-text`, `x-cat`, `x-cat-photo`…): el
+  markup sigue estando entero en cada plantilla, pero se escribió con el mismo
+  orden de piezas.
+
+  **Foco es oscuro sólo en la home.** A diferencia de Neón, Cohete y Cine, la
+  rampa invertida no va en `[data-layout="foco"]` sino sólo en `.tpl-foco`; el
+  resto de la tienda usa una rampa clara en ámbar, y `/promos` usa la tarjeta
+  clásica. Se hizo así porque con el fondo oscuro global la ficha de producto
+  quedaba con el título y las etiquetas "Talle"/"Cantidad" en negro sobre
+  negro (esas páginas tienen `text-stone-800` y `bg-white` fijos). **Neón,
+  Cohete y Cine tienen ese mismo problema desde antes y siguen así** (medido
+  el 2026-10-06: el `h1` de la ficha queda en gris casi negro sobre fondo casi
+  negro en los tres): está
+  anotado en pendientes.
 
 ## 7ter. Vista de promociones (`/promos`) y marcado "Mostrar en promos"
 
@@ -938,6 +985,14 @@ src/app/
       **talle** y por **proveedor** (hoy hace totales, por mes, top/bottom
       productos y por parametría).
 - [ ] (Backend) Flyway, perfil `prod`, proyecciones DTO — ver `../backend/PROYECTO.md` §11.
+
+- **Diseños oscuros fuera de la home (detectado 2026-10-06):** con **Neón**,
+  **Cohete** o **Cine** activos, la ficha de producto (y probablemente el
+  carrito y las demás páginas públicas) quedan con textos oscuros sobre fondo
+  oscuro, porque esas páginas usan `text-stone-800`/`bg-white` fijos y esos
+  tres diseños oscurecen el fondo global. Foco lo evita siendo oscuro sólo en
+  la home (§7bis); falta decidir si los otros tres siguen ese camino o si se
+  adaptan las páginas.
 
 ### Roadmap de mejoras (análisis 2026-09-08 — 5 puntos hechos, resto pendiente)
 
@@ -2252,6 +2307,49 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
     - **Costo:** el bundle inicial pasó de 565,8 kB a 619,9 kB (140,2 → 149,0 kB
       comprimido), casi todo CSS. Ya estaba por encima del aviso de 550 kB antes
       de esta tanda; el límite de error (1 MB) sigue lejos.
+    - La tienda quedó en **Pop**, como estaba.
+
+66. **Diez diseños de movimiento más: Cascada, Acordeón, Persiana, Collage, Foco, Cinta, Ruleta, Cubo, Espejo y Teletipo (2026-10-06).**
+    - **Qué se pidió:** diez diseños más, en la misma línea que los nueve de #65.
+    - **Qué se agregó:** 3 directivas (`appDrag`, `appSpotlight`,
+      `appTypewriter`), la variante `slats` de `appReveal`, 10 plantillas, 10
+      variantes de tarjeta, el bloque "SEGUNDA TANDA" de `styles.css`, las
+      entradas de `LAYOUTS`/`/promos` y los diez ids en el `@Pattern` del
+      backend. Ya son **40 diseños**. Detalle de cada uno en §7bis.
+    - **Verificación en navegador (Playwright, 1440×900 y 390×780) contra el
+      backend real:** los diez activados con `PUT apariencia` (200) y
+      recorridos de punta a punta, sin errores de consola ni scroll horizontal,
+      con las 10 prendas en el catálogo. Interacciones probadas: las columnas
+      de Cascada se corren en sentidos distintos; en Acordeón pasar el mouse
+      abre otra franja y el clic sobre la abierta filtra; las tablillas de
+      Persiana quedan recogidas; en Collage arrastrar mueve la foto y no
+      navega; el reflector de Foco sigue al puntero; la Cinta corre y se frena
+      con el puntero encima; la Ruleta gira al tocar una categoría y con las
+      flechas; el Cubo gira con las flechas y solo; en Espejo las dos columnas
+      corren al revés con el escenario clavado; el título de Teletipo termina
+      escrito y con `aria-label`. Con `prefers-reduced-motion`: Espejo se
+      desarma, la Cinta se detiene y esconde la copia, Teletipo escribe de una,
+      el Cubo no gira solo y Foco queda sin máscara. También "Sin resultados" y
+      `/promos` (con Ruleta), y las 40 miniaturas de `/admin/config/diseno`.
+    - **Bugs encontrados y corregidos en la verificación:** Foco dejaba la
+      ficha de producto ilegible (negro sobre negro) → ahora es oscuro sólo en
+      la home (ver §7bis); la foto redonda de la tarjeta de Ruleta recortaba el
+      aviso "Quedan N" → esquinas redondeadas en vez de círculo; las tarjetas
+      de Espejo quedaban enormes en escritorio → columnas con ancho máximo.
+    - **No verificado:** dedo real en un teléfono (el arrastre de Collage, el
+      toque de Acordeón y el reflector automático de Foco en táctil sólo se
+      probaron con mouse y viewport de celular); Safari y Firefox —en
+      particular la animación del reflector, que usa `@property`—; fotos reales
+      en el carrusel (la base local no tiene); el estado de error de carga; el
+      Cubo con fotos en las caras (sólo se vio con promos); y los tres últimos
+      retoques (tarjeta de Ruleta, columnas de Espejo, Foco claro fuera de la
+      home), que se volvieron a mirar en escritorio pero no en celular salvo
+      Foco.
+    - **Costo:** el bundle inicial pasó de 619,9 kB a 670,6 kB (149,0 → 155,6 kB
+      comprimido), casi todo CSS (`styles.css` ya pesa 244 kB sin comprimir).
+      El aviso de 550 kB se supera por 120 kB; el límite de error es 1 MB. Con
+      40 diseños en una sola hoja de estilos conviene pensar en partirla por
+      diseño antes de sumar más.
     - La tienda quedó en **Pop**, como estaba.
 
 ## 12. Backend (`../backend/`) — resumen

@@ -54,7 +54,17 @@ export type ProductCardVariant =
   | 'estela'
   | 'origami'
   | 'historias'
-  | 'portal';
+  | 'portal'
+  | 'cascada'
+  | 'acordeon'
+  | 'persiana'
+  | 'collage'
+  | 'foco'
+  | 'cinta'
+  | 'ruleta'
+  | 'cubo'
+  | 'espejo'
+  | 'teletipo';
 
 /**
  * Interfaz y no `Record<string, string>`: con un índice el compilador obliga a
@@ -365,6 +375,108 @@ const CLASSES: Record<ProductCardVariant, CardClasses> = {
     name: 'font-display text-lg leading-tight text-brand-800 line-clamp-2',
     age: 'text-xs text-stone-500',
     price: 'mt-auto pt-1 text-sm font-bold text-brand-600 tabular-nums',
+  },
+  cascada: {
+    root: 'group flex flex-col overflow-hidden rounded-[1.2rem] bg-white shadow-[0_2px_0_var(--color-brand-200),0_24px_34px_-26px_rgba(38,69,51,.8)] transition-transform duration-300 ease-out hover:-translate-y-1.5',
+    media: 'relative aspect-[4/5] overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover',
+    badge: 'absolute left-2.5 top-2.5 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-700',
+    body: 'flex flex-1 flex-col gap-0.5 p-3',
+    name: 'font-display text-base leading-snug text-brand-800 line-clamp-2',
+    age: 'text-[11px] text-stone-500',
+    price: 'mt-auto pt-1.5 text-base font-bold text-brand-600 tabular-nums',
+  },
+  acordeon: {
+    root: 'group flex h-full flex-col overflow-hidden rounded-md border-2 border-brand-800 bg-white',
+    media: 'relative aspect-square overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105',
+    badge: 'absolute left-0 top-2 bg-brand-500 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white',
+    body: 'flex flex-1 flex-col gap-0.5 border-t-2 border-brand-800 p-3',
+    name: 'font-display text-xl font-extrabold uppercase leading-none text-brand-800 line-clamp-2',
+    age: 'text-[11px] text-slate-500',
+    price: 'mt-auto pt-2 text-base font-bold text-brand-600 tabular-nums',
+  },
+  persiana: {
+    root: 'group flex flex-col',
+    media: 'relative aspect-[3/4] overflow-hidden bg-brand-200',
+    img: 'h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]',
+    badge: 'absolute left-0 top-3 bg-brand-800 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-brand-50',
+    body: 'mt-3 flex flex-1 flex-col gap-0.5 border-t border-brand-800 pt-2.5',
+    name: 'font-display text-lg leading-tight text-brand-800 line-clamp-2',
+    age: 'text-[11px] uppercase tracking-[0.14em] text-stone-500',
+    price: 'mt-auto pt-1.5 text-sm font-semibold text-brand-600 tabular-nums',
+  },
+  collage: {
+    root: 'group flex h-full flex-col bg-white p-2 pb-3 shadow-[0_16px_24px_-18px_rgba(27,50,134,.6)]',
+    media: 'relative aspect-square overflow-hidden bg-brand-200',
+    img: 'h-full w-full object-cover',
+    badge: 'absolute left-2 top-2 -rotate-3 bg-[#ffb7c5] px-2 py-1 font-display text-[11px] font-bold text-brand-800',
+    body: 'flex flex-1 flex-col gap-0.5 px-1 pt-2.5 text-center',
+    name: 'font-display text-base font-bold leading-snug text-brand-800 line-clamp-2',
+    age: 'text-[11px] text-stone-500',
+    price: 'mt-auto pt-1 font-display text-lg font-extrabold text-brand-600 tabular-nums',
+  },
+  // Ojo: usa la rampa invertida de `.tpl-foco`, así que sólo se lee dentro de
+  // la plantilla Foco (por eso `/promos` usa la clásica con ese diseño).
+  foco: {
+    root: 'group flex h-full flex-col overflow-hidden rounded-2xl bg-brand-100 ring-1 ring-brand-200 transition-shadow duration-300 hover:ring-brand-500 hover:shadow-[0_0_40px_-14px_rgba(255,183,3,.8)]',
+    media: 'relative aspect-[4/5] overflow-hidden bg-brand-200',
+    img: 'foco-shot h-full w-full object-cover',
+    badge: 'absolute left-2.5 top-2.5 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-brand-500 backdrop-blur',
+    body: 'flex flex-1 flex-col gap-0.5 p-3.5',
+    name: 'font-display text-lg leading-snug text-white line-clamp-2',
+    age: 'text-[11px] text-[#a39a86]',
+    price: 'mt-auto pt-1.5 text-base font-bold text-brand-500 tabular-nums',
+  },
+  cinta: {
+    root: 'group flex h-full flex-col overflow-hidden rounded-lg border-[3px] border-brand-800 bg-white shadow-[4px_4px_0_var(--color-brand-800)] transition-transform duration-150 ease-out hover:-translate-y-1',
+    media: 'relative aspect-square overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover',
+    badge: 'absolute left-0 top-2 bg-[#ffd400] px-2 py-1 font-display text-xs font-bold uppercase tracking-wider text-[#14213d]',
+    body: 'flex flex-1 flex-col gap-0.5 border-t-[3px] border-brand-800 p-3',
+    name: 'font-display text-xl font-bold uppercase leading-none text-brand-800 line-clamp-2',
+    age: 'text-[11px] text-slate-500',
+    price: 'mt-auto pt-2 text-base font-bold text-brand-600 tabular-nums',
+  },
+  ruleta: {
+    root: 'group flex h-full flex-col items-center text-center',
+    media: 'relative aspect-square w-full overflow-hidden rounded-3xl bg-brand-100 ring-4 ring-white shadow-[0_0_0_6px_var(--color-brand-200)] transition-shadow duration-300 group-hover:shadow-[0_0_0_6px_var(--color-brand-500)]',
+    img: 'h-full w-full object-cover',
+    badge: 'absolute left-2 top-2 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold text-brand-700',
+    body: 'flex flex-1 flex-col items-center gap-0.5 pt-4',
+    name: 'text-[15px] font-bold leading-snug text-brand-800 line-clamp-2',
+    age: 'text-[11px] text-stone-500',
+    price: 'mt-1 rounded-full bg-brand-600 px-3 py-1 text-sm font-bold text-white tabular-nums',
+  },
+  cubo: {
+    root: 'group flex h-full flex-col overflow-hidden rounded-lg border-2 border-brand-800 bg-white shadow-[5px_5px_0_var(--color-brand-300)] transition-transform duration-150 ease-out hover:-translate-x-0.5 hover:-translate-y-0.5',
+    media: 'relative aspect-square overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover',
+    badge: 'absolute left-2 top-2 rounded bg-brand-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white',
+    body: 'flex flex-1 flex-col gap-0.5 border-t-2 border-brand-800 p-3',
+    name: 'font-display text-[15px] font-bold leading-snug text-brand-800 line-clamp-2',
+    age: 'text-[11px] text-slate-500',
+    price: 'mt-auto pt-1.5 font-display text-base font-bold text-brand-600 tabular-nums',
+  },
+  espejo: {
+    root: 'group flex flex-col overflow-hidden rounded-[1.2rem] bg-white',
+    media: 'relative aspect-[4/5] overflow-hidden bg-brand-200',
+    img: 'h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]',
+    badge: 'absolute right-2.5 top-2.5 rounded-full bg-brand-800/85 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white',
+    body: 'flex flex-1 flex-col gap-0.5 p-3',
+    name: 'font-display text-base font-bold leading-snug text-brand-800 line-clamp-2',
+    age: 'text-[11px] text-stone-500',
+    price: 'mt-auto pt-1 text-sm font-bold text-brand-600 tabular-nums',
+  },
+  teletipo: {
+    root: 'group flex h-full flex-col bg-[#fffdf6] p-2 shadow-[0_0_0_1px_var(--color-brand-200),4px_5px_0_var(--color-brand-200)] transition-transform duration-150 ease-out hover:-translate-x-0.5 hover:-translate-y-0.5',
+    media: 'relative aspect-square overflow-hidden bg-brand-100 sepia-[.2]',
+    img: 'h-full w-full object-cover',
+    badge: 'absolute left-0 top-2 bg-brand-800 px-2 py-0.5 text-[11px] uppercase text-brand-50',
+    body: 'flex flex-1 flex-col gap-0.5 px-1 pt-2.5',
+    name: 'font-display text-base leading-snug text-brand-800 line-clamp-2',
+    age: 'text-[12px] text-stone-500',
+    price: 'mt-auto pt-1 text-base font-bold text-brand-500 tabular-nums',
   },
 };
 

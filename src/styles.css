@@ -4520,6 +4520,1395 @@ html:not([data-layout="portal"])::view-transition-new(*) {
   .portal-chip:hover { border-color: var(--color-brand-600); }
 }
 
+/* ==========================================================================
+   DISEÑOS DE MOVIMIENTO — SEGUNDA TANDA (Cascada · Acordeón · Persiana ·
+   Collage · Foco · Cinta · Ruleta · Cubo · Espejo · Teletipo)
+   Mismas reglas que la primera: tokens duplicados, curvas `--ease-snap` /
+   `--ease-swap`, hover detrás de `(hover: hover) and (pointer: fine)` y todo
+   apagable al final del archivo. Directivas nuevas: `appDrag`, `appSpotlight`
+   y `appTypewriter`; `appReveal` suma la variante `slats`.
+
+   Las clases de promo y de categoría se llaman igual en los diez
+   (`x-promo`, `x-promo-text`, `x-cat`, `x-cat-photo`…) porque el markup de esas
+   secciones sigue el mismo esqueleto; lo que cambia es lo que hace cada una.
+   ========================================================================== */
+
+/* ---------- CASCADA: columnas que se mueven a distinta velocidad ---------- */
+
+[data-layout="cascada"],
+.tpl-cascada {
+  --font-display: "Fraunces", "Georgia", serif;
+  --font-sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #f4f8f4;
+  --color-brand-100: #e3eee5;
+  --color-brand-200: #c5dccb;
+  --color-brand-300: #9cc3a7;
+  --color-brand-400: #6fa482;
+  --color-brand-500: #4c8663;
+  --color-brand-600: #3a6c4f;
+  --color-brand-700: #2f5640;
+  --color-brand-800: #264533;
+}
+
+.cascada-hero { background: linear-gradient(180deg, var(--color-brand-100), var(--color-brand-50)); }
+.cascada-kicker { font-size: 12px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--color-brand-600); }
+.cascada-lead { color: #57534e; }
+.cascada-stat { color: var(--color-brand-700); font-weight: 600; }
+.cascada-btn {
+  border-radius: 999px;
+  background: var(--color-brand-600);
+  color: #fff;
+  padding: .85rem 1.8rem;
+  font-weight: 700;
+  box-shadow: 0 14px 26px -16px rgba(38, 69, 51, .9);
+  transition: background-color .18s ease, transform .14s var(--ease-snap);
+}
+.cascada-btn:active { transform: scale(.97); }
+.cascada-link { font-size: 14px; font-weight: 700; color: var(--color-brand-600); text-decoration: underline; text-underline-offset: 4px; }
+
+.cascada-frame { border-radius: 1.6rem; box-shadow: 0 40px 60px -40px rgba(38, 69, 51, .8); background: var(--color-brand-200); }
+/* La foto del hero: más alta que su marco, se corre mientras el hero se va. */
+.cascada-drift { transform: translate3d(0, calc(var(--s, 0) * 14%), 0); will-change: transform; }
+
+/* La pared. `--drift` es cuánto se corre cada columna a lo largo del cruce de
+   pantalla; `--s` va de 0 a 1 y con `- .5` el corrimiento queda centrado. */
+.cascada-wall { overflow: hidden; padding: 3rem 0 4rem; }
+.cascada-cols { display: flex; align-items: flex-start; justify-content: center; gap: .75rem; padding-block: 3rem; }
+.cascada-col {
+  --drift: 7rem;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  max-width: 17rem;
+  flex-direction: column;
+  gap: 1.25rem;
+  transform: translate3d(0, calc((var(--s, .5) - .5) * var(--drift)), 0);
+  will-change: transform;
+}
+.cascada-col-mid { --drift: -11rem; margin-top: 2.5rem; }
+@media (min-width: 640px) { .cascada-cols { gap: 1.5rem; } }
+
+.cascada-promo {
+  border-radius: 1.2rem;
+  background: #fff;
+  padding: 1.2rem;
+  box-shadow: 0 2px 0 var(--color-brand-200), 0 22px 30px -26px rgba(38, 69, 51, .7);
+}
+.cascada-promo-text { font-family: var(--font-display); font-size: 1.25rem; line-height: 1.25; color: var(--color-brand-800); }
+.cascada-promo-detail { margin-top: .25rem; font-size: 14px; color: #78716c; }
+.cascada-promo-ends { margin-top: .5rem; font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--color-brand-600); }
+
+.cascada-cat { text-align: left; }
+.cascada-cat-photo {
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 1.2rem;
+  background: var(--color-brand-200);
+  box-shadow: 0 26px 34px -28px rgba(38, 69, 51, .9);
+  transition: transform .35s var(--ease-snap), box-shadow .35s ease;
+}
+.cascada-cat-label { display: block; margin-top: .7rem; font-family: var(--font-display); font-size: 1.25rem; color: var(--color-brand-800); }
+.cascada-cat-count { display: block; font-size: 12px; color: #78716c; }
+.cascada-band { background: var(--color-brand-100); }
+
+.cascada-field {
+  border-radius: .8rem;
+  border: 1px solid var(--color-brand-200);
+  background: #fff;
+  padding: .5rem .8rem;
+  font-size: 14px;
+  outline: none;
+  box-shadow: 0 2px 0 var(--color-brand-200);
+}
+.cascada-field:focus { border-color: var(--color-brand-500); }
+.cascada-chip {
+  border-radius: 999px;
+  background: #fff;
+  padding: .4rem 1rem;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-brand-800);
+  box-shadow: 0 2px 0 var(--color-brand-200);
+  transition: background-color .15s ease, color .15s ease;
+}
+.cascada-chip.is-on { background: var(--color-brand-600); color: #fff; box-shadow: 0 2px 0 var(--color-brand-800); }
+
+@media (hover: hover) and (pointer: fine) {
+  .cascada-btn:hover { background: var(--color-brand-700); }
+  .cascada-cat:hover .cascada-cat-photo { transform: translateY(-6px); box-shadow: 0 34px 40px -28px rgba(38, 69, 51, .9); }
+}
+
+/* ---------- ACORDEÓN: franjas que se abren ---------- */
+
+[data-layout="acordeon"],
+.tpl-acordeon {
+  --font-display: "Big Shoulders Display", "Barlow Condensed", system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #fff7f2;
+  --color-brand-100: #ffe9dd;
+  --color-brand-200: #ffcfb8;
+  --color-brand-300: #ffa884;
+  --color-brand-400: #f47a4f;
+  --color-brand-500: #e4572e;
+  --color-brand-600: #c8431f;
+  --color-brand-700: #9f3519;
+  --color-brand-800: #1f2a44;
+
+  --radius-xs: 2px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
+  --radius-2xl: 6px;
+  --radius-3xl: 8px;
+}
+
+.acordeon-kicker { font-size: 12px; font-weight: 800; letter-spacing: .24em; text-transform: uppercase; color: var(--color-brand-500); }
+.acordeon-lead { color: #475569; }
+.acordeon-stat { font-weight: 600; color: var(--color-brand-800); }
+.acordeon-media { border-radius: 6px; background: var(--color-brand-200); }
+.acordeon-btn {
+  background: var(--color-brand-500);
+  color: #fff;
+  padding: .85rem 1.7rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  transition: background-color .18s ease, transform .14s var(--ease-snap);
+}
+.acordeon-btn:active { transform: scale(.97); }
+.acordeon-link { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--color-brand-600); text-decoration: underline; text-underline-offset: 4px; }
+
+/* La tira. `flex-grow` reparte el ancho: la abierta toma cinco partes y las
+   demás una. Es layout, pero acotado a esta tira de pocos hermanos. */
+.acordeon-strips { display: flex; gap: .5rem; height: 26rem; }
+.acordeon-strip {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--color-brand-800);
+  color: #fff;
+  text-align: left;
+  transition: flex-grow .5s var(--ease-swap);
+}
+.acordeon-strip.is-open { flex-grow: 5; }
+.acordeon-strip-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .55;
+  transition: opacity .4s ease, transform .7s var(--ease-snap);
+}
+.acordeon-strip.is-open .acordeon-strip-img { opacity: 1; transform: scale(1.04); }
+.acordeon-strip-shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(31, 42, 68, .9), rgba(31, 42, 68, .1) 60%); }
+/* El nombre en vertical, mientras la franja está cerrada. */
+.acordeon-strip-tab {
+  position: absolute;
+  left: 50%;
+  bottom: 1rem;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform: rotate(-90deg) translateY(-50%);
+  transform-origin: 0 0;
+  transition: opacity .2s ease;
+}
+.acordeon-strip.is-open .acordeon-strip-tab { opacity: 0; }
+.acordeon-strip-body {
+  position: absolute;
+  left: 1.2rem;
+  right: 1.2rem;
+  bottom: 1.2rem;
+  opacity: 0;
+  transform: translate3d(0, 12px, 0);
+  transition: opacity .25s ease, transform .4s var(--ease-snap);
+}
+.acordeon-strip.is-open .acordeon-strip-body { opacity: 1; transform: none; transition-delay: .2s; }
+.acordeon-strip-go {
+  display: inline-block;
+  margin-top: .8rem;
+  background: var(--color-brand-500);
+  padding: .4rem .9rem;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 4px;
+}
+@media (max-width: 767px) {
+  .acordeon-strips { flex-direction: column; height: 34rem; }
+  .acordeon-strip-tab { left: 1rem; bottom: auto; top: 50%; transform: translateY(-50%); }
+}
+
+.acordeon-promo {
+  position: relative;
+  border-left: 6px solid var(--color-brand-500);
+  background: #fff;
+  padding: 1rem 1.1rem 1rem 4.6rem;
+  border-radius: 4px;
+}
+.acordeon-promo-num {
+  position: absolute;
+  left: .8rem;
+  top: .8rem;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--color-brand-500);
+}
+.acordeon-promo-text { font-weight: 700; line-height: 1.3; color: var(--color-brand-800); }
+.acordeon-promo-detail { margin-top: .2rem; font-size: 14px; color: #64748b; }
+.acordeon-promo-ends { margin-top: .4rem; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--color-brand-600); }
+.acordeon-band { background: var(--color-brand-100); }
+
+.acordeon-field {
+  border: 2px solid var(--color-brand-800);
+  border-radius: 4px;
+  background: #fff;
+  padding: .45rem .7rem;
+  font-size: 14px;
+  outline: none;
+}
+.acordeon-field:focus { border-color: var(--color-brand-500); }
+/* Pestañas de carpeta: redondeadas sólo arriba. */
+.acordeon-chip {
+  border: 2px solid var(--color-brand-800);
+  border-bottom-width: 4px;
+  border-radius: 8px 8px 0 0;
+  padding: .3rem .9rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--color-brand-800);
+  transition: background-color .15s ease, color .15s ease;
+}
+.acordeon-chip.is-on { background: var(--color-brand-800); color: #fff; border-bottom-color: var(--color-brand-500); }
+
+@media (hover: hover) and (pointer: fine) {
+  .acordeon-btn:hover { background: var(--color-brand-600); }
+  .acordeon-chip:hover { border-bottom-color: var(--color-brand-500); }
+}
+
+/* ---------- PERSIANA: las fotos se descubren en tablillas ---------- */
+
+[data-layout="persiana"],
+.tpl-persiana {
+  --font-display: "Libre Caslon Display", "Georgia", serif;
+  --font-sans: "Libre Franklin", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #f5f7fa;
+  --color-brand-100: #e6ebf1;
+  --color-brand-200: #cbd6e2;
+  --color-brand-300: #a4b6c9;
+  --color-brand-400: #7790aa;
+  --color-brand-500: #56718e;
+  --color-brand-600: #435b75;
+  --color-brand-700: #36495e;
+  --color-brand-800: #2a384a;
+
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-2xl: 2px;
+  --radius-3xl: 3px;
+}
+
+.persiana-kicker { font-size: 12px; font-weight: 600; letter-spacing: .26em; text-transform: uppercase; color: var(--color-brand-500); }
+.persiana-lead { color: #57534e; }
+.persiana-stat { color: var(--color-brand-600); }
+.persiana-media { background: var(--color-brand-200); }
+.persiana-btn {
+  border: 1px solid var(--color-brand-800);
+  background: var(--color-brand-800);
+  color: var(--color-brand-50);
+  padding: .85rem 1.8rem;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  transition: background-color .2s ease, color .2s ease, transform .14s var(--ease-snap);
+}
+.persiana-btn:active { transform: scale(.97); }
+.persiana-link { font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--color-brand-600); text-decoration: underline; text-underline-offset: 5px; }
+/* Renglones finos al pie del hero: el motivo de las tablillas. */
+.persiana-rule {
+  height: 1.6rem;
+  background: repeating-linear-gradient(to bottom, var(--color-brand-300) 0 1px, transparent 1px 6px);
+  opacity: .7;
+}
+
+/* La persiana: seis tablillas que tapan la foto y se recogen hacia arriba, una
+   atrás de la otra (`--i` es el orden). `appReveal variant="slats"` sólo pone
+   `is-visible` en el contenedor; `transition-delay: inherit` no aplica acá
+   porque el retraso es por tablilla. */
+.persiana-slats { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.persiana-slat {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--i) * 100% / 6);
+  height: calc(100% / 6 + 1px);
+  background: var(--color-brand-700);
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .18);
+  transform-origin: 50% 0;
+  transition: transform .7s var(--ease-swap);
+  transition-delay: calc(var(--i) * 70ms);
+}
+.reveal-slats.is-visible .persiana-slat { transform: scaleY(0); }
+
+.persiana-promo { border-top: 1px solid var(--color-brand-800); border-bottom: 1px solid var(--color-brand-300); padding: 1.1rem 0; }
+.persiana-promo-text { font-family: var(--font-display); font-size: 1.4rem; line-height: 1.2; color: var(--color-brand-800); }
+.persiana-promo-detail { margin-top: .25rem; font-size: 14px; color: #78716c; }
+.persiana-promo-ends { margin-top: .5rem; font-size: 11px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--color-brand-500); }
+
+.persiana-cat { text-align: left; }
+.persiana-cat-photo { position: relative; display: block; aspect-ratio: 3 / 4; overflow: hidden; background: var(--color-brand-200); }
+.persiana-cat-photo img { transition: transform .8s var(--ease-snap); }
+.persiana-cat-label { display: block; margin-top: .7rem; font-family: var(--font-display); font-size: 1.35rem; color: var(--color-brand-800); }
+.persiana-cat-count { display: block; font-size: 12px; letter-spacing: .08em; color: #78716c; }
+.persiana-band { background: var(--color-brand-100); }
+
+.persiana-field {
+  border: 0;
+  border-top: 1px solid var(--color-brand-300);
+  border-bottom: 1px solid var(--color-brand-800);
+  background: transparent;
+  padding: .5rem .3rem;
+  font-size: 14px;
+  outline: none;
+}
+.persiana-field:focus { border-bottom-color: var(--color-brand-500); background: #fff; }
+.persiana-chip {
+  border: 1px solid var(--color-brand-300);
+  padding: .35rem .9rem;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--color-brand-700);
+  transition: background-color .15s ease, color .15s ease;
+}
+.persiana-chip.is-on { background: var(--color-brand-800); border-color: var(--color-brand-800); color: var(--color-brand-50); }
+
+@media (hover: hover) and (pointer: fine) {
+  .persiana-btn:hover { background: transparent; color: var(--color-brand-800); }
+  .persiana-cat:hover .persiana-cat-photo img { transform: scale(1.06); }
+  .persiana-chip:hover { border-color: var(--color-brand-800); }
+}
+
+/* ---------- COLLAGE: fotos sobre la mesa que se pueden mover ---------- */
+
+[data-layout="collage"],
+.tpl-collage {
+  --font-display: "Shantell Sans", "Comic Neue", system-ui, sans-serif;
+  --font-sans: "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #fffbea;
+  --color-brand-100: #fff2c2;
+  --color-brand-200: #ffe38a;
+  --color-brand-300: #b9c6ff;
+  --color-brand-400: #7f95f5;
+  --color-brand-500: #4a66e8;
+  --color-brand-600: #2b50d6;
+  --color-brand-700: #2140ad;
+  --color-brand-800: #1b3286;
+}
+
+.collage-hero { background: var(--color-brand-100); }
+.collage-kicker { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: #e0457b; }
+.collage-lead { color: #44403c; }
+.collage-stat { font-weight: 700; color: var(--color-brand-700); }
+.collage-btn {
+  border: 3px solid var(--color-brand-800);
+  border-radius: 14px;
+  background: var(--color-brand-600);
+  color: #fff;
+  padding: .75rem 1.6rem;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  transform: rotate(-1.5deg);
+  transition: transform .18s var(--ease-snap), background-color .18s ease;
+}
+.collage-btn:active { transform: rotate(-1.5deg) scale(.96); }
+.collage-link { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--color-brand-600); text-decoration: underline; text-decoration-style: wavy; text-underline-offset: 5px; }
+
+/* La mesa. Cada foto arranca en su lugar y con su giro (`--r`); `--dx`/`--dy`
+   los escribe `appDrag`. La transición de `transform` se apaga mientras se
+   arrastra para que la foto vaya pegada al dedo. */
+.collage-table { position: relative; height: 24rem; margin-inline: auto; max-width: 30rem; }
+.collage-piece {
+  --r: 0deg;
+  position: absolute;
+  width: 9.5rem;
+  margin: 0;
+  background: #fff;
+  padding: .45rem .45rem .2rem;
+  box-shadow: 0 16px 24px -16px rgba(27, 50, 134, .55), 0 0 0 1px rgba(0, 0, 0, .05);
+  transform: translate3d(var(--dx, 0px), var(--dy, 0px), 0) rotate(var(--r));
+  transition: box-shadow .2s ease;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+.collage-piece.is-dragging { cursor: grabbing; box-shadow: 0 34px 40px -20px rgba(27, 50, 134, .6), 0 0 0 1px rgba(0, 0, 0, .05); }
+.collage-piece img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; pointer-events: none; }
+.collage-piece figcaption {
+  overflow: hidden;
+  padding: .35rem .1rem .25rem;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #44403c;
+}
+/* La cinta adhesiva de cada foto. */
+.collage-piece::before,
+.collage-taped::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -.6rem;
+  z-index: 1;
+  width: 4.2rem;
+  height: 1.3rem;
+  margin-left: -2.1rem;
+  background: rgba(255, 183, 197, .8);
+  transform: rotate(-3deg);
+}
+.collage-piece:nth-child(1) { --r: -8deg; left: 2%; top: 6%; }
+.collage-piece:nth-child(2) { --r: 6deg; left: 36%; top: 0; }
+.collage-piece:nth-child(3) { --r: -3deg; right: 1%; top: 12%; }
+.collage-piece:nth-child(4) { --r: 9deg; left: 10%; top: 48%; }
+.collage-piece:nth-child(5) { --r: -6deg; left: 40%; top: 44%; }
+.collage-piece:nth-child(6) { --r: 4deg; right: 3%; top: 52%; }
+.collage-hint { margin-top: .5rem; text-align: center; font-family: var(--font-display); font-size: .95rem; color: var(--color-brand-600); }
+@media (max-width: 479px) {
+  .collage-table { height: 21rem; }
+  .collage-piece { width: 7.6rem; }
+}
+
+.collage-taped { background: #fff; padding: .6rem; box-shadow: 0 22px 30px -22px rgba(27, 50, 134, .55); transform: rotate(-.6deg); }
+.collage-taped app-hero-carousel { inset: .6rem; width: auto; height: auto; }
+
+.collage-promo {
+  border: 2px dashed var(--color-brand-400);
+  border-radius: 14px;
+  background: #fff;
+  padding: 1.1rem;
+}
+.collage-promo:nth-child(odd) { transform: rotate(-.8deg); }
+.collage-promo:nth-child(even) { transform: rotate(.9deg); }
+.collage-promo-text { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; line-height: 1.25; color: var(--color-brand-800); }
+.collage-promo-detail { margin-top: .2rem; font-size: 14px; color: #78716c; }
+.collage-promo-ends { margin-top: .4rem; font-size: 12px; font-weight: 700; color: #e0457b; }
+
+.collage-cat { background: #fff; padding: .5rem .5rem .8rem; text-align: center; box-shadow: 0 16px 24px -18px rgba(27, 50, 134, .55); transition: transform .25s var(--ease-snap); }
+.collage-cat:nth-child(odd) { transform: rotate(-2deg); }
+.collage-cat:nth-child(even) { transform: rotate(2deg); }
+.collage-cat-photo { display: block; aspect-ratio: 1; overflow: hidden; background: var(--color-brand-200); }
+.collage-cat-label { display: block; margin-top: .5rem; font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; color: var(--color-brand-800); }
+.collage-cat-count { display: block; font-size: 12px; color: #78716c; }
+.collage-band { background: var(--color-brand-100); }
+
+/* Las tarjetas del catálogo, apenas torcidas, una para cada lado. */
+.collage-tilt > * { display: block; transition: transform .25s var(--ease-snap); }
+.collage-tilt:nth-child(odd) > * { transform: rotate(-1.2deg); }
+.collage-tilt:nth-child(even) > * { transform: rotate(1.2deg); }
+
+.collage-field {
+  border: 2px solid var(--color-brand-800);
+  border-radius: 12px;
+  background: #fff;
+  padding: .45rem .8rem;
+  font-size: 14px;
+  outline: none;
+}
+.collage-field:focus { border-color: #e0457b; }
+.collage-chip {
+  border: 2px solid var(--color-brand-800);
+  border-radius: 999px;
+  background: #fff;
+  padding: .3rem .95rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-brand-800);
+  transition: background-color .15s ease, color .15s ease;
+}
+.collage-chip.is-on { background: var(--color-brand-600); color: #fff; }
+
+@media (hover: hover) and (pointer: fine) {
+  .collage-btn:hover { transform: rotate(1deg); background: var(--color-brand-700); }
+  .collage-cat:hover { transform: rotate(0deg) scale(1.03); }
+  .collage-tilt:hover > * { transform: rotate(0deg); }
+  .collage-chip:hover { background: var(--color-brand-200); }
+  .collage-chip.is-on:hover { background: var(--color-brand-600); }
+}
+
+/* ---------- FOCO: un reflector en la oscuridad (diseño oscuro) ---------- */
+
+/* La posición del reflector en táctil: se registran como longitudes para que
+   la animación pueda interpolarlas. */
+@property --fx { syntax: "<length-percentage>"; inherits: true; initial-value: 50%; }
+@property --fy { syntax: "<length-percentage>"; inherits: true; initial-value: 40%; }
+
+@keyframes foco-roam {
+  0%   { --fx: 25%; --fy: 30%; }
+  25%  { --fx: 72%; --fy: 38%; }
+  50%  { --fx: 60%; --fy: 70%; }
+  75%  { --fx: 28%; --fy: 62%; }
+  100% { --fx: 25%; --fy: 30%; }
+}
+
+/* Foco es oscuro SÓLO en la home. A diferencia de Neón, Cohete y Cine, la rampa
+   invertida no va en `[data-layout="foco"]` sino únicamente en `.tpl-foco` (el
+   host de la plantilla): el resto de la tienda —header, footer, ficha de
+   producto, carrito— usa una rampa clara en ámbar. Es a propósito: esas páginas
+   tienen textos `text-stone-800` y cajas `bg-white` fijos, y con el fondo
+   oscuro global los títulos quedaban negro sobre negro. */
+[data-layout="foco"] {
+  --font-display: "Bodoni Moda", "Georgia", serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #fbf8f1;
+  --color-brand-100: #f3ecdb;
+  --color-brand-200: #e6d7b3;
+  --color-brand-300: #d9bd7c;
+  --color-brand-400: #c99a3a;
+  --color-brand-500: #b07d12;
+  --color-brand-600: #8f640c;
+  --color-brand-700: #6f4d0b;
+  --color-brand-800: #2a2418;
+}
+
+.tpl-foco {
+  --font-display: "Bodoni Moda", "Georgia", serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  /* Rampa invertida: los tonos bajos son la noche. */
+  --color-brand-50: #0c0b0a;
+  --color-brand-100: #171512;
+  --color-brand-200: #25211b;
+  --color-brand-300: #4a4130;
+  --color-brand-400: #ffd166;
+  --color-brand-500: #ffb703;
+  --color-brand-600: #ffc533;
+  --color-brand-700: #ffd766;
+  --color-brand-800: #ffe9a8;
+
+  color: #f3ede0;
+}
+
+/* El escenario. */
+.foco-stage {
+  position: relative;
+  display: flex;
+  min-height: min(82svh, 46rem);
+  align-items: flex-end;
+  overflow: hidden;
+  background: #0c0b0a;
+}
+.foco-dim,
+.foco-color { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.foco-dim { filter: grayscale(1) brightness(.34); }
+/* La copia en color sólo se ve dentro del círculo del reflector. */
+.foco-color {
+  -webkit-mask-image: radial-gradient(circle 15rem at var(--fx) var(--fy), #000 0, rgba(0, 0, 0, .55) 55%, transparent 100%);
+  mask-image: radial-gradient(circle 15rem at var(--fx) var(--fy), #000 0, rgba(0, 0, 0, .55) 55%, transparent 100%);
+}
+/* Mientras nadie apunta (o en táctil), el reflector se pasea solo. */
+.foco-stage:not(.is-lit) { animation: foco-roam 14s ease-in-out infinite; }
+.foco-vignette {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(12, 11, 10, .95), rgba(12, 11, 10, .2) 55%, rgba(12, 11, 10, .5));
+  pointer-events: none;
+}
+.foco-copy { position: relative; z-index: 1; width: 100%; max-width: 72rem; margin-inline: auto; padding: 3rem 1.25rem; pointer-events: none; }
+.foco-copy button { pointer-events: auto; }
+@media (min-width: 640px) { .foco-copy { padding-inline: 2rem; } }
+
+.foco-kicker { font-size: 12px; font-weight: 700; letter-spacing: .28em; text-transform: uppercase; color: #ffb703; }
+.foco-btn {
+  border-radius: 999px;
+  background: #ffb703;
+  color: #171512;
+  padding: .85rem 1.8rem;
+  font-weight: 800;
+  box-shadow: 0 0 34px -6px rgba(255, 183, 3, .8);
+  transition: box-shadow .2s ease, transform .14s var(--ease-snap);
+}
+.foco-btn:active { transform: scale(.97); }
+.foco-link { font-size: 14px; font-weight: 700; color: #ffb703; text-decoration: underline; text-underline-offset: 4px; }
+.foco-frame { border-radius: 1rem; box-shadow: 0 0 0 1px #25211b, 0 0 60px -20px rgba(255, 183, 3, .5); }
+
+.foco-promo { border: 1px solid #332d22; border-radius: 1rem; background: #171512; padding: 1.2rem; }
+.foco-promo-text { font-family: var(--font-display); font-size: 1.3rem; line-height: 1.25; color: #fff; }
+.foco-promo-detail { margin-top: .25rem; font-size: 14px; color: #a39a86; }
+.foco-promo-ends { margin-top: .5rem; font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #ffb703; }
+
+.foco-cat { text-align: left; }
+.foco-cat-photo {
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: #171512;
+  box-shadow: 0 0 0 1px #25211b;
+  transition: box-shadow .3s ease;
+}
+.foco-cat-label { display: block; margin-top: .7rem; font-family: var(--font-display); font-size: 1.3rem; color: #fff; }
+.foco-cat-count { display: block; font-size: 12px; color: #a39a86; }
+.foco-band { background: #100f0d; }
+
+/* Las fotos apagadas hasta que se las señala. Sólo con puntero fino: en táctil
+   no hay cómo "señalar", así que se ven siempre en color. */
+.foco-cat-photo img,
+.foco-shot { transition: filter .45s ease, transform .6s var(--ease-snap); }
+
+.foco-field {
+  border-radius: 999px;
+  border: 1px solid #332d22;
+  background: #171512;
+  color: #f3ede0;
+  padding: .5rem 1rem;
+  font-size: 14px;
+  outline: none;
+  color-scheme: dark;
+}
+.foco-field::placeholder { color: #8c8372; }
+.foco-field:focus { border-color: #ffb703; box-shadow: 0 0 0 3px rgba(255, 183, 3, .2); }
+.foco-chip {
+  border-radius: 999px;
+  border: 1px solid #332d22;
+  padding: .35rem 1rem;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e6dcc6;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.foco-chip.is-on { background: #ffb703; border-color: #ffb703; color: #171512; }
+
+@media (hover: hover) and (pointer: fine) {
+  .foco-btn:hover { box-shadow: 0 0 50px -4px rgba(255, 183, 3, 1); }
+  .foco-cat-photo img,
+  .foco-shot { filter: grayscale(.9) brightness(.6); }
+  .foco-cat:hover .foco-cat-photo { box-shadow: 0 0 0 1px #ffb703, 0 0 40px -12px rgba(255, 183, 3, .8); }
+  .foco-cat:hover .foco-cat-photo img,
+  .group:hover .foco-shot { filter: none; transform: scale(1.05); }
+  .foco-chip:hover { border-color: #ffb703; }
+}
+
+/* ---------- CINTA: las prendas pasan en una cinta transportadora ---------- */
+
+@keyframes cinta-run {
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+[data-layout="cinta"],
+.tpl-cinta {
+  --font-display: "Saira Condensed", "Barlow Condensed", system-ui, sans-serif;
+  --font-sans: "Saira", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #f3f7ff;
+  --color-brand-100: #e1ebff;
+  --color-brand-200: #c2d6ff;
+  --color-brand-300: #94b6ff;
+  --color-brand-400: #5a8dff;
+  --color-brand-500: #1f66ff;
+  --color-brand-600: #0a4fe0;
+  --color-brand-700: #083eb0;
+  --color-brand-800: #0b2f7d;
+
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius-2xl: 10px;
+  --radius-3xl: 12px;
+}
+
+.cinta-kicker { font-size: 12px; font-weight: 700; letter-spacing: .24em; text-transform: uppercase; color: var(--color-brand-600); }
+.cinta-lead { color: #475569; }
+.cinta-stat { font-weight: 600; color: var(--color-brand-800); }
+.cinta-media { border-radius: 10px; border: 3px solid var(--color-brand-800); background: var(--color-brand-200); }
+.cinta-btn {
+  border-radius: 6px;
+  background: #ffd400;
+  color: #14213d;
+  padding: .8rem 1.6rem;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 0 #b89600;
+  transition: transform .12s var(--ease-snap), box-shadow .12s var(--ease-snap);
+}
+.cinta-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #b89600; }
+.cinta-link { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--color-brand-600); text-decoration: underline; text-underline-offset: 4px; }
+/* Franja de precaución, amarilla y negra. */
+.cinta-hazard { height: .9rem; background: repeating-linear-gradient(-45deg, #ffd400 0 14px, #14213d 14px 28px); }
+
+/* La cinta. El contenido va dos veces (`.cinta-group`) y la pista corre
+   exactamente la mitad: por eso el empalme no se nota. `--n` (cantidad real)
+   fija la duración, así la velocidad es la misma con 4 prendas o con 10. */
+.cinta-belt {
+  overflow: hidden;
+  border-block: 4px solid var(--color-brand-800);
+  background:
+    repeating-linear-gradient(90deg, rgba(11, 47, 125, .08) 0 2px, transparent 2px 28px),
+    var(--color-brand-100);
+  padding: 1.2rem 0;
+}
+.cinta-track {
+  display: flex;
+  width: max-content;
+  animation: cinta-run calc(var(--n, 6) * 5.5s) linear infinite;
+}
+.cinta-track-reverse { animation-direction: reverse; animation-duration: calc(var(--n, 6) * 7s); }
+.cinta-belt:hover .cinta-track,
+.cinta-belt:focus-within .cinta-track { animation-play-state: paused; }
+.cinta-group { display: flex; flex-shrink: 0; gap: 1.25rem; padding-right: 1.25rem; }
+.cinta-item { width: 13rem; flex-shrink: 0; }
+@media (max-width: 639px) { .cinta-item { width: 10.5rem; } }
+
+.cinta-belt-labels { background: var(--color-brand-800); border-color: #ffd400; padding: .7rem 0; }
+.cinta-label {
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: #ffd400;
+  padding: .3rem .9rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #14213d;
+}
+
+.cinta-promo { border-radius: 8px; border: 3px solid var(--color-brand-800); background: #fff; padding: 1rem 1.1rem; box-shadow: 5px 5px 0 var(--color-brand-800); }
+.cinta-promo-text { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; line-height: 1.1; text-transform: uppercase; color: var(--color-brand-800); }
+.cinta-promo-detail { margin-top: .3rem; font-size: 14px; color: #64748b; }
+.cinta-promo-ends { margin-top: .4rem; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--color-brand-600); }
+
+.cinta-cat { border-radius: 8px; border: 3px solid var(--color-brand-800); background: #fff; padding: .5rem .5rem .8rem; text-align: left; transition: transform .16s var(--ease-snap), box-shadow .16s var(--ease-snap); box-shadow: 4px 4px 0 var(--color-brand-800); }
+.cinta-cat-photo { display: block; aspect-ratio: 1; overflow: hidden; border-radius: 4px; background: var(--color-brand-200); }
+.cinta-cat-label { display: block; margin-top: .6rem; font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; text-transform: uppercase; line-height: 1; color: var(--color-brand-800); }
+.cinta-cat-count { display: block; margin-top: .15rem; font-size: 12px; color: #64748b; }
+
+.cinta-field {
+  border-radius: 6px;
+  border: 2px solid var(--color-brand-800);
+  background: #fff;
+  padding: .45rem .7rem;
+  font-size: 14px;
+  outline: none;
+}
+.cinta-field:focus { box-shadow: 0 0 0 3px #ffd400; }
+.cinta-chip {
+  border-radius: 6px;
+  border: 2px solid var(--color-brand-800);
+  background: #fff;
+  padding: .25rem .9rem;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--color-brand-800);
+  box-shadow: 0 3px 0 var(--color-brand-800);
+  transition: transform .12s var(--ease-snap), box-shadow .12s var(--ease-snap), background-color .15s ease;
+}
+/* El botón apretado: baja y pierde la sombra. */
+.cinta-chip.is-on { background: #ffd400; transform: translateY(3px); box-shadow: 0 0 0 var(--color-brand-800); }
+
+@media (hover: hover) and (pointer: fine) {
+  .cinta-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 0 #b89600; }
+  .cinta-cat:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--color-brand-800); }
+}
+
+/* ---------- RULETA: una rueda de categorías ---------- */
+
+[data-layout="ruleta"],
+.tpl-ruleta {
+  --font-display: "Chango", "Rammetto One", system-ui, sans-serif;
+  --font-sans: "Rubik", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #fff5f6;
+  --color-brand-100: #ffe3e7;
+  --color-brand-200: #ffc2cb;
+  --color-brand-300: #ff93a4;
+  --color-brand-400: #ef5e78;
+  --color-brand-500: #d12f52;
+  --color-brand-600: #a4133c;
+  --color-brand-700: #800f2f;
+  --color-brand-800: #590d22;
+}
+
+/* Chango es muy ancha: en el celular el nombre empujaba el carrito. */
+@media (max-width: 479px) {
+  [data-layout="ruleta"] app-header header a > span.font-display { font-size: .95rem; }
+}
+
+.ruleta-kicker { font-size: 12px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--color-brand-500); }
+.ruleta-lead { color: #57534e; }
+.ruleta-stat { font-weight: 600; color: var(--color-brand-700); }
+.ruleta-media { background: var(--color-brand-200); box-shadow: 0 0 0 .6rem #fff, 0 0 0 .9rem var(--color-brand-600); }
+.ruleta-btn {
+  border-radius: 999px;
+  background: var(--color-brand-600);
+  color: #fff;
+  padding: .8rem 1.7rem;
+  font-weight: 700;
+  box-shadow: 0 4px 0 var(--color-brand-800);
+  transition: transform .12s var(--ease-snap), box-shadow .12s var(--ease-snap);
+}
+.ruleta-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--color-brand-800); }
+.ruleta-link { font-size: 14px; font-weight: 700; color: var(--color-brand-600); text-decoration: underline; text-underline-offset: 4px; }
+
+.ruleta-felt { background: radial-gradient(70% 90% at 30% 40%, #8a1535, var(--color-brand-800)); }
+.ruleta-wheel-wrap { position: relative; width: min(21rem, 82vw); margin-inline: auto; padding-top: 1.2rem; }
+/* El marcador: un triángulo que señala la categoría de arriba. */
+.ruleta-pin {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  z-index: 3;
+  width: 0;
+  height: 0;
+  margin-left: -.8rem;
+  border-inline: .8rem solid transparent;
+  border-top: 1.5rem solid #ffd166;
+  filter: drop-shadow(0 3px 2px rgba(0, 0, 0, .35));
+}
+/* La rueda. `--rot` lo pone la plantilla; es una transición, así que cambiar de
+   categoría a mitad de giro retoma desde donde iba. */
+.ruleta-wheel {
+  --rot: 0deg;
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    repeating-conic-gradient(from -22.5deg, #fff5f6 0 45deg, #ffe3e7 45deg 90deg);
+  box-shadow: 0 0 0 .5rem #ffd166, 0 0 0 .8rem var(--color-brand-800), 0 30px 40px -20px rgba(0, 0, 0, .7);
+  transform: rotate(var(--rot));
+  transition: transform .9s var(--ease-swap);
+}
+/* Cada pieza: se ubica girando `--a` y saliendo hacia el borde; la ficha de
+   adentro se contragira lo mismo que giró todo, para quedar derecha. */
+.ruleta-slot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4.4rem;
+  height: 4.4rem;
+  margin: -2.2rem 0 0 -2.2rem;
+  border-radius: 50%;
+  transform: rotate(var(--a)) translateY(-185%);
+}
+.ruleta-token {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  background: var(--color-brand-100);
+  box-shadow: 0 6px 10px -4px rgba(0, 0, 0, .5);
+  transform: rotate(calc(-1 * (var(--a) + var(--rot))));
+  transition: transform .9s var(--ease-swap), box-shadow .25s ease;
+}
+.ruleta-slot.is-on .ruleta-token { box-shadow: 0 0 0 4px #ffd166, 0 6px 10px -4px rgba(0, 0, 0, .5); }
+.ruleta-hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3.4rem;
+  height: 3.4rem;
+  margin: -1.7rem 0 0 -1.7rem;
+  border-radius: 50%;
+  background: #ffd166;
+  box-shadow: inset 0 0 0 .5rem var(--color-brand-600);
+}
+@media (max-width: 479px) {
+  .ruleta-slot { width: 3.5rem; height: 3.5rem; margin: -1.75rem 0 0 -1.75rem; }
+}
+.ruleta-round {
+  display: grid;
+  place-items: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 50%;
+  background: #ffd166;
+  color: var(--color-brand-800);
+  font-weight: 800;
+  transition: transform .12s var(--ease-snap);
+}
+.ruleta-round:active { transform: scale(.92); }
+
+.ruleta-prize { overflow: hidden; border-radius: 1.5rem; background: #fff; box-shadow: 0 30px 40px -24px rgba(0, 0, 0, .7); }
+.ruleta-prize-photo { aspect-ratio: 16 / 10; overflow: hidden; background: var(--color-brand-100); }
+
+.ruleta-promo { border-radius: 1.4rem; border: 2px solid var(--color-brand-200); background: #fff; padding: 1.1rem 1.2rem; }
+.ruleta-promo-text { font-size: 1.1rem; font-weight: 700; line-height: 1.3; color: var(--color-brand-800); }
+.ruleta-promo-detail { margin-top: .2rem; font-size: 14px; color: #78716c; }
+.ruleta-promo-ends { margin-top: .4rem; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--color-brand-500); }
+.ruleta-band { background: var(--color-brand-100); }
+
+.ruleta-field {
+  border-radius: 999px;
+  border: 2px solid var(--color-brand-200);
+  background: #fff;
+  padding: .45rem 1rem;
+  font-size: 14px;
+  outline: none;
+}
+.ruleta-field:focus { border-color: var(--color-brand-500); }
+.ruleta-chip {
+  border-radius: 999px;
+  border: 2px solid var(--color-brand-200);
+  background: #fff;
+  padding: .35rem 1rem;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-brand-800);
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.ruleta-chip.is-on { background: var(--color-brand-600); border-color: var(--color-brand-600); color: #fff; }
+
+@media (hover: hover) and (pointer: fine) {
+  .ruleta-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 0 var(--color-brand-800); }
+  .ruleta-slot:hover .ruleta-token { box-shadow: 0 0 0 4px #ffd166, 0 6px 10px -4px rgba(0, 0, 0, .5); }
+  .ruleta-chip:hover { border-color: var(--color-brand-500); }
+}
+
+/* ---------- CUBO: un cubo 3D que rota entre fotos y promos ---------- */
+
+@keyframes cubo-tick {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+[data-layout="cubo"],
+.tpl-cubo {
+  --font-display: "Chakra Petch", "Space Grotesk", system-ui, sans-serif;
+  --font-sans: "Sarabun", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #f6f7f9;
+  --color-brand-100: #e9ecf0;
+  --color-brand-200: #d3d9e1;
+  --color-brand-300: #f3c77a;
+  --color-brand-400: #e8a53a;
+  --color-brand-500: #cf8410;
+  --color-brand-600: #b26d08;
+  --color-brand-700: #8c5506;
+  --color-brand-800: #25303d;
+
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius-2xl: 10px;
+  --radius-3xl: 12px;
+}
+
+.cubo-hero { background: linear-gradient(160deg, var(--color-brand-100), var(--color-brand-50) 60%); }
+.cubo-kicker { font-size: 12px; font-weight: 700; letter-spacing: .24em; text-transform: uppercase; color: var(--color-brand-600); }
+.cubo-lead { color: #475569; }
+.cubo-stat { font-weight: 600; color: var(--color-brand-800); }
+.cubo-btn {
+  border-radius: 6px;
+  background: var(--color-brand-800);
+  color: #fff;
+  padding: .85rem 1.7rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  box-shadow: 5px 5px 0 var(--color-brand-400);
+  transition: transform .14s var(--ease-snap), box-shadow .14s var(--ease-snap);
+}
+.cubo-btn:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--color-brand-400); }
+.cubo-link { font-size: 14px; font-weight: 700; color: var(--color-brand-600); text-decoration: underline; text-underline-offset: 4px; }
+
+/* El cubo. `--size` es el lado; cada cara sale medio lado hacia afuera y el
+   cubo entero retrocede lo mismo, así la cara de frente queda en su tamaño
+   real. `--cara` (giros hechos) lo pone la plantilla. */
+.cubo-scene {
+  --size: min(19rem, 70vw);
+  width: var(--size);
+  height: var(--size);
+  margin: 1.5rem auto 0;
+  perspective: 1100px;
+}
+.cubo {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: translateZ(calc(var(--size) / -2)) rotateY(calc(var(--cara, 0) * -90deg));
+  transition: transform .85s var(--ease-swap);
+}
+.cubo-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--color-brand-800);
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .08);
+  backface-visibility: hidden;
+  transform: rotateY(calc(var(--i) * 90deg)) translateZ(calc(var(--size) / 2));
+}
+.cubo-side {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  justify-content: center;
+  background: linear-gradient(150deg, var(--color-brand-500), var(--color-brand-700));
+  padding: 1.4rem;
+  color: #fff;
+}
+.cubo-promo-tag { align-self: flex-start; border-radius: 4px; background: rgba(0, 0, 0, .25); padding: .2rem .6rem; font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+.cubo-promo-num { margin-top: .6rem; font-family: var(--font-display); font-size: 4rem; font-weight: 700; line-height: .9; }
+
+.cubo-round {
+  display: grid;
+  place-items: center;
+  width: 2.7rem;
+  height: 2.7rem;
+  border-radius: 6px;
+  background: var(--color-brand-800);
+  color: #fff;
+  font-weight: 800;
+  transition: transform .12s var(--ease-snap);
+}
+.cubo-round:active { transform: scale(.92); }
+/* La barrita marca cuánto falta para el giro siguiente (progreso: `linear`). */
+.cubo-timer { width: 6rem; height: 4px; overflow: hidden; border-radius: 4px; background: var(--color-brand-200); }
+.cubo-timer > span {
+  display: block;
+  height: 100%;
+  background: var(--color-brand-500);
+  transform-origin: 0 50%;
+  animation: cubo-tick 4.5s linear forwards;
+}
+
+.cubo-promo {
+  border-radius: 8px;
+  border: 2px solid var(--color-brand-800);
+  background: #fff;
+  padding: 1.1rem;
+  color: var(--color-brand-800);
+  box-shadow: 5px 5px 0 var(--color-brand-300);
+}
+.cubo-promo-text { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; line-height: 1.25; }
+.cubo-promo-detail { margin-top: .2rem; font-size: 14px; color: #64748b; }
+.cubo-promo-ends { margin-top: .4rem; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--color-brand-600); }
+
+.cubo-cat { border-radius: 8px; border: 2px solid var(--color-brand-800); background: #fff; padding: .5rem .5rem .8rem; text-align: left; box-shadow: 5px 5px 0 var(--color-brand-300); transition: transform .16s var(--ease-snap), box-shadow .16s var(--ease-snap); }
+.cubo-cat-photo { display: block; aspect-ratio: 1; overflow: hidden; border-radius: 4px; background: var(--color-brand-100); }
+.cubo-cat-label { display: block; margin-top: .6rem; font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; color: var(--color-brand-800); }
+.cubo-cat-count { display: block; font-size: 12px; color: #64748b; }
+.cubo-band { background: var(--color-brand-100); }
+
+.cubo-field {
+  border-radius: 6px;
+  border: 2px solid var(--color-brand-800);
+  background: #fff;
+  padding: .45rem .7rem;
+  font-size: 14px;
+  outline: none;
+  box-shadow: 3px 3px 0 var(--color-brand-200);
+}
+.cubo-field:focus { box-shadow: 3px 3px 0 var(--color-brand-400); }
+.cubo-chip {
+  border-radius: 6px;
+  border: 2px solid var(--color-brand-800);
+  background: #fff;
+  padding: .3rem .9rem;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-brand-800);
+  box-shadow: 3px 3px 0 var(--color-brand-200);
+  transition: background-color .15s ease, color .15s ease;
+}
+.cubo-chip.is-on { background: var(--color-brand-800); color: #fff; box-shadow: 3px 3px 0 var(--color-brand-400); }
+
+@media (hover: hover) and (pointer: fine) {
+  .cubo-btn:hover { transform: translate(-1px, -1px); box-shadow: 6px 6px 0 var(--color-brand-400); }
+  .cubo-cat:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--color-brand-300); }
+  /* Con el puntero sobre el cubo, la cuenta para el giro siguiente se frena. */
+  .cubo-hero:has(.cubo-scene:hover) .cubo-timer > span { animation-play-state: paused; }
+}
+
+/* ---------- ESPEJO: dos columnas que corren en sentidos opuestos ---------- */
+
+[data-layout="espejo"],
+.tpl-espejo {
+  --font-display: "Familjen Grotesk", "Inter", system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #f7f5ff;
+  --color-brand-100: #ece8ff;
+  --color-brand-200: #d8d0ff;
+  --color-brand-300: #b9abff;
+  --color-brand-400: #9580ff;
+  --color-brand-500: #7a5cff;
+  --color-brand-600: #6343e6;
+  --color-brand-700: #4d33b8;
+  --color-brand-800: #1c1730;
+}
+
+.espejo-kicker { font-size: 12px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--color-brand-600); }
+.espejo-lead { color: #57534e; }
+.espejo-stat { font-weight: 600; color: var(--color-brand-700); }
+.espejo-media { border-radius: 1.4rem; background: var(--color-brand-200); }
+.espejo-btn {
+  border-radius: 999px;
+  background: var(--color-brand-800);
+  color: #fff;
+  padding: .85rem 1.8rem;
+  font-weight: 700;
+  transition: background-color .18s ease, transform .14s var(--ease-snap);
+}
+.espejo-btn:active { transform: scale(.97); }
+.espejo-link { font-size: 14px; font-weight: 700; color: var(--color-brand-600); text-decoration: underline; text-underline-offset: 4px; }
+
+/* La escena. `--n` (prendas por columna) decide cuánto dura; `--win` es el alto
+   de la ventana de cada columna y tiene que coincidir con el alto real, porque
+   de ahí sale cuánto corre cada una. */
+.espejo-scene {
+  position: relative;
+  height: calc(100svh - 4rem + var(--n, 4) * 13rem);
+  background: var(--color-brand-100);
+}
+.espejo-stage {
+  --win: calc(100svh - 4rem);
+  position: sticky;
+  top: 4rem;
+  display: grid;
+  height: calc(100svh - 4rem);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 2rem;
+  overflow: hidden;
+}
+.espejo-win { width: 100%; max-width: 18rem; height: var(--win); justify-self: center; overflow: hidden; }
+.espejo-mid { align-self: center; text-align: center; }
+/* `100%` dentro de `translate` es el alto de la propia columna: corre justo lo
+   que le sobra respecto de la ventana. El `min()` cubre la columna que entra
+   entera (no se mueve). La B usa el mismo recorrido, al revés. */
+.espejo-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-block: 1.5rem;
+  transform: translate3d(0, calc(var(--s, 0) * min(0px, var(--win) - 100%)), 0);
+  will-change: transform;
+}
+.espejo-col-b { transform: translate3d(0, calc((1 - var(--s, 0)) * min(0px, var(--win) - 100%)), 0); }
+@media (max-width: 767px) {
+  .espejo-stage {
+    --win: calc(100svh - 4rem - 9.5rem);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: 9.5rem auto;
+    gap: 0 .75rem;
+    padding-inline: 1rem;
+  }
+  .espejo-mid { grid-column: 1 / -1; grid-row: 1; }
+  .espejo-mid .espejo-btn { display: none; }
+}
+
+.espejo-promo { border-radius: 1.2rem; background: #fff; padding: 1.2rem; box-shadow: 0 20px 30px -26px rgba(28, 23, 48, .7); }
+.espejo-promo:nth-child(even) { background: var(--color-brand-800); }
+.espejo-promo-text { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; line-height: 1.2; color: var(--color-brand-800); }
+.espejo-promo:nth-child(even) .espejo-promo-text { color: #fff; }
+.espejo-promo-detail { margin-top: .25rem; font-size: 14px; color: #78716c; }
+.espejo-promo:nth-child(even) .espejo-promo-detail { color: #b9b3d6; }
+.espejo-promo-ends { margin-top: .5rem; font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--color-brand-500); }
+.espejo-promo:nth-child(even) .espejo-promo-ends { color: var(--color-brand-300); }
+
+.espejo-cat { text-align: left; }
+.espejo-cat-photo { display: block; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 1.2rem; background: var(--color-brand-200); }
+.espejo-cat-photo img { transition: transform .7s var(--ease-snap); }
+/* Las pares, espejadas: la foto mira para el otro lado. */
+.espejo-cat:nth-child(even) .espejo-cat-photo img { transform: scaleX(-1); }
+.espejo-cat-label { display: block; margin-top: .7rem; font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--color-brand-800); }
+.espejo-cat-count { display: block; font-size: 12px; color: #78716c; }
+
+.espejo-field {
+  border-radius: .8rem;
+  border: 1px solid var(--color-brand-200);
+  background: #fff;
+  padding: .5rem .8rem;
+  font-size: 14px;
+  outline: none;
+}
+.espejo-field:focus { border-color: var(--color-brand-500); box-shadow: 0 0 0 3px rgba(122, 92, 255, .2); }
+.espejo-chip {
+  border-radius: 999px;
+  border: 1px solid var(--color-brand-200);
+  background: #fff;
+  padding: .35rem 1rem;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-brand-800);
+  transition: background-color .15s ease, color .15s ease;
+}
+.espejo-chip.is-on { background: var(--color-brand-800); border-color: var(--color-brand-800); color: #fff; }
+
+@media (hover: hover) and (pointer: fine) {
+  .espejo-btn:hover { background: var(--color-brand-600); }
+  .espejo-cat:hover .espejo-cat-photo img { transform: scale(1.06); }
+  .espejo-cat:nth-child(even):hover .espejo-cat-photo img { transform: scaleX(-1) scale(1.06); }
+  .espejo-chip:hover { border-color: var(--color-brand-500); }
+}
+
+/* ---------- TELETIPO: los títulos se escriben solos ---------- */
+
+@keyframes teletipo-blink {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+[data-layout="teletipo"],
+.tpl-teletipo {
+  --font-display: "Special Elite", "Courier New", monospace;
+  --font-sans: "Courier Prime", "Courier New", monospace;
+
+  --color-brand-50: #f7f1e3;
+  --color-brand-100: #efe6d0;
+  --color-brand-200: #e0d3b4;
+  --color-brand-300: #e0a39b;
+  --color-brand-400: #cf6257;
+  --color-brand-500: #b3261e;
+  --color-brand-600: #991f18;
+  --color-brand-700: #7a1913;
+  --color-brand-800: #2a2520;
+
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 1px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-2xl: 2px;
+  --radius-3xl: 3px;
+}
+
+/* Renglones de papel pautado. */
+.teletipo-hero {
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 1.9rem, rgba(42, 37, 32, .07) 1.9rem calc(1.9rem + 1px)),
+    var(--color-brand-50);
+}
+.teletipo-kicker { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-brand-500); }
+.teletipo-lead { color: #44403c; }
+.teletipo-stat { color: var(--color-brand-800); text-transform: uppercase; letter-spacing: .06em; }
+
+/* Lo que escribe `appTypewriter`. El cursor es un `::after` que parpadea; al
+   terminar (`is-typed`) sigue parpadeando, como una máquina esperando. El alto
+   mínimo reserva el renglón para que la página no salte al empezar a escribir. */
+.typewriter { min-height: 1.15em; }
+.typewriter::after {
+  content: "";
+  display: inline-block;
+  width: .5em;
+  height: .9em;
+  margin-left: .08em;
+  vertical-align: -.06em;
+  background: var(--color-brand-500);
+  animation: teletipo-blink 1s steps(1) infinite;
+}
+.teletipo-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 10vw, 4.6rem);
+  line-height: 1.05;
+  color: var(--color-brand-800);
+  overflow-wrap: anywhere;
+}
+.teletipo-h2 { font-family: var(--font-display); font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.1; color: var(--color-brand-800); }
+
+.teletipo-btn {
+  border: 2px solid var(--color-brand-800);
+  background: var(--color-brand-800);
+  color: var(--color-brand-50);
+  padding: .7rem 1.4rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  transition: background-color .15s ease, color .15s ease, transform .1s var(--ease-snap);
+}
+/* La tecla que baja. */
+.teletipo-btn:active { transform: translateY(2px); }
+.teletipo-link { font-size: 14px; color: var(--color-brand-500); text-decoration: underline; text-underline-offset: 4px; }
+
+.teletipo-sheet { background: #fffdf6; padding: .7rem .7rem .2rem; box-shadow: 0 0 0 1px var(--color-brand-200), 6px 8px 0 var(--color-brand-200); transform: rotate(.8deg); }
+.teletipo-media { background: var(--color-brand-100); filter: sepia(.25) contrast(1.02); }
+.teletipo-caption { padding: .5rem .2rem; font-size: 12px; color: #78716c; }
+
+.teletipo-promo { display: flex; flex-wrap: wrap; align-items: baseline; gap: .1rem .7rem; border-bottom: 1px dashed var(--color-brand-800); padding: .8rem 0; }
+.teletipo-stop { color: var(--color-brand-500); }
+.teletipo-promo-text { font-size: 1.05rem; font-weight: 700; color: var(--color-brand-800); }
+.teletipo-promo-detail { font-size: 14px; color: #78716c; }
+.teletipo-promo-ends { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--color-brand-500); }
+
+.teletipo-cat { background: #fffdf6; padding: .5rem .5rem .7rem; text-align: left; box-shadow: 0 0 0 1px var(--color-brand-200), 4px 5px 0 var(--color-brand-200); transition: transform .16s var(--ease-snap), box-shadow .16s var(--ease-snap); }
+.teletipo-cat-photo { display: block; aspect-ratio: 1; overflow: hidden; background: var(--color-brand-100); filter: sepia(.25); }
+.teletipo-cat-label { display: block; margin-top: .5rem; font-family: var(--font-display); font-size: 1.15rem; color: var(--color-brand-800); }
+.teletipo-cat-count { display: block; font-size: 12px; color: #78716c; }
+.teletipo-band { background: var(--color-brand-100); }
+
+.teletipo-field {
+  border: 0;
+  border-bottom: 2px dotted var(--color-brand-800);
+  background: transparent;
+  padding: .4rem .2rem;
+  font-size: 15px;
+  outline: none;
+}
+.teletipo-field:focus { border-bottom-style: solid; border-bottom-color: var(--color-brand-500); }
+.teletipo-chip {
+  border: 1px solid var(--color-brand-800);
+  padding: .25rem .8rem;
+  font-size: 14px;
+  text-transform: uppercase;
+  color: var(--color-brand-800);
+  transition: background-color .15s ease, color .15s ease;
+}
+.teletipo-chip.is-on { background: var(--color-brand-800); color: var(--color-brand-50); }
+
+@media (hover: hover) and (pointer: fine) {
+  .teletipo-btn:hover { background: var(--color-brand-500); border-color: var(--color-brand-500); }
+  .teletipo-cat:hover { transform: translate(-2px, -2px); box-shadow: 0 0 0 1px var(--color-brand-200), 7px 8px 0 var(--color-brand-200); }
+  .teletipo-chip:hover { background: var(--color-brand-200); }
+  .teletipo-chip.is-on:hover { background: var(--color-brand-800); }
+}
+
 /* Accesibilidad: quien pide menos movimiento ve todo en su lugar, sin animar.
    Va al final y con !important porque es el interruptor general. */
 @media (prefers-reduced-motion: reduce) {
@@ -4668,5 +6057,41 @@ html:not([data-layout="portal"])::view-transition-new(*) {
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none !important;
+  }
+
+  /* --- Diseños de movimiento, segunda tanda --- */
+  /* Persiana: sin tablillas, la foto se ve de entrada. */
+  .persiana-slats { display: none !important; }
+
+  /* Cinta detenida: se esconde la copia y queda un riel que se desliza a mano. */
+  .cinta-track { animation: none !important; }
+  .cinta-dup { display: none !important; }
+  .cinta-belt { overflow-x: auto !important; }
+
+  /* Foco: la foto en color, sin reflector. */
+  .foco-stage { animation: none !important; }
+  .foco-color { -webkit-mask-image: none !important; mask-image: none !important; }
+  .foco-cat-photo img,
+  .foco-shot { filter: none !important; transition: none !important; }
+
+  /* El cubo no gira solo (la barrita no corre, así que nunca pide el giro). */
+  .cubo-timer { display: none !important; }
+  .cubo { transition: none !important; }
+
+  /* Espejo sin escena: dos columnas quietas. */
+  .espejo-scene { height: auto !important; }
+  .espejo-stage { position: static !important; height: auto !important; padding-block: 2rem; }
+  .espejo-win { height: auto !important; overflow: visible !important; }
+  .espejo-col { transform: none !important; }
+
+  .teletipo-sheet,
+  .typewriter::after { animation: none !important; }
+  .ruleta-wheel,
+  .ruleta-token,
+  .acordeon-strip,
+  .acordeon-strip-img,
+  .acordeon-strip-body,
+  .collage-tilt > * {
+    transition: none !important;
   }
 }

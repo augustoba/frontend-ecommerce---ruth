@@ -47,6 +47,17 @@ const VARIANT_BY_LAYOUT: Record<string, ProductCardVariant> = {
   origami: 'origami',
   historias: 'historias',
   portal: 'portal',
+  cascada: 'cascada',
+  acordeon: 'acordeon',
+  persiana: 'persiana',
+  collage: 'collage',
+  // La tarjeta `foco` asume el fondo oscuro de su plantilla; acá la página es clara.
+  foco: 'classic',
+  cinta: 'cinta',
+  ruleta: 'ruleta',
+  cubo: 'cubo',
+  espejo: 'espejo',
+  teletipo: 'teletipo',
 };
 
 /**

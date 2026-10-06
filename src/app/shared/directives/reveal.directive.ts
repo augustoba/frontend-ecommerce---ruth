@@ -18,7 +18,8 @@ export type RevealVariant =
   | 'right'
   | 'zoom'
   | 'fold'
-  | 'flip';
+  | 'flip'
+  | 'slats';
 
 /**
  * Aparición al hacer scroll: el elemento empieza invisible y entra cuando llega
@@ -26,7 +27,8 @@ export type RevealVariant =
  * `.reveal-mask`, `.reveal-bounce`, `.reveal-blur`, `.reveal-left`,
  * `.reveal-right` y `.reveal-zoom` definidas en `styles.css`. `fold` (se
  * despliega desde arriba como un papel doblado) y `flip` (se da vuelta como una
- * hoja) son las de Origami.
+ * hoja) son las de Origami. `slats` no mueve al elemento: sólo le pone
+ * `is-visible`, y son las tablillas de adentro (Persiana) las que se recogen.
  *
  * `[delay]` sirve para el efecto escalonado: en un `@for` se pasa `i * 60`.
  * Con `prefers-reduced-motion` el CSS ya deja todo visible, así que acá no hace
@@ -44,6 +46,7 @@ export type RevealVariant =
     '[class.reveal-zoom]': 'variant() === "zoom"',
     '[class.reveal-fold]': 'variant() === "fold"',
     '[class.reveal-flip]': 'variant() === "flip"',
+    '[class.reveal-slats]': 'variant() === "slats"',
     '[class.is-visible]': 'visible()',
     '[style.transition-delay.ms]': 'delay()',
   },

@@ -55,12 +55,14 @@ si conviene tocar también este archivo o el `README.md`).
 
 ## Detalles que no están en el código y conviene recordar
 
-- **La home tiene 30 diseños intercambiables** (Ruth / Editorial / Pop desde
+- **La home tiene 40 diseños intercambiables** (Ruth / Editorial / Pop desde
   2026-09-30; + Vidriera / Ofertas / Fichero / Mosaico / Nova / Neón / Caramelo /
   Cohete / Jungla / Crayón desde 2026-10-01; + Boutique / Feria / Periódico /
   Retro 90 / Suizo / Cancha / Cine / Playa desde 2026-10-02; + los nueve "de
   movimiento" Pasarela / Baraja / Líquido / Kinético / Órbita / Estela /
-  Origami / Historias / Portal desde 2026-10-06):
+  Origami / Historias / Portal y, en una segunda tanda del mismo día, Cascada /
+  Acordeón / Persiana / Collage / Foco / Cinta / Ruleta / Cubo / Espejo /
+  Teletipo, desde 2026-10-06):
   `CatalogPageComponent` es un **contenedor** que carga los datos
   y los pasa como un único `CatalogView` (`features/catalog/catalog-view.ts`) a
   la plantilla elegida (`@switch (layout())` sobre
@@ -95,6 +97,14 @@ si conviene tocar también este archivo o el `README.md`).
   `withViewTransitions` para el viaje de la foto de Portal; el resto de los
   diseños lo tiene anulado por CSS — no "limpiar" esa regla. Ver PROYECTO.md
   §7bis y #65.
+  La **segunda tanda** (diez más, #66) sumó `appDrag` (Collage), `appSpotlight`
+  (Foco), `appTypewriter` (Teletipo) y la variante `slats` de `appReveal`
+  (Persiana). **Foco es oscuro sólo en la home**: su rampa invertida vive en
+  `.tpl-foco` y NO en `[data-layout="foco"]`, porque las demás páginas públicas
+  tienen `text-stone-800`/`bg-white` fijos y con fondo oscuro global quedan
+  ilegibles — que es justo lo que les pasa hoy a Neón, Cohete y Cine en la
+  ficha de producto (pendiente, PROYECTO.md §10). Un diseño oscuro nuevo tiene
+  que seguir el camino de Foco, no el de esos tres.
 - **Vocabulario de tienda en las etiquetas funcionales** (2026-10-02, commit
   `39f1740`): los diseños se diferencian **sólo por lo visual**. Títulos de
   sección ("Lo más vendido", "El catálogo", "Promos"), conteos, buscador

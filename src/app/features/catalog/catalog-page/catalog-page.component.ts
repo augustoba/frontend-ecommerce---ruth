@@ -29,6 +29,16 @@ import { TemplateEstelaComponent } from '../templates/template-estela.component'
 import { TemplateOrigamiComponent } from '../templates/template-origami.component';
 import { TemplateHistoriasComponent } from '../templates/template-historias.component';
 import { TemplatePortalComponent } from '../templates/template-portal.component';
+import { TemplateCascadaComponent } from '../templates/template-cascada.component';
+import { TemplateAcordeonComponent } from '../templates/template-acordeon.component';
+import { TemplatePersianaComponent } from '../templates/template-persiana.component';
+import { TemplateCollageComponent } from '../templates/template-collage.component';
+import { TemplateFocoComponent } from '../templates/template-foco.component';
+import { TemplateCintaComponent } from '../templates/template-cinta.component';
+import { TemplateRuletaComponent } from '../templates/template-ruleta.component';
+import { TemplateCuboComponent } from '../templates/template-cubo.component';
+import { TemplateEspejoComponent } from '../templates/template-espejo.component';
+import { TemplateTeletipoComponent } from '../templates/template-teletipo.component';
 import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
 import { SizeScaleService } from '../../../core/services/size-scale.service';
@@ -80,6 +90,16 @@ import { CatalogView, PromoLine, SortOrder } from '../catalog-view';
     TemplateOrigamiComponent,
     TemplateHistoriasComponent,
     TemplatePortalComponent,
+    TemplateCascadaComponent,
+    TemplateAcordeonComponent,
+    TemplatePersianaComponent,
+    TemplateCollageComponent,
+    TemplateFocoComponent,
+    TemplateCintaComponent,
+    TemplateRuletaComponent,
+    TemplateCuboComponent,
+    TemplateEspejoComponent,
+    TemplateTeletipoComponent,
   ],
   templateUrl: './catalog-page.component.html',
   styleUrl: './catalog-page.component.css',

@@ -290,6 +290,96 @@ export const LAYOUTS: LayoutOption[] = [
     fontsHref:
       'https://fonts.googleapis.com/css2?family=Marcellus&family=Hanken+Grotesk:wght@400;500;600;700&display=swap',
   },
+  {
+    id: 'cascada',
+    label: 'Cascada',
+    blurb:
+      'Profundidad: las prendas destacadas van en columnas que se mueven a distinta velocidad al bajar, y la foto del hero se corre más lento que la página.',
+    previewColor: '#3a6c4f',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'acordeon',
+    label: 'Acordeón',
+    blurb:
+      'Las categorías son franjas angostas que se abren: la que se señala o se toca se ensancha y muestra su foto, su nombre y cuántas prendas tiene.',
+    previewColor: '#e4572e',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'persiana',
+    label: 'Persiana',
+    blurb:
+      'Las fotos se descubren en tablillas: cada una arranca tapada por franjas que se recogen una atrás de la otra, como una persiana que se levanta.',
+    previewColor: '#435b75',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Libre+Franklin:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'collage',
+    label: 'Collage',
+    blurb:
+      'Fotos tiradas sobre la mesa: el hero es una pila de fotos de prendas, torcidas y pegadas con cinta, que se pueden agarrar y mover con el dedo.',
+    previewColor: '#2b50d6',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Shantell+Sans:wght@400;600;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap',
+  },
+  {
+    id: 'foco',
+    label: 'Foco',
+    blurb:
+      'Diseño oscuro: la foto está en penumbra y un reflector que sigue al puntero le devuelve el color; las prendas se encienden al señalarlas.',
+    previewColor: '#ffb703',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,700;6..96,800&family=Manrope:wght@400;500;600;700;800&display=swap',
+  },
+  {
+    id: 'cinta',
+    label: 'Cinta',
+    blurb:
+      'Las prendas pasan solas en una cinta transportadora que no para, con otra de promos corriendo para el otro lado; se frenan cuando te acercás.',
+    previewColor: '#1f66ff',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Saira:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'ruleta',
+    label: 'Ruleta',
+    blurb:
+      'Una rueda de categorías: tocás una y la rueda gira hasta dejarla arriba, bajo el marcador, y al costado aparece en grande con su foto.',
+    previewColor: '#a4133c',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Chango&family=Rubik:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'cubo',
+    label: 'Cubo',
+    blurb:
+      'Un cubo 3D en el hero: sus caras muestran las fotos del carrusel y las promos vigentes, y rota solo cada pocos segundos o con las flechas.',
+    previewColor: '#cf8410',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Sarabun:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'espejo',
+    label: 'Espejo',
+    blurb:
+      'Pantalla partida: la página se clava y dos columnas de prendas corren en sentidos opuestos, una sube y la otra baja, con el título fijo en el medio.',
+    previewColor: '#7a5cff',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'teletipo',
+    label: 'Teletipo',
+    blurb:
+      'Los títulos se escriben solos: el nombre de la tienda y cada sección aparecen letra por letra, con el cursor parpadeando, en letra de máquina sobre papel.',
+    previewColor: '#b3261e',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap',
+  },
 ];
 
 export function isKnownLayout(id: string | null | undefined): boolean {
