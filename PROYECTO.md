@@ -5,7 +5,8 @@
 > `../backend/PROYECTO.md` (esa es la carpeta real en esta máquina; el repo en
 > GitHub se llama `backend-ecommer-ruth`).
 >
-> **Última actualización: 2026-10-06** (40 diseños de tienda: se sumaron los
+> **Última actualización: 2026-10-06** (55 diseños de tienda; la tercera tanda,
+> de quince, está en §7bis e historial #67. Las dos anteriores: se sumaron los
 > nueve "de movimiento" —Pasarela / Baraja / Líquido / Kinético / Órbita /
 > Estela / Origami / Historias / Portal—, §7bis e historial #65, y una segunda
 > tanda de diez —Cascada / Acordeón / Persiana / Collage / Foco / Cinta /
@@ -305,8 +306,8 @@ otra estructura visual.
 
 - **Qué es:** el dueño puede elegir el **diseño de la tienda** desde
   `/admin/config/diseno` (sección 9sexies), sin tocar código ni redesplegar.
-  Hoy hay **cuarenta** (los diecinueve últimos, "de movimiento", tienen sus
-  propios bullets más abajo). Los primeros veintiuno: **Ruth** (el original), **Editorial**, **Pop**,
+  Hoy hay **cincuenta y cinco** (los treinta y cuatro últimos, "de movimiento",
+  tienen sus propios bullets más abajo). Los primeros veintiuno: **Ruth** (el original), **Editorial**, **Pop**,
   **Vidriera**, **Ofertas**, **Fichero**, **Mosaico**, **Nova**, **Neón**,
   **Caramelo**, **Cohete**, **Jungla**, **Crayón**, **Boutique**, **Feria**,
   **Periódico**, **Retro 90**, **Suizo**, **Cancha**, **Cine** y **Playa**.
@@ -629,6 +630,61 @@ otra estructura visual.
   el 2026-10-06: el `h1` de la ficha queda en gris casi negro sobre fondo casi
   negro en los tres): está
   anotado en pendientes.
+
+- **Tercera tanda de movimiento, quince más (2026-10-06):** **Glitch**,
+  **Vórtice**, **Holograma**, **Pixel**, **Tinta**, **Tajo**, **Cifrado**,
+  **Confeti**, **Tablero**, **Negativo**, **Historieta**, **Fragmento**,
+  **Soga**, **Eco** y **Radar**. Es la tanda "disruptiva": en cada uno se
+  mueven los botones, las fotos, el banner de promos, los títulos y las
+  tarjetas, además de la pieza propia.
+  - **Glitch** — títulos con eco rojo/cian que salta (`data-text`), fotos en
+    tres capas que se desfasan, botones que tiemblan. Oscuro sólo en la home.
+  - **Vórtice** — sello de texto circular (SVG `textPath`) que gira alrededor
+    de la foto, categorías que rotan con el scroll, botón con borde cónico.
+  - **Holograma** — lámina tornasolada sobre tarjetas y fotos que sigue al
+    puntero (`appTilt` + `--mx`/`--my`); en táctil barre sola.
+  - **Pixel** — todo con `steps()`: las fotos se cargan renglón por renglón,
+    la cinta avanza a los tirones, los botones bajan un escalón.
+  - **Tinta** — `clip-path: circle()` que crece desde donde entra el puntero
+    (`appSpotlight`): en botones, en las fotos de categoría y entre promos.
+  - **Tajo** — la foto del hero son cinco copias recortadas en tiras que
+    llegan desfasadas; las de categoría, tres.
+  - **Cifrado** — `appScramble`: nombre, títulos, promos, categorías y botones
+    arrancan como letras al azar y se acomodan. Lo que se lee para comprar no
+    se mezcla.
+  - **Confeti** — `appConfetti`: cada botón y cada categoría suelta una ráfaga
+    de papelitos (WAAPI); caen papelitos en el hero y hay guirnalda.
+  - **Tablero** — cartel de paletas: la promo actual partida en 3 renglones de
+    16 casilleros que giran letra por letra.
+  - **Negativo** — blanco y negro; un disco en `mix-blend-mode: difference`
+    sigue al puntero e invierte lo que toca.
+  - **Historieta** — viñetas torcidas con trama de puntos, la línea de compra
+    en un globo, promos con estallidos que laten, botones con un estallido.
+  - **Fragmento** — cada foto son cuatro triángulos que llegan volando y
+    encajan; se rajan al señalarla.
+  - **Soga** — todo cuelga de una soga con broches y se hamaca (péndulo).
+  - **Eco** — copias en contorno detrás del nombre, de los títulos, de las
+    fotos y de los botones, que se abren en diagonal.
+  - **Radar** — pantalla de radar con haz que gira; las categorías reales son
+    las señales (botones). Oscuro sólo en la home.
+
+  **Banner de promos que rota** (`MotionTemplateBase`): `promoActual`,
+  `promoIdx`, `promoSiguiente` y `promoPar`. Muestra una promo por vez; el
+  tiempo lo marca la animación CSS de `.promo-timer` (`animationend` pide la
+  siguiente), sin `setInterval`. Siempre hay botón "Promo siguiente", que es
+  además lo único que queda con `prefers-reduced-motion`.
+
+  **Cómo se reinicia una animación sin recrear el nodo:** cada animación que
+  tiene que volver a correr (la barrita, la entrada de la promo, las paletas
+  del Tablero, la barrita del Cubo) existe en `styles.css` con dos nombres
+  (`x` y `x-b`) y la plantilla alterna la clase `is-b`. La primera versión
+  recreaba el nodo con `@for (k of [valor]; track k)`, y Angular avisaba
+  (NG0956) en cada cambio: 48 avisos por giro en el Tablero.
+
+  **CSS de la tanda:** se arma en dos partes por diseño — "Esqueleto"
+  (tipografía, color y forma de las piezas comunes) y "Movimiento" (lo
+  propio). **Glitch y Radar siguen el camino de Foco**: oscuros sólo en
+  `.tpl-x`, con rampa clara en `[data-layout]` y tarjeta clásica en `/promos`.
 
 ## 7ter. Vista de promociones (`/promos`) y marcado "Mostrar en promos"
 
@@ -2350,6 +2406,49 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       El aviso de 550 kB se supera por 120 kB; el límite de error es 1 MB. Con
       40 diseños en una sola hoja de estilos conviene pensar en partirla por
       diseño antes de sumar más.
+    - La tienda quedó en **Pop**, como estaba.
+
+67. **Quince diseños "disruptivos": Glitch, Vórtice, Holograma, Pixel, Tinta, Tajo, Cifrado, Confeti, Tablero, Negativo, Historieta, Fragmento, Soga, Eco y Radar (2026-10-06).**
+    - **Qué se pidió:** quince más, más disruptivos, con más animación en
+      botones, fotos, banner y todo, y sin nada que ver con los que había.
+    - **Qué se agregó:** 2 directivas (`appScramble`, `appConfetti`), el banner
+      de promos que rota en `MotionTemplateBase`, 15 plantillas, 15 variantes
+      de tarjeta, el bloque "TERCERA TANDA" de `styles.css` y los quince ids en
+      el `@Pattern` del backend. Ya son **55 diseños**. Detalle en §7bis.
+    - **Verificación en navegador (Playwright, 1440×900 y 390×780) contra el
+      backend real:** los quince activados con `PUT apariencia` (200),
+      recorridos de punta a punta sin errores de consola ni scroll horizontal,
+      con las 10 prendas en el catálogo. Probado puntualmente: la ráfaga de
+      Confeti (16 papelitos que después se sacan del DOM), el texto final y el
+      `aria-label` de Cifrado, el Tablero (cambia de promo solo y con el
+      botón), el botón de Tinta (toma la posición del puntero y se llena), el
+      disco de Negativo, las señales de Radar (filtran), la lámina de Holograma
+      (sigue al puntero), y la rotación del banner en Glitch y Cifrado. Con
+      `prefers-reduced-motion`: el Tablero no avanza solo, Fragmento queda
+      armado, Confeti no suelta papelitos y Cifrado escribe de una. También:
+      "Sin resultados" (con Eco), la ficha de producto y `/promos` claros y
+      legibles con Glitch y Radar, y las 55 miniaturas del admin.
+    - **Bugs encontrados y corregidos en la verificación:** el hero de Glitch
+      quedaba lavado y sin contraste con una foto clara (velo oscuro sobre las
+      capas); en Negativo la tilde de la Ñ se fundía con el renglón de arriba
+      (más interlineado); los avisos NG0956 (ver §7bis); y de paso el mismo
+      aviso en el Cubo de la tanda anterior.
+    - **Una falsa alarma que conviene recordar:** a mitad de las pruebas las
+      apariciones se veían demoradas (Soga parecía tener secciones vacías). No
+      era el diseño: la ventana del navegador de pruebas había quedado en
+      segundo plano y dibujaba a 2 cuadros por segundo en **todos** los
+      diseños, también en Pop y Ruth. Con la ventana al frente volvió a 61.
+    - **No verificado:** dedo real en un teléfono; Safari y Firefox (en
+      particular `@property`, las funciones `sin()`/`cos()` de Radar,
+      `color-mix()` de la barrita y `mix-blend-mode` en Negativo, Glitch y
+      Holograma); fotos reales en el carrusel (la base local no tiene, y varios
+      de estos diseños —Glitch, Tajo, Fragmento— se lucen recién con una foto);
+      el estado de error de carga; el rendimiento real en un celular de gama
+      baja (hay diseños con muchas animaciones a la vez: Soga, Confeti, Glitch);
+      el barrido automático de Holograma y el disco de Negativo en táctil; y la
+      versión con movimiento reducido de los once que no se probaron uno por
+      uno.
+    - **Costo:** el bundle inicial pasó de 670,6 kB a 784,4 kB (155,6 → 167,6 kB comprimido); `styles.css` ya pesa 352 kB sin comprimir (46 kB comprimido). Supera el aviso de 550 kB por 234 kB; el límite de error es 1 MB y quedan unos 215 kB de margen. **Antes de sumar otra tanda hay que partir la hoja de estilos por diseño** (cargar el CSS de cada uno a demanda, como ya se hace con las fuentes): hoy toda tienda baja el CSS de los 55.
     - La tienda quedó en **Pop**, como estaba.
 
 ## 12. Backend (`../backend/`) — resumen

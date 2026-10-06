@@ -1,0 +1,186 @@
+@if (vm(); as v) {
+  <!-- ===== Apertura: un radar: el haz gira y las categorías reales son las señales ===== -->
+  <section class="radar-hero relative">
+    <div class="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pb-12 pt-10 sm:px-8 lg:grid-cols-2 lg:pt-14">
+      <div class="min-w-0">
+        <p appReveal class="radar-kicker">— barrido activo —</p>
+        <h1 appReveal [delay]="90" class="radar-title mt-3 [overflow-wrap:anywhere] [text-wrap:balance] ">
+          {{ v.storeName() }}
+        </h1>
+        <p appReveal [delay]="180" class="radar-lead mt-5 max-w-md text-base leading-relaxed">{{ compraLine() }}</p>
+        <div appReveal [delay]="260" class="radar-actions mt-7 flex flex-wrap items-center gap-4">
+          <button type="button" (click)="v.scrollToCatalog()" class="radar-btn"><span>Ver catálogo</span></button>
+          <span class="radar-stat text-sm tabular-nums">
+            {{ v.filteredProducts().length }} prendas · {{ v.availableSizes().length }} talles
+          </span>
+        </div>
+      </div>
+      <div class="min-w-0">
+        <div class="radar-screen">
+          <span class="radar-sweep" aria-hidden="true"></span>
+          <span class="radar-rings" aria-hidden="true"></span>
+          @for (opt of categorias(); track opt.id; let i = $index) {
+            <button
+              type="button"
+              class="radar-blip"
+              [style.--a]="(i * 360) / categorias().length + 20 + 'deg'"
+              [style.--r]="i % 2 ? '27%' : '38%'"
+              (click)="elegirCategoria(opt.id)"
+            >
+              <span class="radar-dot" aria-hidden="true"></span>
+              <span class="radar-blip-label">{{ opt.label }}</span>
+            </button>
+          }
+          <img [src]="v.logoSrc() | cldImg: 200" [alt]="v.storeName()" class="radar-core" />
+        </div>
+        @if (categorias().length) {
+          <p class="radar-hint">Elegí por categoría: tocá una señal</p>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Banner de promos: cada promo llega como una transmisión. La barrita (`.promo-timer`) marca el
+       tiempo y pide la siguiente; `is-b` alterna en cada cambio y con eso se
+       vuelve a disparar la animación de entrada (ver `promoPar`). ===== -->
+  @if (promoActual(); as promo) {
+    <section class="radar-banner" aria-label="Promos">
+      <div class="radar-banner-in mx-auto max-w-6xl px-5 sm:px-8">
+        <h2 class="radar-banner-tag">Promos <span class="tabular-nums">{{ promoIdx() + 1 }}/{{ v.promos().length }}</span></h2>
+        <div class="radar-banner-slide" [class.is-b]="promoPar()" aria-live="polite">
+          <p class="radar-banner-text">{{ promo.text }}</p>
+          @if (promo.detail) {
+            <p class="radar-banner-detail">{{ promo.detail }}</p>
+          }
+          @if (promo.endsLabel) {
+            <p class="radar-banner-ends">{{ promo.endsLabel }}</p>
+          }
+        </div>
+        <div class="radar-banner-foot mt-5 flex flex-wrap items-center gap-4">
+          <a routerLink="/promos" class="radar-btn radar-btn-sm"><span>Ver prendas en promo</span></a>
+          @if (v.promos().length > 1) {
+            <button type="button" (click)="promoSiguiente()" aria-label="Promo siguiente" class="radar-next">→</button>
+            <span class="promo-timer" aria-hidden="true">
+              <span [class.is-b]="promoPar()" (animationend)="promoSiguiente()"></span>
+            </span>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ===== Las fotos del carrusel (administrables desde el panel). ===== -->
+  @if (v.heroSlides().length) {
+    <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-8">
+      <div appReveal variant="zoom" class="radar-media radar-scan relative aspect-[4/3] w-full overflow-hidden sm:aspect-[21/8]">
+        <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+      </div>
+    </section>
+  }
+
+  <!-- ===== Lo más vendido: sólo sin filtros puestos. ===== -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section id="mas-vendido" class="radar-band scroll-mt-24 py-10">
+      <div class="mx-auto max-w-6xl px-5 sm:px-8">
+        <h2 class="radar-h2">Lo más vendido</h2>
+        <div class="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto px-1 pb-4 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          @for (p of v.bestSellers(); track p.id; let i = $index) {
+            <div appReveal [delay]="i * 60" class="radar-item w-52 shrink-0 snap-start sm:w-60">
+              <app-product-card [product]="p" variant="radar" />
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ===== Catálogo ===== -->
+  <section id="catalogo" class="scroll-mt-24">
+    <div class="mx-auto max-w-6xl px-5 pb-16 pt-12 sm:px-8">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <h2 class="radar-h2">El catálogo</h2>
+        <p class="radar-stat text-sm tabular-nums">
+          {{ v.filteredProducts().length }} {{ v.filteredProducts().length === 1 ? 'prenda' : 'prendas' }}
+        </p>
+      </div>
+
+      <!-- Filtros: campos de consola con borde de fósforo. -->
+      <div class="mt-6 flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          [ngModel]="v.searchTerm()"
+          (ngModelChange)="v.searchTerm.set($event)"
+          placeholder="Buscar producto..."
+          aria-label="Buscar producto"
+          class="radar-field min-w-[10rem] flex-1"
+        />
+        <select [ngModel]="v.selectedSize()" (ngModelChange)="v.selectedSize.set($event)" aria-label="Filtrar por talle" class="radar-field">
+          <option value="todos">Talle: todos</option>
+          @for (size of v.availableSizes(); track size) {
+            <option [value]="size">Talle {{ size }}</option>
+          }
+        </select>
+        @for (group of v.selectGroups(); track group.id) {
+          <select [ngModel]="v.paramValue(group.id)" (ngModelChange)="v.setParam(group.id, $event)" [attr.aria-label]="group.name" class="radar-field">
+            <option value="">{{ group.name }}: todas</option>
+            @for (option of group.options; track option.id) {
+              <option [value]="option.id">{{ option.label }}</option>
+            }
+          </select>
+        }
+        <input type="number" inputmode="numeric" min="0" placeholder="$ mín" aria-label="Precio mínimo" [ngModel]="v.minPrice()" (ngModelChange)="v.setMinPrice($event)" class="radar-field w-24" />
+        <input type="number" inputmode="numeric" min="0" placeholder="$ máx" aria-label="Precio máximo" [ngModel]="v.maxPrice()" (ngModelChange)="v.setMaxPrice($event)" class="radar-field w-24" />
+        <select [ngModel]="v.sortBy()" (ngModelChange)="v.sortBy.set($event)" aria-label="Ordenar" class="radar-field">
+          <option value="novedades">Orden: novedades</option>
+          <option value="precio-asc">Precio: menor a mayor</option>
+          <option value="precio-desc">Precio: mayor a menor</option>
+        </select>
+      </div>
+
+      @if (v.publicoGroup(); as publico) {
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <button type="button" (click)="v.setParam(publico.id, '')" class="radar-chip" [class.is-on]="!v.paramValue(publico.id)">Todas</button>
+          @for (option of publico.options; track option.id) {
+            <button type="button" (click)="v.setParam(publico.id, option.id)" class="radar-chip" [class.is-on]="v.paramValue(publico.id) === option.id">
+              {{ option.label }}
+            </button>
+          }
+          @if (v.hasActiveFilters()) {
+            <button type="button" (click)="v.clearFilters()" class="radar-link ml-auto">Limpiar filtros ✕</button>
+          }
+        </div>
+      }
+
+      <div class="mt-8">
+        @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+          <app-skeleton variant="card" [count]="8" />
+        } @else if (v.catalogStatus() === 'error') {
+          <div class="py-20 text-center">
+            <p class="radar-h2">No se pudo cargar el catálogo.</p>
+            <button type="button" (click)="v.reloadCatalog()" class="radar-link mt-3">Reintentar</button>
+          </div>
+        } @else if (v.filteredProducts().length) {
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+            @for (product of v.visibleProducts(); track product.id; let i = $index) {
+              <div appReveal [delay]="(i % 4) * 70" class="radar-scan h-full">
+                <app-product-card class="block h-full" [product]="product" variant="radar" />
+              </div>
+            }
+          </div>
+
+          @if (v.hasMore()) {
+            <div class="mt-12 text-center">
+              <button type="button" (click)="v.showMore()" class="radar-btn"><span>Ver más prendas</span></button>
+            </div>
+          }
+        } @else {
+          <div class="py-20 text-center">
+            <p class="radar-h2">Sin resultados</p>
+            <p class="mt-1 text-sm opacity-70">No encontramos prendas con esos filtros.</p>
+            <button type="button" (click)="v.clearFilters()" class="radar-link mt-3">Ver todo el catálogo</button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}

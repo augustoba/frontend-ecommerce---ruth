@@ -64,7 +64,22 @@ export type ProductCardVariant =
   | 'ruleta'
   | 'cubo'
   | 'espejo'
-  | 'teletipo';
+  | 'teletipo'
+  | 'glitch'
+  | 'vortice'
+  | 'holograma'
+  | 'pixel'
+  | 'tinta'
+  | 'tajo'
+  | 'cifrado'
+  | 'confeti'
+  | 'tablero'
+  | 'negativo'
+  | 'historieta'
+  | 'fragmento'
+  | 'soga'
+  | 'eco'
+  | 'radar';
 
 /**
  * Interfaz y no `Record<string, string>`: con un índice el compilador obliga a
@@ -477,6 +492,156 @@ const CLASSES: Record<ProductCardVariant, CardClasses> = {
     name: 'font-display text-base leading-snug text-brand-800 line-clamp-2',
     age: 'text-[12px] text-stone-500',
     price: 'mt-auto pt-1 text-base font-bold text-brand-500 tabular-nums',
+  },
+  glitch: {
+    root: 'group flex h-full flex-col overflow-hidden bg-brand-100 ring-1 ring-brand-300 transition-shadow duration-200 hover:ring-brand-400 hover:shadow-[4px_4px_0_#ff2a6d,-4px_-4px_0_#05d9e8]',
+    media: 'relative aspect-[4/5] overflow-hidden bg-brand-200',
+    img: 'glitch-card-img h-full w-full object-cover',
+    badge: 'absolute left-0 top-2 bg-brand-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#07060b]',
+    body: 'flex flex-1 flex-col gap-0.5 p-3',
+    name: 'font-display text-[15px] font-semibold uppercase leading-snug text-white line-clamp-2',
+    age: 'text-[11px] text-[#a9a6c4]',
+    price: 'mt-auto pt-1.5 font-display text-lg font-bold text-brand-400 tabular-nums',
+  },
+  vortice: {
+    root: 'group flex h-full flex-col overflow-hidden rounded-[1.6rem] bg-white shadow-[0_18px_30px_-22px_rgba(42,23,102,.7)] transition-transform duration-300 ease-out hover:rotate-2',
+    media: 'relative aspect-square overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover transition-transform duration-500 ease-out group-hover:-rotate-6 group-hover:scale-110',
+    badge: 'absolute left-2.5 top-2.5 rounded-full bg-brand-800 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white',
+    body: 'flex flex-1 flex-col gap-0.5 p-3.5',
+    name: 'text-[15px] font-bold leading-snug text-brand-800 line-clamp-2',
+    age: 'text-[11px] text-stone-500',
+    price: 'mt-auto pt-1.5 text-base font-bold text-brand-600 tabular-nums',
+  },
+  holograma: {
+    root: 'group flex h-full flex-col overflow-hidden rounded-[1.4rem] bg-white/80 ring-1 ring-white shadow-[0_24px_40px_-30px_rgba(43,36,82,.8)] backdrop-blur',
+    media: 'relative aspect-[4/5] overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105',
+    badge: 'absolute left-2.5 top-2.5 rounded-full bg-white/85 px-2.5 py-1 text-[10px] font-bold text-brand-700 backdrop-blur',
+    body: 'flex flex-1 flex-col gap-0.5 p-3.5',
+    name: 'text-[15px] font-semibold leading-snug text-brand-800 line-clamp-2',
+    age: 'text-[11px] text-stone-500',
+    price: 'mt-auto pt-1.5 text-base font-bold text-brand-600 tabular-nums',
+  },
+  pixel: {
+    root: 'pixel-card group flex h-full flex-col bg-white shadow-[0_0_0_4px_#1b1b1b,6px_6px_0_4px_rgba(0,0,0,.3)]',
+    media: 'relative aspect-square overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover',
+    badge: 'absolute left-0 top-0 bg-[#1b1b1b] px-2 py-1 font-display text-[8px] leading-relaxed text-[#ffd23f]',
+    body: 'flex flex-1 flex-col gap-1 border-t-4 border-[#1b1b1b] p-3',
+    name: 'text-base font-bold leading-tight text-[#1b1b1b] line-clamp-2',
+    age: 'text-xs text-slate-600',
+    price: 'mt-auto pt-1 font-display text-[11px] leading-relaxed text-brand-600 tabular-nums',
+  },
+  tinta: {
+    root: 'group flex h-full flex-col',
+    media: 'relative aspect-[3/4] overflow-hidden bg-brand-200',
+    img: 'tinta-card-img h-full w-full object-cover',
+    badge: 'absolute right-2 top-2 bg-brand-500 px-1.5 py-2 text-[10px] font-bold text-white [writing-mode:vertical-rl]',
+    body: 'flex flex-1 flex-col gap-0.5 border-t border-brand-800 pt-2.5 mt-2.5',
+    name: 'font-display text-lg font-bold leading-tight text-brand-800 line-clamp-2',
+    age: 'text-[11px] text-stone-500',
+    price: 'mt-auto pt-1 text-sm font-bold text-brand-500 tabular-nums',
+  },
+  tajo: {
+    root: 'group flex h-full flex-col bg-white',
+    media: 'relative aspect-[4/5] overflow-hidden bg-brand-200 transition-[clip-path] duration-300 ease-out [clip-path:polygon(0_0,100%_0,100%_100%,0_100%)] group-hover:[clip-path:polygon(0_0,100%_7%,100%_100%,0_93%)]',
+    img: 'h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105',
+    badge: 'absolute left-0 top-3 bg-brand-500 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white',
+    body: 'flex flex-1 flex-col gap-0.5 p-3',
+    name: 'font-display text-xl uppercase leading-none text-brand-800 line-clamp-2',
+    age: 'text-[11px] uppercase tracking-wider text-slate-500',
+    price: 'mt-auto pt-2 text-base font-bold text-brand-600 tabular-nums',
+  },
+  cifrado: {
+    root: 'group flex h-full flex-col border-2 border-brand-800 bg-white',
+    media: 'relative aspect-square overflow-hidden bg-brand-100',
+    img: 'cifrado-shot h-full w-full object-cover',
+    badge: 'absolute left-0 top-0 bg-brand-800 px-2 py-1 font-display text-[10px] uppercase text-[#c9f27a]',
+    body: 'flex flex-1 flex-col gap-0.5 border-t-2 border-brand-800 p-3',
+    name: 'text-[15px] font-bold leading-snug text-brand-800 line-clamp-2',
+    age: 'font-display text-[11px] text-stone-500',
+    price: 'mt-auto pt-1.5 font-display text-base font-bold text-brand-600 tabular-nums',
+  },
+  confeti: {
+    root: 'group flex h-full flex-col overflow-hidden rounded-[1.8rem] bg-white shadow-[0_8px_0_var(--color-brand-200)] ring-2 ring-brand-200',
+    media: 'relative aspect-square overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105',
+    badge: 'absolute left-3 top-3 -rotate-6 rounded-full bg-[#ffd23f] px-3 py-1 text-[11px] font-bold text-brand-800',
+    body: 'flex flex-1 flex-col items-center gap-0.5 p-3.5 text-center',
+    name: 'font-display text-lg leading-tight text-brand-800 line-clamp-2',
+    age: 'text-xs text-stone-500',
+    price: 'mt-auto mt-1 rounded-full bg-[#ff4d8d] px-3 py-1 font-display text-base text-white tabular-nums',
+  },
+  tablero: {
+    root: 'group flex h-full flex-col overflow-hidden rounded border-2 border-brand-800 bg-white',
+    media: 'relative aspect-square overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105',
+    badge: 'absolute left-2 top-2 rounded-sm bg-[#111827] px-2 py-0.5 font-display text-[11px] uppercase tracking-widest text-[#fbbf24]',
+    body: 'flex flex-1 flex-col gap-0.5 border-t-2 border-brand-800 p-3',
+    name: 'font-display text-lg font-medium uppercase leading-tight text-brand-800 line-clamp-2',
+    age: 'text-[11px] text-slate-500',
+    price: 'mt-auto pt-1.5 self-start rounded-sm bg-[#111827] px-2 py-0.5 font-display text-base text-[#fbbf24] tabular-nums',
+  },
+  negativo: {
+    root: 'group flex h-full flex-col border-[3px] border-black bg-white transition-colors duration-200 hover:bg-black',
+    media: 'relative aspect-square overflow-hidden border-b-[3px] border-black bg-brand-200',
+    img: 'negativo-shot h-full w-full object-cover',
+    badge: 'absolute left-0 top-0 bg-black px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white',
+    body: 'flex flex-1 flex-col gap-0.5 p-3',
+    name: 'text-[15px] font-bold uppercase leading-snug text-black transition-colors duration-200 group-hover:text-white line-clamp-2',
+    age: 'text-[11px] text-neutral-500 transition-colors duration-200 group-hover:text-neutral-300',
+    price: 'mt-auto pt-1.5 font-display text-lg text-black transition-colors duration-200 group-hover:text-white tabular-nums',
+  },
+  historieta: {
+    root: 'group flex h-full flex-col border-4 border-[#151515] bg-white shadow-[6px_6px_0_#151515] transition-transform duration-200 ease-out hover:-translate-x-0.5 hover:-translate-y-1 hover:-rotate-1',
+    media: 'relative aspect-square overflow-hidden border-b-4 border-[#151515] bg-brand-100',
+    img: 'h-full w-full object-cover',
+    badge: 'absolute left-2 top-2 -rotate-3 border-2 border-[#151515] bg-[#ffe066] px-2 py-0.5 font-display text-sm tracking-wide text-[#151515]',
+    body: 'flex flex-1 flex-col gap-0.5 p-3',
+    name: 'text-[15px] font-black leading-snug text-[#151515] line-clamp-2',
+    age: 'text-[11px] font-bold text-stone-500',
+    price: 'mt-auto pt-1.5 self-start -rotate-2 border-2 border-[#151515] bg-brand-500 px-2 font-display text-xl tracking-wide text-white tabular-nums',
+  },
+  fragmento: {
+    root: 'group flex h-full flex-col bg-white [clip-path:polygon(0_0,calc(100%-1.4rem)_0,100%_1.4rem,100%_100%,1.4rem_100%,0_calc(100%-1.4rem))]',
+    media: 'relative aspect-[4/5] overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105',
+    badge: 'absolute left-0 top-3 bg-brand-800 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white',
+    body: 'flex flex-1 flex-col gap-0.5 p-3 pb-5',
+    name: 'text-[15px] font-bold leading-snug text-brand-800 line-clamp-2',
+    age: 'text-[11px] text-slate-500',
+    price: 'mt-auto pt-1.5 text-base font-extrabold text-brand-600 tabular-nums',
+  },
+  soga: {
+    root: 'group flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-[0_18px_24px_-18px_rgba(29,63,102,.7)] ring-1 ring-brand-200',
+    media: 'relative aspect-square overflow-hidden bg-brand-100',
+    img: 'h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105',
+    badge: 'absolute left-2.5 top-2.5 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold text-brand-700',
+    body: 'flex flex-1 flex-col gap-0.5 p-3.5 text-center',
+    name: 'font-display text-lg leading-tight text-brand-800 line-clamp-2',
+    age: 'text-xs text-stone-500',
+    price: 'mt-auto pt-1 text-base font-bold text-brand-600 tabular-nums',
+  },
+  eco: {
+    root: 'group flex h-full flex-col border-[3px] border-brand-800 bg-white',
+    media: 'relative aspect-square overflow-hidden border-b-[3px] border-brand-800 bg-brand-100',
+    img: 'h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105',
+    badge: 'absolute left-0 top-2 bg-[#ff5fa2] px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white',
+    body: 'flex flex-1 flex-col gap-0.5 p-3',
+    name: 'font-display text-base leading-tight text-brand-800 line-clamp-2',
+    age: 'text-[11px] text-stone-500',
+    price: 'mt-auto pt-1.5 text-base font-bold text-brand-600 tabular-nums',
+  },
+  radar: {
+    root: 'group flex h-full flex-col overflow-hidden rounded-sm bg-brand-100 ring-1 ring-brand-300 transition-shadow duration-200 hover:ring-brand-500 hover:shadow-[0_0_30px_-10px_#39ff88]',
+    media: 'relative aspect-square overflow-hidden bg-brand-200',
+    img: 'h-full w-full object-cover',
+    badge: 'absolute left-2 top-2 rounded-sm bg-black/60 px-2 py-0.5 font-display text-[10px] uppercase tracking-widest text-brand-500',
+    body: 'flex flex-1 flex-col gap-0.5 p-3',
+    name: 'text-[15px] font-semibold leading-snug text-white line-clamp-2',
+    age: 'font-display text-[11px] text-[#8fb8a3]',
+    price: 'mt-auto pt-1.5 font-display text-lg text-brand-500 tabular-nums',
   },
 };
 

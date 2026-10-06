@@ -1,0 +1,205 @@
+@if (vm(); as v) {
+  <!-- ===== Apertura: la foto se arma con cuatro pedazos que llegan volando ===== -->
+  <section class="frag-hero relative">
+    <div class="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pb-12 pt-10 sm:px-8 lg:grid-cols-2 lg:pt-14">
+      <div class="min-w-0">
+        <p appReveal class="frag-kicker">Pieza por pieza</p>
+        <h1 appReveal [delay]="90" class="frag-title mt-3 [overflow-wrap:anywhere] [text-wrap:balance] ">
+          {{ v.storeName() }}
+        </h1>
+        <p appReveal [delay]="180" class="frag-lead mt-5 max-w-md text-base leading-relaxed">{{ compraLine() }}</p>
+        <div appReveal [delay]="260" class="frag-actions mt-7 flex flex-wrap items-center gap-4">
+          <button type="button" (click)="v.scrollToCatalog()" class="frag-btn"><span>Ver catálogo</span></button>
+          <span class="frag-stat text-sm tabular-nums">
+            {{ v.filteredProducts().length }} prendas · {{ v.availableSizes().length }} talles
+          </span>
+        </div>
+      </div>
+      <div class="min-w-0">
+        <div appReveal variant="slats" [delay]="150">
+          @if (fotoPrincipal(); as foto) {
+          <div class="frag-shot frag-hero-shot">
+            @for (n of pedazos; track n) {
+              <img [src]="foto | cldImg: 1200" [alt]="n === 0 ? v.storeName() : ''" [attr.aria-hidden]="n ? true : null" class="frag-layer" [style.--i]="n" />
+            }
+          </div>
+        } @else {
+          <div class="frag-shot frag-hero-shot grid place-items-center">
+            <img [src]="v.logoSrc() | cldImg: 400" [alt]="v.storeName()" class="h-36 w-36 rounded-full object-cover" />
+          </div>
+        }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Banner de promos: la promo entra partida en dos y se une. La barrita (`.promo-timer`) marca el
+       tiempo y pide la siguiente; `is-b` alterna en cada cambio y con eso se
+       vuelve a disparar la animación de entrada (ver `promoPar`). ===== -->
+  @if (promoActual(); as promo) {
+    <section class="frag-banner" aria-label="Promos">
+      <div class="frag-banner-in mx-auto max-w-6xl px-5 sm:px-8">
+        <h2 class="frag-banner-tag">Promos <span class="tabular-nums">{{ promoIdx() + 1 }}/{{ v.promos().length }}</span></h2>
+        <div class="frag-banner-slide" [class.is-b]="promoPar()" aria-live="polite">
+          <p class="frag-banner-text">{{ promo.text }}</p>
+          @if (promo.detail) {
+            <p class="frag-banner-detail">{{ promo.detail }}</p>
+          }
+          @if (promo.endsLabel) {
+            <p class="frag-banner-ends">{{ promo.endsLabel }}</p>
+          }
+        </div>
+        <div class="frag-banner-foot mt-5 flex flex-wrap items-center gap-4">
+          <a routerLink="/promos" class="frag-btn frag-btn-sm"><span>Ver prendas en promo</span></a>
+          @if (v.promos().length > 1) {
+            <button type="button" (click)="promoSiguiente()" aria-label="Promo siguiente" class="frag-next">→</button>
+            <span class="promo-timer" aria-hidden="true">
+              <span [class.is-b]="promoPar()" (animationend)="promoSiguiente()"></span>
+            </span>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ===== Las fotos del carrusel (administrables desde el panel). ===== -->
+  @if (v.heroSlides().length > 1) {
+    <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-8">
+      <div appReveal variant="zoom" class="frag-media  relative aspect-[4/3] w-full overflow-hidden sm:aspect-[21/8]">
+        <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+      </div>
+    </section>
+  }
+
+  <!-- ===== Categorías reales, con la foto de una prenda de cada una. ===== -->
+  @if (categorias().length) {
+    <section class="frag-cats mx-auto max-w-6xl px-5 py-10 sm:px-8">
+      <h2 class="frag-h2">Elegí por categoría</h2>
+      <div class="mt-6 grid grid-cols-2 gap-5 lg:grid-cols-4">
+        @for (opt of categorias(); track opt.id; let i = $index) {
+          @let foto = fotoDeCategoria()[opt.id];
+          @let total = totalDeCategoria()[opt.id];
+          <button appReveal variant="slats" [delay]="i * 110" type="button" (click)="elegirCategoria(opt.id)" class="frag-cat group">
+            <span class="frag-cat-photo" >
+              @if (foto) {
+                @for (n of pedazos; track n) {
+                  <img [src]="foto | cldImg: 500" alt="" loading="lazy" class="frag-layer" [style.--i]="n" />
+                }
+              }
+            </span>
+            <span class="frag-cat-label">{{ opt.label }}</span>
+            @if (total) {
+              <span class="frag-cat-count">{{ total }} {{ total === 1 ? 'prenda' : 'prendas' }}</span>
+            }
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== Lo más vendido: sólo sin filtros puestos. ===== -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section id="mas-vendido" class="frag-band scroll-mt-24 py-10">
+      <div class="mx-auto max-w-6xl px-5 sm:px-8">
+        <h2 class="frag-h2">Lo más vendido</h2>
+        <div class="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto px-1 pb-4 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          @for (p of v.bestSellers(); track p.id; let i = $index) {
+            <div appReveal variant="zoom" [delay]="i * 60" class="frag-item w-52 shrink-0 snap-start sm:w-60">
+              <app-product-card [product]="p" variant="fragmento" />
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ===== Catálogo ===== -->
+  <section id="catalogo" class="scroll-mt-24">
+    <div class="mx-auto max-w-6xl px-5 pb-16 pt-12 sm:px-8">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <h2 class="frag-h2">El catálogo</h2>
+        <p class="frag-stat text-sm tabular-nums">
+          {{ v.filteredProducts().length }} {{ v.filteredProducts().length === 1 ? 'prenda' : 'prendas' }}
+        </p>
+      </div>
+
+      <!-- Filtros: facetas. -->
+      <div class="mt-6 flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          [ngModel]="v.searchTerm()"
+          (ngModelChange)="v.searchTerm.set($event)"
+          placeholder="Buscar producto..."
+          aria-label="Buscar producto"
+          class="frag-field min-w-[10rem] flex-1"
+        />
+        <select [ngModel]="v.selectedSize()" (ngModelChange)="v.selectedSize.set($event)" aria-label="Filtrar por talle" class="frag-field">
+          <option value="todos">Talle: todos</option>
+          @for (size of v.availableSizes(); track size) {
+            <option [value]="size">Talle {{ size }}</option>
+          }
+        </select>
+        @for (group of v.selectGroups(); track group.id) {
+          <select [ngModel]="v.paramValue(group.id)" (ngModelChange)="v.setParam(group.id, $event)" [attr.aria-label]="group.name" class="frag-field">
+            <option value="">{{ group.name }}: todas</option>
+            @for (option of group.options; track option.id) {
+              <option [value]="option.id">{{ option.label }}</option>
+            }
+          </select>
+        }
+        <input type="number" inputmode="numeric" min="0" placeholder="$ mín" aria-label="Precio mínimo" [ngModel]="v.minPrice()" (ngModelChange)="v.setMinPrice($event)" class="frag-field w-24" />
+        <input type="number" inputmode="numeric" min="0" placeholder="$ máx" aria-label="Precio máximo" [ngModel]="v.maxPrice()" (ngModelChange)="v.setMaxPrice($event)" class="frag-field w-24" />
+        <select [ngModel]="v.sortBy()" (ngModelChange)="v.sortBy.set($event)" aria-label="Ordenar" class="frag-field">
+          <option value="novedades">Orden: novedades</option>
+          <option value="precio-asc">Precio: menor a mayor</option>
+          <option value="precio-desc">Precio: mayor a menor</option>
+        </select>
+      </div>
+
+      @if (v.publicoGroup(); as publico) {
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <button type="button" (click)="v.setParam(publico.id, '')" class="frag-chip" [class.is-on]="!v.paramValue(publico.id)">Todas</button>
+          @for (option of publico.options; track option.id) {
+            <button type="button" (click)="v.setParam(publico.id, option.id)" class="frag-chip" [class.is-on]="v.paramValue(publico.id) === option.id">
+              {{ option.label }}
+            </button>
+          }
+          @if (v.hasActiveFilters()) {
+            <button type="button" (click)="v.clearFilters()" class="frag-link ml-auto">Limpiar filtros ✕</button>
+          }
+        </div>
+      }
+
+      <div class="mt-8">
+        @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+          <app-skeleton variant="card" [count]="8" />
+        } @else if (v.catalogStatus() === 'error') {
+          <div class="py-20 text-center">
+            <p class="frag-h2">No se pudo cargar el catálogo.</p>
+            <button type="button" (click)="v.reloadCatalog()" class="frag-link mt-3">Reintentar</button>
+          </div>
+        } @else if (v.filteredProducts().length) {
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+            @for (product of v.visibleProducts(); track product.id; let i = $index) {
+              <div appReveal variant="zoom" [delay]="(i % 4) * 70">
+                <app-product-card [product]="product" variant="fragmento" />
+              </div>
+            }
+          </div>
+
+          @if (v.hasMore()) {
+            <div class="mt-12 text-center">
+              <button type="button" (click)="v.showMore()" class="frag-btn"><span>Ver más prendas</span></button>
+            </div>
+          }
+        } @else {
+          <div class="py-20 text-center">
+            <p class="frag-h2">Sin resultados</p>
+            <p class="mt-1 text-sm opacity-70">No encontramos prendas con esos filtros.</p>
+            <button type="button" (click)="v.clearFilters()" class="frag-link mt-3">Ver todo el catálogo</button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}

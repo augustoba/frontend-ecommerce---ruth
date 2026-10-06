@@ -39,6 +39,21 @@ import { TemplateRuletaComponent } from '../templates/template-ruleta.component'
 import { TemplateCuboComponent } from '../templates/template-cubo.component';
 import { TemplateEspejoComponent } from '../templates/template-espejo.component';
 import { TemplateTeletipoComponent } from '../templates/template-teletipo.component';
+import { TemplateGlitchComponent } from '../templates/template-glitch.component';
+import { TemplateVorticeComponent } from '../templates/template-vortice.component';
+import { TemplateHologramaComponent } from '../templates/template-holograma.component';
+import { TemplatePixelComponent } from '../templates/template-pixel.component';
+import { TemplateTintaComponent } from '../templates/template-tinta.component';
+import { TemplateTajoComponent } from '../templates/template-tajo.component';
+import { TemplateCifradoComponent } from '../templates/template-cifrado.component';
+import { TemplateConfetiComponent } from '../templates/template-confeti.component';
+import { TemplateTableroComponent } from '../templates/template-tablero.component';
+import { TemplateNegativoComponent } from '../templates/template-negativo.component';
+import { TemplateHistorietaComponent } from '../templates/template-historieta.component';
+import { TemplateFragmentoComponent } from '../templates/template-fragmento.component';
+import { TemplateSogaComponent } from '../templates/template-soga.component';
+import { TemplateEcoComponent } from '../templates/template-eco.component';
+import { TemplateRadarComponent } from '../templates/template-radar.component';
 import { ProductService } from '../../../core/services/product.service';
 import { ParamService } from '../../../core/services/param.service';
 import { SizeScaleService } from '../../../core/services/size-scale.service';
@@ -100,6 +115,21 @@ import { CatalogView, PromoLine, SortOrder } from '../catalog-view';
     TemplateCuboComponent,
     TemplateEspejoComponent,
     TemplateTeletipoComponent,
+    TemplateGlitchComponent,
+    TemplateVorticeComponent,
+    TemplateHologramaComponent,
+    TemplatePixelComponent,
+    TemplateTintaComponent,
+    TemplateTajoComponent,
+    TemplateCifradoComponent,
+    TemplateConfetiComponent,
+    TemplateTableroComponent,
+    TemplateNegativoComponent,
+    TemplateHistorietaComponent,
+    TemplateFragmentoComponent,
+    TemplateSogaComponent,
+    TemplateEcoComponent,
+    TemplateRadarComponent,
   ],
   templateUrl: './catalog-page.component.html',
   styleUrl: './catalog-page.component.css',

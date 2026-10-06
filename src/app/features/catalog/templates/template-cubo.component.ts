@@ -22,8 +22,9 @@ type Cara =
  * `cara` no se reinicia: cuenta los giros, y el cubo rota siempre en el mismo
  * sentido (`rotateY(cara × -90deg)`), sin rebobinar. El tiempo entre giros lo
  * marca la animación CSS de la barrita (`animationend` pide el giro siguiente),
- * como en Historias: no hay `setInterval`. La barrita se recrea en cada giro
- * (`@for … track cara()`), que es lo que reinicia la animación. Se pausa con el
+ * como en Historias: no hay `setInterval`. La barrita alterna la clase `is-b` en
+ * cada giro (el CSS tiene la animación con dos nombres), que es lo que la
+ * reinicia. Se pausa con el
  * puntero encima, y con `prefers-reduced-motion` el cubo no gira solo.
  */
 @Component({

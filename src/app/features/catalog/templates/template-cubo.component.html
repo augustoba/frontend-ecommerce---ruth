@@ -55,11 +55,9 @@
       @if (gira()) {
         <div class="mt-8 flex items-center justify-center gap-4">
           <button type="button" (click)="girar(-1)" aria-label="Cara anterior" class="cubo-round">←</button>
-          <!-- La barrita se recrea en cada giro: eso reinicia su animación. -->
+          <!-- `is-b` alterna en cada giro: eso reinicia la animación de la barrita. -->
           <span class="cubo-timer" aria-hidden="true">
-            @for (k of [cara()]; track k) {
-              <span (animationend)="girar(1)"></span>
-            }
+            <span [class.is-b]="cara() % 2 !== 0" (animationend)="girar(1)"></span>
           </span>
           <button type="button" (click)="girar(1)" aria-label="Cara siguiente" class="cubo-round">→</button>
         </div>

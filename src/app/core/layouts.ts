@@ -380,6 +380,141 @@ export const LAYOUTS: LayoutOption[] = [
     fontsHref:
       'https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap',
   },
+  {
+    id: 'glitch',
+    label: 'Glitch',
+    blurb:
+      'La señal está rota: títulos con eco rojo y cian que saltan, fotos en tres capas que se desfasan y botones que tiemblan. Oscuro sólo en la home.',
+    previewColor: '#ff2a6d',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap',
+  },
+  {
+    id: 'vortice',
+    label: 'Vórtice',
+    blurb:
+      'Todo gira: un sello de texto que da vueltas alrededor de la foto, categorías que rotan con el scroll, botones con borde que gira y tarjetas que se tuercen.',
+    previewColor: '#7c4dff',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Outfit:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'holograma',
+    label: 'Holograma',
+    blurb:
+      'Tornasol: las tarjetas y las fotos se inclinan con el puntero y una lámina iridiscente cambia de color según por dónde pasa; los botones llevan un degradé que corre.',
+    previewColor: '#7868c2',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Krona+One&family=Outfit:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'pixel',
+    label: 'Pixel',
+    blurb:
+      'Un videojuego de 8 bits: las fotos se cargan renglón por renglón, la cinta de promos avanza a los tirones, los botones bajan un escalón y todo se mueve a saltos.',
+    previewColor: '#1f6fe0',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'tinta',
+    label: 'Tinta',
+    blurb:
+      'Manchas de tinta: la foto aparece desde una gota que crece, los botones se llenan desde donde entra el puntero y las categorías se tiñen de color al tocarlas.',
+    previewColor: '#d43d24',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap',
+  },
+  {
+    id: 'tajo',
+    label: 'Tajo',
+    blurb:
+      'Todo está cortado: la foto del hero son cinco tiras que llegan desfasadas y encajan, las categorías se vuelven a cortar al señalarlas y los botones se llenan en diagonal.',
+    previewColor: '#ff5a1f',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Narrow:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'cifrado',
+    label: 'Cifrado',
+    blurb:
+      'Los textos se descifran: el nombre, los títulos, las promos y los botones arrancan como letras al azar y se acomodan; las fotos se enfocan al mirarlas.',
+    previewColor: '#6b8a1f',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Red+Hat+Mono:wght@400;500;700&family=Red+Hat+Display:wght@400;500;700;800&display=swap',
+  },
+  {
+    id: 'confeti',
+    label: 'Confeti',
+    blurb:
+      'Una fiesta: cada botón y cada categoría que tocás suelta una ráfaga de papelitos, caen papelitos en el hero, hay guirnalda de banderines y todo rebota.',
+    previewColor: '#ff4d8d',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Lilita+One&family=Mali:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'tablero',
+    label: 'Tablero',
+    blurb:
+      'Un cartel de aeropuerto: las promos se arman en un tablero de paletas que giran letra por letra, y los botones y las etiquetas dan su vuelta al señalarlos.',
+    previewColor: '#c97a0a',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap',
+  },
+  {
+    id: 'negativo',
+    label: 'Negativo',
+    blurb:
+      'Blanco y negro que se da vuelta: un círculo que sigue al puntero invierte lo que tiene debajo, las fotos pasan a negativo al señalarlas y los botones intercambian colores.',
+    previewColor: '#000000',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Bowlby+One&family=Lexend+Deca:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'historieta',
+    label: 'Historieta',
+    blurb:
+      'Una página de cómic: viñetas torcidas con trama de puntos, la línea de compra en un globo, promos con estallidos que laten y botones con un POW por detrás.',
+    previewColor: '#e8262d',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap',
+  },
+  {
+    id: 'fragmento',
+    label: 'Fragmento',
+    blurb:
+      'Todo se arma con pedazos: cada foto son cuatro triángulos que llegan volando y encajan, se rajan al señalarlas, y los botones se parten en dos por la diagonal.',
+    previewColor: '#4470cf',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Michroma&family=Mulish:wght@400;500;600;700;800&display=swap',
+  },
+  {
+    id: 'soga',
+    label: 'Soga',
+    blurb:
+      'Ropa tendida: el cartel con el nombre cuelga de dos hilos, las promos y las categorías son etiquetas con broche que se hamacan, y las tarjetas se mecen al señalarlas.',
+    previewColor: '#3a8de0',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Itim&family=Sen:wght@400;500;600;700&display=swap',
+  },
+  {
+    id: 'eco',
+    label: 'Eco',
+    blurb:
+      'Todo deja copias: el nombre con tres contornos que se abren en diagonal, títulos con eco, marcos repetidos detrás de fotos y botones, y una cinta de letras huecas.',
+    previewColor: '#7a3cf0',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Titan+One&family=DM+Sans:wght@400;500;700&display=swap',
+  },
+  {
+    id: 'radar',
+    label: 'Radar',
+    blurb:
+      'Una pantalla de radar: un haz gira y las categorías son señales que laten y se tocan para filtrar; los botones emiten ondas y un haz barre las fotos. Oscuro sólo en la home.',
+    previewColor: '#1f8f66',
+    fontsHref:
+      'https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@400;500;600;700&display=swap',
+  },
 ];
 
 export function isKnownLayout(id: string | null | undefined): boolean {

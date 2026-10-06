@@ -1,0 +1,201 @@
+@if (vm(); as v) {
+  <!-- ===== Apertura: la foto en cinco tiras que llegan desfasadas y encajan ===== -->
+  <section class="tajo-hero relative">
+    <div class="relative mx-auto max-w-6xl px-5 pb-10 pt-10 sm:px-8 lg:pt-14">
+      <div class="min-w-0">
+        <p appReveal class="tajo-kicker">Cortado a medida</p>
+        <h1 appReveal [delay]="90" class="tajo-title mt-3 [overflow-wrap:anywhere] [text-wrap:balance] ">
+          {{ v.storeName() }}
+        </h1>
+        <p appReveal [delay]="180" class="tajo-lead mt-5 max-w-md text-base leading-relaxed">{{ compraLine() }}</p>
+        <div appReveal [delay]="260" class="tajo-actions mt-7 flex flex-wrap items-center gap-4">
+          <button type="button" (click)="v.scrollToCatalog()" class="tajo-btn"><span>Ver catálogo</span></button>
+          <span class="tajo-stat text-sm tabular-nums">
+            {{ v.filteredProducts().length }} prendas · {{ v.availableSizes().length }} talles
+          </span>
+        </div>
+      </div>
+      <div class="mt-10 min-w-0">
+        <div appReveal variant="slats">
+          @if (fotoPrincipal(); as foto) {
+          <div class="tajo-shot tajo-hero-shot">
+            @for (n of tiras; track n) {
+              <img [src]="foto | cldImg: 1600" [alt]="n === 0 ? v.storeName() : ''" [attr.aria-hidden]="n ? true : null" class="tajo-layer" [style.--i]="n" />
+            }
+          </div>
+        } @else {
+          <div class="tajo-shot tajo-hero-shot grid place-items-center">
+            <img [src]="v.logoSrc() | cldImg: 400" [alt]="v.storeName()" class="h-36 w-36 rounded-full object-cover" />
+          </div>
+        }
+        </div>
+      </div>
+    </div>
+    <div class="tajo-edge" aria-hidden="true"></div>
+  </section>
+
+  <!-- ===== Banner de promos: las promos reales, todas a la vista. ===== -->
+  @if (v.promos().length) {
+    <section class="tajo-promos mx-auto max-w-6xl px-5 py-10 sm:px-8">
+      <div class="flex items-end justify-between gap-4">
+        <h2 class="tajo-h2">Promos</h2>
+        <a routerLink="/promos" class="tajo-link">Ver prendas en promo</a>
+      </div>
+      <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        @for (promo of v.promos(); track promo.id; let i = $index) {
+          <article appReveal [variant]="i % 2 ? 'right' : 'left'" [delay]="i * 70" class="tajo-promo">
+            <span class="tajo-num" aria-hidden="true">{{ promo.percent ? promo.percent + '%' : '//' }}</span>
+            <p class="tajo-promo-text">{{ promo.text }}</p>
+            @if (promo.detail) {
+              <p class="tajo-promo-detail">{{ promo.detail }}</p>
+            }
+            @if (promo.endsLabel) {
+              <p class="tajo-promo-ends">{{ promo.endsLabel }}</p>
+            }
+          </article>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== Las fotos del carrusel (administrables desde el panel). ===== -->
+  @if (v.heroSlides().length > 1) {
+    <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-8">
+      <div appReveal variant="zoom" class="tajo-media  relative aspect-[4/3] w-full overflow-hidden sm:aspect-[21/8]">
+        <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+      </div>
+    </section>
+  }
+
+  <!-- ===== Categorías reales, con la foto de una prenda de cada una. ===== -->
+  @if (categorias().length) {
+    <section class="tajo-cats mx-auto max-w-6xl px-5 py-10 sm:px-8">
+      <h2 class="tajo-h2">Elegí por categoría</h2>
+      <div class="mt-6 grid grid-cols-2 gap-5 lg:grid-cols-4">
+        @for (opt of categorias(); track opt.id; let i = $index) {
+          @let foto = fotoDeCategoria()[opt.id];
+          @let total = totalDeCategoria()[opt.id];
+          <button appReveal [delay]="i * 80" type="button" (click)="elegirCategoria(opt.id)" class="tajo-cat group">
+            <span class="tajo-cat-photo" >
+              @if (foto) {
+                @for (n of cortes; track n) {
+                  <img [src]="foto | cldImg: 500" alt="" loading="lazy" class="tajo-layer" [style.--i]="n" />
+                }
+              }
+            </span>
+            <span class="tajo-cat-label">{{ opt.label }}</span>
+            @if (total) {
+              <span class="tajo-cat-count">{{ total }} {{ total === 1 ? 'prenda' : 'prendas' }}</span>
+            }
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== Lo más vendido: sólo sin filtros puestos. ===== -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section id="mas-vendido" class="tajo-band scroll-mt-24 py-10">
+      <div class="mx-auto max-w-6xl px-5 sm:px-8">
+        <h2 class="tajo-h2">Lo más vendido</h2>
+        <div class="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto px-1 pb-4 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          @for (p of v.bestSellers(); track p.id; let i = $index) {
+            <div appReveal [delay]="i * 60" class="tajo-item w-52 shrink-0 snap-start sm:w-60">
+              <app-product-card [product]="p" variant="tajo" />
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ===== Catálogo ===== -->
+  <section id="catalogo" class="scroll-mt-24">
+    <div class="mx-auto max-w-6xl px-5 pb-16 pt-12 sm:px-8">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <h2 class="tajo-h2">El catálogo</h2>
+        <p class="tajo-stat text-sm tabular-nums">
+          {{ v.filteredProducts().length }} {{ v.filteredProducts().length === 1 ? 'prenda' : 'prendas' }}
+        </p>
+      </div>
+
+      <!-- Filtros: etiquetas con la punta cortada. -->
+      <div class="mt-6 flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          [ngModel]="v.searchTerm()"
+          (ngModelChange)="v.searchTerm.set($event)"
+          placeholder="Buscar producto..."
+          aria-label="Buscar producto"
+          class="tajo-field min-w-[10rem] flex-1"
+        />
+        <select [ngModel]="v.selectedSize()" (ngModelChange)="v.selectedSize.set($event)" aria-label="Filtrar por talle" class="tajo-field">
+          <option value="todos">Talle: todos</option>
+          @for (size of v.availableSizes(); track size) {
+            <option [value]="size">Talle {{ size }}</option>
+          }
+        </select>
+        @for (group of v.selectGroups(); track group.id) {
+          <select [ngModel]="v.paramValue(group.id)" (ngModelChange)="v.setParam(group.id, $event)" [attr.aria-label]="group.name" class="tajo-field">
+            <option value="">{{ group.name }}: todas</option>
+            @for (option of group.options; track option.id) {
+              <option [value]="option.id">{{ option.label }}</option>
+            }
+          </select>
+        }
+        <input type="number" inputmode="numeric" min="0" placeholder="$ mín" aria-label="Precio mínimo" [ngModel]="v.minPrice()" (ngModelChange)="v.setMinPrice($event)" class="tajo-field w-24" />
+        <input type="number" inputmode="numeric" min="0" placeholder="$ máx" aria-label="Precio máximo" [ngModel]="v.maxPrice()" (ngModelChange)="v.setMaxPrice($event)" class="tajo-field w-24" />
+        <select [ngModel]="v.sortBy()" (ngModelChange)="v.sortBy.set($event)" aria-label="Ordenar" class="tajo-field">
+          <option value="novedades">Orden: novedades</option>
+          <option value="precio-asc">Precio: menor a mayor</option>
+          <option value="precio-desc">Precio: mayor a menor</option>
+        </select>
+      </div>
+
+      @if (v.publicoGroup(); as publico) {
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <button type="button" (click)="v.setParam(publico.id, '')" class="tajo-chip" [class.is-on]="!v.paramValue(publico.id)">Todas</button>
+          @for (option of publico.options; track option.id) {
+            <button type="button" (click)="v.setParam(publico.id, option.id)" class="tajo-chip" [class.is-on]="v.paramValue(publico.id) === option.id">
+              {{ option.label }}
+            </button>
+          }
+          @if (v.hasActiveFilters()) {
+            <button type="button" (click)="v.clearFilters()" class="tajo-link ml-auto">Limpiar filtros ✕</button>
+          }
+        </div>
+      }
+
+      <div class="mt-8">
+        @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+          <app-skeleton variant="card" [count]="8" />
+        } @else if (v.catalogStatus() === 'error') {
+          <div class="py-20 text-center">
+            <p class="tajo-h2">No se pudo cargar el catálogo.</p>
+            <button type="button" (click)="v.reloadCatalog()" class="tajo-link mt-3">Reintentar</button>
+          </div>
+        } @else if (v.filteredProducts().length) {
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+            @for (product of v.visibleProducts(); track product.id; let i = $index) {
+              <div appReveal [variant]="i % 2 ? 'right' : 'left'" [delay]="(i % 4) * 60">
+                <app-product-card [product]="product" variant="tajo" />
+              </div>
+            }
+          </div>
+
+          @if (v.hasMore()) {
+            <div class="mt-12 text-center">
+              <button type="button" (click)="v.showMore()" class="tajo-btn"><span>Ver más prendas</span></button>
+            </div>
+          }
+        } @else {
+          <div class="py-20 text-center">
+            <p class="tajo-h2">Sin resultados</p>
+            <p class="mt-1 text-sm opacity-70">No encontramos prendas con esos filtros.</p>
+            <button type="button" (click)="v.clearFilters()" class="tajo-link mt-3">Ver todo el catálogo</button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}

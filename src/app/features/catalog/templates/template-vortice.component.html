@@ -1,0 +1,183 @@
+@if (vm(); as v) {
+  <!-- ===== Apertura: un disco con la foto y un sello de texto que gira alrededor ===== -->
+  <section class="vortice-hero relative">
+    <div class="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pb-12 pt-10 sm:px-8 lg:grid-cols-2 lg:pt-14">
+      <div class="min-w-0">
+        <p appReveal class="vortice-kicker">Todo da vueltas</p>
+        <h1 appReveal [delay]="90" class="vortice-title mt-3 [overflow-wrap:anywhere] [text-wrap:balance] ">
+          {{ v.storeName() }}
+        </h1>
+        <p appReveal [delay]="180" class="vortice-lead mt-5 max-w-md text-base leading-relaxed">{{ compraLine() }}</p>
+        <div appReveal [delay]="260" class="vortice-actions mt-7 flex flex-wrap items-center gap-4">
+          <button type="button" (click)="v.scrollToCatalog()" class="vortice-btn"><span>Ver catálogo</span></button>
+          <span class="vortice-stat text-sm tabular-nums">
+            {{ v.filteredProducts().length }} prendas · {{ v.availableSizes().length }} talles
+          </span>
+        </div>
+      </div>
+      <div class="min-w-0">
+        <div class="vortice-disc">
+          <div class="vortice-media vortice-disc-in">
+          @if (v.heroSlides().length) {
+            <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+          } @else {
+            <div class="absolute inset-0 grid place-items-center">
+              <img [src]="v.logoSrc() | cldImg: 400" [alt]="v.storeName()" class="h-36 w-36 rounded-full object-cover" />
+            </div>
+          }
+        </div>
+          <svg class="vortice-ring" viewBox="0 0 200 200" aria-hidden="true">
+            <defs><path id="vortice-circle" d="M100,100 m-90,0 a90,90 0 1,1 180,0 a90,90 0 1,1 -180,0" /></defs>
+            <text><textPath href="#vortice-circle">{{ v.storeName() }} ✺ ropa para chicos ✺ {{ v.storeName() }} ✺ ropa para chicos ✺ </textPath></text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Banner de promos: una cinta que corre. Toda la cinta es el link a
+       /promos; el contenido va dos veces (la segunda, `aria-hidden`). ===== -->
+  @if (v.promos().length) {
+    <a routerLink="/promos" class="vortice-strip">
+      <span class="vortice-strip-tag">Promos</span>
+      <span class="vortice-strip-run">
+        <span class="anim-marquee vortice-strip-track">
+          @for (text of promoLoop(); track $index; let i = $index) {
+            <span class="vortice-strip-item" [attr.aria-hidden]="i >= v.promos().length ? true : null">{{ text }} <i aria-hidden="true">✺</i></span>
+          }
+        </span>
+      </span>
+      <span class="vortice-strip-go">Ver prendas en promo →</span>
+    </a>
+  }
+
+  <!-- ===== Categorías reales, con la foto de una prenda de cada una. ===== -->
+  @if (categorias().length) {
+    <section class="vortice-cats mx-auto max-w-6xl px-5 py-10 sm:px-8">
+      <h2 class="vortice-h2">Elegí por categoría</h2>
+      <div class="mt-6 grid grid-cols-2 gap-5 lg:grid-cols-4">
+        @for (opt of categorias(); track opt.id; let i = $index) {
+          @let foto = fotoDeCategoria()[opt.id];
+          @let total = totalDeCategoria()[opt.id];
+          <button appReveal variant="zoom" [delay]="i * 80" type="button" (click)="elegirCategoria(opt.id)" class="vortice-cat group">
+            <span class="vortice-cat-photo" appScrollScene="view">
+              @if (foto) {
+                <img [src]="foto | cldImg: 500" alt="" loading="lazy" class="vortice-cat-img" />
+              }
+            </span>
+            <span class="vortice-cat-label">{{ opt.label }}</span>
+            @if (total) {
+              <span class="vortice-cat-count">{{ total }} {{ total === 1 ? 'prenda' : 'prendas' }}</span>
+            }
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== Lo más vendido: sólo sin filtros puestos. ===== -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section id="mas-vendido" class="vortice-band scroll-mt-24 py-10">
+      <div class="mx-auto max-w-6xl px-5 sm:px-8">
+        <h2 class="vortice-h2">Lo más vendido</h2>
+        <div class="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto px-1 pb-4 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          @for (p of v.bestSellers(); track p.id; let i = $index) {
+            <div appReveal variant="zoom" [delay]="i * 60" class="vortice-item w-52 shrink-0 snap-start sm:w-60">
+              <app-product-card [product]="p" variant="vortice" />
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ===== Catálogo ===== -->
+  <section id="catalogo" class="scroll-mt-24">
+    <div class="mx-auto max-w-6xl px-5 pb-16 pt-12 sm:px-8">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <h2 class="vortice-h2">El catálogo</h2>
+        <p class="vortice-stat text-sm tabular-nums">
+          {{ v.filteredProducts().length }} {{ v.filteredProducts().length === 1 ? 'prenda' : 'prendas' }}
+        </p>
+      </div>
+
+      <!-- Filtros: cápsulas con borde que gira al enfocarlas. -->
+      <div class="mt-6 flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          [ngModel]="v.searchTerm()"
+          (ngModelChange)="v.searchTerm.set($event)"
+          placeholder="Buscar producto..."
+          aria-label="Buscar producto"
+          class="vortice-field min-w-[10rem] flex-1"
+        />
+        <select [ngModel]="v.selectedSize()" (ngModelChange)="v.selectedSize.set($event)" aria-label="Filtrar por talle" class="vortice-field">
+          <option value="todos">Talle: todos</option>
+          @for (size of v.availableSizes(); track size) {
+            <option [value]="size">Talle {{ size }}</option>
+          }
+        </select>
+        @for (group of v.selectGroups(); track group.id) {
+          <select [ngModel]="v.paramValue(group.id)" (ngModelChange)="v.setParam(group.id, $event)" [attr.aria-label]="group.name" class="vortice-field">
+            <option value="">{{ group.name }}: todas</option>
+            @for (option of group.options; track option.id) {
+              <option [value]="option.id">{{ option.label }}</option>
+            }
+          </select>
+        }
+        <input type="number" inputmode="numeric" min="0" placeholder="$ mín" aria-label="Precio mínimo" [ngModel]="v.minPrice()" (ngModelChange)="v.setMinPrice($event)" class="vortice-field w-24" />
+        <input type="number" inputmode="numeric" min="0" placeholder="$ máx" aria-label="Precio máximo" [ngModel]="v.maxPrice()" (ngModelChange)="v.setMaxPrice($event)" class="vortice-field w-24" />
+        <select [ngModel]="v.sortBy()" (ngModelChange)="v.sortBy.set($event)" aria-label="Ordenar" class="vortice-field">
+          <option value="novedades">Orden: novedades</option>
+          <option value="precio-asc">Precio: menor a mayor</option>
+          <option value="precio-desc">Precio: mayor a menor</option>
+        </select>
+      </div>
+
+      @if (v.publicoGroup(); as publico) {
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <button type="button" (click)="v.setParam(publico.id, '')" class="vortice-chip" [class.is-on]="!v.paramValue(publico.id)">Todas</button>
+          @for (option of publico.options; track option.id) {
+            <button type="button" (click)="v.setParam(publico.id, option.id)" class="vortice-chip" [class.is-on]="v.paramValue(publico.id) === option.id">
+              {{ option.label }}
+            </button>
+          }
+          @if (v.hasActiveFilters()) {
+            <button type="button" (click)="v.clearFilters()" class="vortice-link ml-auto">Limpiar filtros ✕</button>
+          }
+        </div>
+      }
+
+      <div class="mt-8">
+        @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+          <app-skeleton variant="card" [count]="8" />
+        } @else if (v.catalogStatus() === 'error') {
+          <div class="py-20 text-center">
+            <p class="vortice-h2">No se pudo cargar el catálogo.</p>
+            <button type="button" (click)="v.reloadCatalog()" class="vortice-link mt-3">Reintentar</button>
+          </div>
+        } @else if (v.filteredProducts().length) {
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+            @for (product of v.visibleProducts(); track product.id; let i = $index) {
+              <div appReveal variant="zoom" [delay]="(i % 4) * 70">
+                <app-product-card [product]="product" variant="vortice" />
+              </div>
+            }
+          </div>
+
+          @if (v.hasMore()) {
+            <div class="mt-12 text-center">
+              <button type="button" (click)="v.showMore()" class="vortice-btn"><span>Ver más prendas</span></button>
+            </div>
+          }
+        } @else {
+          <div class="py-20 text-center">
+            <p class="vortice-h2">Sin resultados</p>
+            <p class="mt-1 text-sm opacity-70">No encontramos prendas con esos filtros.</p>
+            <button type="button" (click)="v.clearFilters()" class="vortice-link mt-3">Ver todo el catálogo</button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}

@@ -1,11 +1,10 @@
-import { Directive, computed, input } from '@angular/core';
-import { CatalogView } from '../catalog-view';
+import { Directive, computed, input, signal } from '@angular/core';
+import { CatalogView, PromoLine } from '../catalog-view';
 import { ParamOption } from '../../../core/models/param.model';
 import { Product, productHasParam } from '../../../core/models/product.model';
 
 /**
- * Base de los nueve diseños "de movimiento" (Pasarela, Baraja, Líquido,
- * Kinético, Órbita, Estela, Origami, Historias y Portal).
+ * Base de los diseños "de movimiento" (las tres tandas: de Pasarela a Radar).
  *
  * Sólo junta los helpers de presentación que los nueve repiten tal cual —la
  * línea de compra, las categorías reales con su foto y su conteo—. El markup
@@ -65,6 +64,45 @@ export abstract class MotionTemplateBase {
       titulo: v.sortBy() === 'novedades' ? 'Novedades' : 'Destacadas',
       items: v.visibleProducts().slice(0, 8),
     };
+  });
+
+  /** Una foto real para piezas grandes: la primera del carrusel o, si no hay, la de una prenda. */
+  readonly fotoPrincipal = computed<string | null>(() => {
+    const v = this.vm();
+    return v.heroSlides()[0]?.imageUrl ?? v.filteredProducts()[0]?.imageUrl ?? null;
+  });
+
+  // --- Banner de promos que rota ---
+  // Lo usan los diseños que muestran una promo por vez. `promoGiro` no se
+  // reinicia: cuenta los cambios y el índice sale con módulo, así sigue andando
+  // aunque cambie la cantidad de promos. El tiempo entre una y otra lo marca la
+  // animación CSS de `.promo-timer` (`animationend` llama a `promoSiguiente`):
+  // no hay `setInterval`, y con `prefers-reduced-motion` no avanza sola.
+  private readonly promoGiro = signal(0);
+
+  /**
+   * Si el giro actual es impar. La plantilla lo pone como clase `is-b` en la
+   * barrita y en la promo: el CSS tiene cada animación dos veces, con dos
+   * nombres (`x` y `x-b`), y cambiar de nombre es lo que la vuelve a disparar.
+   * Así no hace falta destruir y recrear el nodo en cada cambio.
+   */
+  readonly promoPar = computed(() => this.promoGiro() % 2 !== 0);
+
+  readonly promoIdx = computed(() => {
+    const n = this.vm().promos().length;
+    return n ? ((this.promoGiro() % n) + n) % n : 0;
+  });
+
+  readonly promoActual = computed<PromoLine | null>(() => this.vm().promos()[this.promoIdx()] ?? null);
+
+  protected promoSiguiente(): void {
+    this.promoGiro.update((g) => g + 1);
+  }
+
+  /** Los textos de las promos, dos veces: `.anim-marquee` corre exactamente 50%. */
+  readonly promoLoop = computed<string[]>(() => {
+    const textos = this.vm().promos().map((p) => p.text);
+    return [...textos, ...textos];
   });
 
   protected productsOf(optionId: string): Product[] {

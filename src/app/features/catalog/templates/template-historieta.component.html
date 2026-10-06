@@ -1,0 +1,189 @@
+@if (vm(); as v) {
+  <!-- ===== Apertura: una viñeta con la foto y la línea de compra en un globo de diálogo ===== -->
+  <section class="comic-hero relative">
+    <div class="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pb-12 pt-10 sm:px-8 lg:grid-cols-2 lg:pt-14">
+      <div class="min-w-0">
+        <p appReveal class="comic-kicker">¡Edición especial!</p>
+        <h1 appReveal variant="bounce" [delay]="90" class="comic-title mt-3 [overflow-wrap:anywhere] [text-wrap:balance] ">
+          {{ v.storeName() }}
+        </h1>
+        <p appReveal variant="bounce" [delay]="180" class="comic-bubble mt-6 max-w-md">{{ compraLine() }}</p>
+        <div appReveal [delay]="260" class="comic-actions mt-7 flex flex-wrap items-center gap-4">
+          <button type="button" (click)="v.scrollToCatalog()" class="comic-btn"><span>Ver catálogo</span></button>
+          <span class="comic-stat text-sm tabular-nums">
+            {{ v.filteredProducts().length }} prendas · {{ v.availableSizes().length }} talles
+          </span>
+        </div>
+      </div>
+      <div class="min-w-0">
+        <div appReveal variant="bounce" [delay]="160" class="comic-panel">
+          <div class="comic-media relative aspect-[4/5] w-full overflow-hidden sm:aspect-[5/4] lg:aspect-[4/5]">
+          @if (v.heroSlides().length) {
+            <app-hero-carousel [slides]="v.heroSlides()" class="absolute inset-0" />
+          } @else {
+            <div class="absolute inset-0 grid place-items-center">
+              <img [src]="v.logoSrc() | cldImg: 400" [alt]="v.storeName()" class="h-36 w-36 rounded-full object-cover" />
+            </div>
+          }
+        </div>
+          <span class="comic-dots" aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Banner de promos: las promos reales, todas a la vista. ===== -->
+  @if (v.promos().length) {
+    <section class="comic-promos mx-auto max-w-6xl px-5 py-10 sm:px-8">
+      <div class="flex items-end justify-between gap-4">
+        <h2 class="comic-h2">Promos</h2>
+        <a routerLink="/promos" class="comic-link">Ver prendas en promo</a>
+      </div>
+      <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        @for (promo of v.promos(); track promo.id; let i = $index) {
+          <article appReveal variant="bounce" [delay]="i * 90" class="comic-promo">
+            <span class="comic-burst" aria-hidden="true">{{ promo.percent ? promo.percent + '%' : '¡!' }}</span>
+            <p class="comic-promo-text">{{ promo.text }}</p>
+            @if (promo.detail) {
+              <p class="comic-promo-detail">{{ promo.detail }}</p>
+            }
+            @if (promo.endsLabel) {
+              <p class="comic-promo-ends">{{ promo.endsLabel }}</p>
+            }
+          </article>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== Categorías reales, con la foto de una prenda de cada una. ===== -->
+  @if (categorias().length) {
+    <section class="comic-cats mx-auto max-w-6xl px-5 py-10 sm:px-8">
+      <h2 class="comic-h2">Elegí por categoría</h2>
+      <div class="mt-6 grid grid-cols-2 gap-5 lg:grid-cols-4">
+        @for (opt of categorias(); track opt.id; let i = $index) {
+          @let foto = fotoDeCategoria()[opt.id];
+          @let total = totalDeCategoria()[opt.id];
+          <button appReveal variant="bounce" [delay]="i * 80" type="button" (click)="elegirCategoria(opt.id)" class="comic-cat group">
+            <span class="comic-cat-photo" >
+              @if (foto) {
+                <img [src]="foto | cldImg: 500" alt="" loading="lazy" class="comic-cat-img" />
+              }
+            </span>
+            <span class="comic-cat-label">{{ opt.label }}</span>
+            @if (total) {
+              <span class="comic-cat-count">{{ total }} {{ total === 1 ? 'prenda' : 'prendas' }}</span>
+            }
+            <span class="comic-dots" aria-hidden="true"></span>
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===== Lo más vendido: sólo sin filtros puestos. ===== -->
+  @if (v.bestSellers().length && !v.hasActiveFilters()) {
+    <section id="mas-vendido" class="comic-band scroll-mt-24 py-10">
+      <div class="mx-auto max-w-6xl px-5 sm:px-8">
+        <h2 class="comic-h2">Lo más vendido</h2>
+        <div class="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto px-1 pb-4 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          @for (p of v.bestSellers(); track p.id; let i = $index) {
+            <div appReveal variant="bounce" [delay]="i * 60" class="comic-item w-52 shrink-0 snap-start sm:w-60">
+              <app-product-card [product]="p" variant="historieta" />
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ===== Catálogo ===== -->
+  <section id="catalogo" class="scroll-mt-24">
+    <div class="mx-auto max-w-6xl px-5 pb-16 pt-12 sm:px-8">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <h2 class="comic-h2">El catálogo</h2>
+        <p class="comic-stat text-sm tabular-nums">
+          {{ v.filteredProducts().length }} {{ v.filteredProducts().length === 1 ? 'prenda' : 'prendas' }}
+        </p>
+      </div>
+
+      <!-- Filtros: cartuchos de texto. -->
+      <div class="mt-6 flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          [ngModel]="v.searchTerm()"
+          (ngModelChange)="v.searchTerm.set($event)"
+          placeholder="Buscar producto..."
+          aria-label="Buscar producto"
+          class="comic-field min-w-[10rem] flex-1"
+        />
+        <select [ngModel]="v.selectedSize()" (ngModelChange)="v.selectedSize.set($event)" aria-label="Filtrar por talle" class="comic-field">
+          <option value="todos">Talle: todos</option>
+          @for (size of v.availableSizes(); track size) {
+            <option [value]="size">Talle {{ size }}</option>
+          }
+        </select>
+        @for (group of v.selectGroups(); track group.id) {
+          <select [ngModel]="v.paramValue(group.id)" (ngModelChange)="v.setParam(group.id, $event)" [attr.aria-label]="group.name" class="comic-field">
+            <option value="">{{ group.name }}: todas</option>
+            @for (option of group.options; track option.id) {
+              <option [value]="option.id">{{ option.label }}</option>
+            }
+          </select>
+        }
+        <input type="number" inputmode="numeric" min="0" placeholder="$ mín" aria-label="Precio mínimo" [ngModel]="v.minPrice()" (ngModelChange)="v.setMinPrice($event)" class="comic-field w-24" />
+        <input type="number" inputmode="numeric" min="0" placeholder="$ máx" aria-label="Precio máximo" [ngModel]="v.maxPrice()" (ngModelChange)="v.setMaxPrice($event)" class="comic-field w-24" />
+        <select [ngModel]="v.sortBy()" (ngModelChange)="v.sortBy.set($event)" aria-label="Ordenar" class="comic-field">
+          <option value="novedades">Orden: novedades</option>
+          <option value="precio-asc">Precio: menor a mayor</option>
+          <option value="precio-desc">Precio: mayor a menor</option>
+        </select>
+      </div>
+
+      @if (v.publicoGroup(); as publico) {
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <button type="button" (click)="v.setParam(publico.id, '')" class="comic-chip" [class.is-on]="!v.paramValue(publico.id)">Todas</button>
+          @for (option of publico.options; track option.id) {
+            <button type="button" (click)="v.setParam(publico.id, option.id)" class="comic-chip" [class.is-on]="v.paramValue(publico.id) === option.id">
+              {{ option.label }}
+            </button>
+          }
+          @if (v.hasActiveFilters()) {
+            <button type="button" (click)="v.clearFilters()" class="comic-link ml-auto">Limpiar filtros ✕</button>
+          }
+        </div>
+      }
+
+      <div class="mt-8">
+        @if (v.catalogStatus() === 'loading' && !v.filteredProducts().length) {
+          <app-skeleton variant="card" [count]="8" />
+        } @else if (v.catalogStatus() === 'error') {
+          <div class="py-20 text-center">
+            <p class="comic-h2">No se pudo cargar el catálogo.</p>
+            <button type="button" (click)="v.reloadCatalog()" class="comic-link mt-3">Reintentar</button>
+          </div>
+        } @else if (v.filteredProducts().length) {
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+            @for (product of v.visibleProducts(); track product.id; let i = $index) {
+              <div appReveal variant="bounce" [delay]="(i % 4) * 70" class="h-full">
+                <app-product-card class="block h-full" [product]="product" variant="historieta" />
+              </div>
+            }
+          </div>
+
+          @if (v.hasMore()) {
+            <div class="mt-12 text-center">
+              <button type="button" (click)="v.showMore()" class="comic-btn"><span>Ver más prendas</span></button>
+            </div>
+          }
+        } @else {
+          <div class="py-20 text-center">
+            <p class="comic-h2">Sin resultados</p>
+            <p class="mt-1 text-sm opacity-70">No encontramos prendas con esos filtros.</p>
+            <button type="button" (click)="v.clearFilters()" class="comic-link mt-3">Ver todo el catálogo</button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}

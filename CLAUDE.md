@@ -55,7 +55,7 @@ si conviene tocar también este archivo o el `README.md`).
 
 ## Detalles que no están en el código y conviene recordar
 
-- **La home tiene 40 diseños intercambiables** (Ruth / Editorial / Pop desde
+- **La home tiene 55 diseños intercambiables** (Ruth / Editorial / Pop desde
   2026-09-30; + Vidriera / Ofertas / Fichero / Mosaico / Nova / Neón / Caramelo /
   Cohete / Jungla / Crayón desde 2026-10-01; + Boutique / Feria / Periódico /
   Retro 90 / Suizo / Cancha / Cine / Playa desde 2026-10-02; + los nueve "de
@@ -105,6 +105,15 @@ si conviene tocar también este archivo o el `README.md`).
   ilegibles — que es justo lo que les pasa hoy a Neón, Cohete y Cine en la
   ficha de producto (pendiente, PROYECTO.md §10). Un diseño oscuro nuevo tiene
   que seguir el camino de Foco, no el de esos tres.
+  La **tercera tanda** (quince, #67: de Glitch a Radar) anima todo —botones,
+  fotos, banner, títulos— y sumó `appScramble` y `appConfetti`. Dos cosas a
+  respetar: (1) el **banner de promos que rota** vive en `MotionTemplateBase`
+  (`promoActual`/`promoSiguiente`/`promoPar`) y lo avanza la animación CSS de
+  `.promo-timer`, no un `setInterval`; (2) para **volver a disparar una
+  animación** se alterna la clase `is-b` (cada keyframe está dos veces en
+  `styles.css`, `x` y `x-b`) — no recrear el nodo con `@for (k of [x]; track
+  k)`, que hace saltar el aviso NG0956 en cada cambio. Glitch y Radar son
+  oscuros sólo en la home, igual que Foco.
 - **Vocabulario de tienda en las etiquetas funcionales** (2026-10-02, commit
   `39f1740`): los diseños se diferencian **sólo por lo visual**. Títulos de
   sección ("Lo más vendido", "El catálogo", "Promos"), conteos, buscador

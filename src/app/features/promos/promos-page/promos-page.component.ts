@@ -58,6 +58,22 @@ const VARIANT_BY_LAYOUT: Record<string, ProductCardVariant> = {
   cubo: 'cubo',
   espejo: 'espejo',
   teletipo: 'teletipo',
+  // Glitch y Radar son oscuros sólo en la home (como Foco): acá la página es clara.
+  glitch: 'classic',
+  vortice: 'vortice',
+  holograma: 'holograma',
+  pixel: 'pixel',
+  tinta: 'tinta',
+  tajo: 'tajo',
+  cifrado: 'cifrado',
+  confeti: 'confeti',
+  tablero: 'tablero',
+  negativo: 'negativo',
+  historieta: 'historieta',
+  fragmento: 'fragmento',
+  soga: 'soga',
+  eco: 'eco',
+  radar: 'classic',
 };
 
 /**
