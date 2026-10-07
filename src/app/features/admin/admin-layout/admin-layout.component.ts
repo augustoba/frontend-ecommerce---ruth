@@ -73,7 +73,7 @@ const GROUPS: NavGroup[] = [
       { path: '/admin/config/nosotros', label: 'Sobre nosotros', permission: 'PLATFORM_SETTINGS_MANAGE' },
       { path: '/admin/config/ayuda', label: 'Cómo comprar + FAQ', permission: 'PLATFORM_SETTINGS_MANAGE' },
       { path: '/admin/config/servicios', label: 'Servicio de mail', permission: 'PLATFORM_SETTINGS_MANAGE' },
-      { path: '/admin/carrusel', label: 'Carrusel', permission: 'CAROUSEL_MANAGE' },
+      { path: '/admin/carrusel', label: 'Carrusel y banner', permission: 'CAROUSEL_MANAGE' },
       { path: '/admin/usuarios', label: 'Usuarios y roles', permission: 'USERS_MANAGE' },
     ],
   },

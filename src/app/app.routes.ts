@@ -251,7 +251,7 @@ export const routes: Routes = [
           import('./features/admin/admin-hero-slides/admin-hero-slides.component').then(
             (m) => m.AdminHeroSlidesComponent
           ),
-        title: 'Carrusel | Admin',
+        title: 'Carrusel y banner | Admin',
       },
       {
         path: 'parametrias',

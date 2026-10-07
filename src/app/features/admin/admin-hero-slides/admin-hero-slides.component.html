@@ -1,4 +1,5 @@
-<h1 class="font-display font-extrabold text-2xl text-stone-800 mb-2">Carrusel de la home</h1>
+<h1 class="font-display font-extrabold text-2xl text-stone-800 mb-4">Carrusel y banner</h1>
+<h2 class="font-display font-extrabold text-xl text-stone-800 mb-2">Carrusel de la home</h2>
 @if (status() === 'error') {
   <div class="bg-white rounded-2xl ring-1 ring-black/5 p-4 text-center mb-4">
     <span class="text-sm text-stone-500">No se pudieron cargar las fotos. </span>
@@ -95,3 +96,77 @@
     <p class="font-semibold">No hay fotos en el carrusel.</p>
   </div>
 }
+
+<!-- Banner promocional -->
+<h2 class="font-display font-extrabold text-xl text-stone-800 mt-10 mb-2">Banner al entrar a la tienda</h2>
+<p class="text-sm text-stone-500 mb-6">
+  Una imagen que se abre como ventana cuando alguien entra a la tienda, por ejemplo una foto de promociones.
+  Se muestra una sola vez por visita y tiene un botón para cerrarla.
+</p>
+
+<div class="bg-white rounded-2xl ring-1 ring-black/5 p-5">
+  <label class="flex items-center gap-2 mb-4">
+    <input
+      type="checkbox"
+      class="w-4 h-4 accent-brand-500"
+      [ngModel]="banner().enabled"
+      (ngModelChange)="patchBanner({ enabled: $event })"
+    />
+    <span class="text-sm font-semibold text-stone-700">Mostrar el banner al entrar</span>
+  </label>
+
+  <div class="flex items-center gap-4">
+    @if (banner().image; as image) {
+      <img [src]="image | cldImg: 300" alt="Banner promocional" class="h-24 w-24 rounded-lg object-cover ring-1 ring-stone-200 bg-white shrink-0" />
+    }
+    <div class="flex flex-col gap-1.5">
+      <label class="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 cursor-pointer hover:underline">
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          class="sr-only"
+          (change)="onBannerFileSelected($event)"
+          [disabled]="bannerUploading() || !canUpload"
+        />
+        {{ bannerUploading() ? 'Subiendo…' : banner().image ? 'Cambiar imagen' : 'Subir imagen' }}
+      </label>
+      @if (banner().image) {
+        <button type="button" (click)="patchBanner({ image: null })" class="text-xs text-stone-400 hover:text-red-500 font-semibold text-left">
+          Quitar
+        </button>
+      }
+    </div>
+  </div>
+  @if (!canUpload) {
+    <p class="text-xs text-stone-400 mt-2">La subida de fotos todavía no está configurada.</p>
+  } @else if (banner().enabled && !banner().image) {
+    <p class="text-xs text-amber-600 mt-2">Subí una imagen para que el banner se muestre.</p>
+  }
+
+  <label class="block text-sm font-semibold text-stone-700 mb-1.5 mt-4" for="banner-link">Link al tocarlo (opcional)</label>
+  <input
+    id="banner-link"
+    type="text"
+    [ngModel]="banner().link"
+    (ngModelChange)="patchBanner({ link: $event })"
+    placeholder="/promos, /producto/xxxxx o una URL"
+    class="w-full sm:w-96 rounded-lg border border-stone-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+  />
+  <p class="text-xs text-stone-400 mt-1.5">
+    Con <span class="font-mono">/promos</span> lleva a la vista con las prendas marcadas como "Mostrar en promos"
+    (o, si no hay ninguna, a las que tienen descuento vigente).
+  </p>
+
+  @if (bannerError()) {
+    <p class="text-sm text-red-500 font-semibold mt-3">{{ bannerError() }}</p>
+  }
+
+  <button
+    type="button"
+    (click)="saveBanner()"
+    [disabled]="bannerSaving() || bannerUploading() || !bannerDirty()"
+    class="mt-5 bg-brand-500 hover:bg-brand-600 disabled:bg-stone-300 disabled:cursor-not-allowed text-white font-bold py-2.5 px-6 rounded-full transition-colors"
+  >
+    {{ bannerSaving() ? 'Guardando…' : bannerDirty() ? 'Guardar banner' : 'Sin cambios' }}
+  </button>
+</div>

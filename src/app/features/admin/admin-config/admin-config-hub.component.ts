@@ -70,9 +70,9 @@ export class AdminConfigHubComponent {
     {
       path: '/admin/carrusel',
       icon: '🖼️',
-      title: 'Carrusel',
-      desc: 'Las fotos que pasan arriba de la home.',
-      where: 'Arriba de todo en la página de inicio.',
+      title: 'Carrusel y banner',
+      desc: 'Las fotos que pasan arriba de la home y el banner promocional que se abre al entrar.',
+      where: 'Arriba de todo en la página de inicio y, el banner, como ventana al entrar a la tienda.',
     },
     {
       path: '/admin/config/servicios',

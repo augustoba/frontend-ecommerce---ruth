@@ -233,13 +233,21 @@ export class SettingsService {
     const {
       storeName, whatsappNumber, aboutText, instagram, facebookUrl, logoUrl,
       whatsappIntro, whatsappClosing, storeAddress, helpText, faqText,
-      storePhotoUrl, aboutPageEnabled, promoBannerEnabled, promoBannerImage, promoBannerLink,
+      storePhotoUrl, aboutPageEnabled,
     } = full;
     return this.putMerged('/admin/settings/platform', {
       storeName, whatsappNumber, aboutText, instagram, facebookUrl, logoUrl,
       whatsappIntro, whatsappClosing, storeAddress, helpText, faqText,
-      storePhotoUrl, aboutPageEnabled, promoBannerEnabled, promoBannerImage, promoBannerLink,
+      storePhotoUrl, aboutPageEnabled,
     });
+  }
+
+  /**
+   * Banner promocional (popup al entrar). Lo carga el dueño de la tienda desde
+   * la pantalla del carrusel (`CAROUSEL_MANAGE`).
+   */
+  updatePromoBanner(req: Pick<SiteSettings, 'promoBannerEnabled' | 'promoBannerImage' | 'promoBannerLink'>): Observable<boolean> {
+    return this.putMerged('/admin/settings/banner', { ...req });
   }
 
   /** Medios de pago. Lo edita el admin normal (`PAYMENTS_MANAGE`). */

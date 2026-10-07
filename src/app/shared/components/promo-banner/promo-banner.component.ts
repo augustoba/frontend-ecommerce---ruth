@@ -6,8 +6,8 @@ const DISMISSED_KEY = 'promoBannerDismissed';
 
 /**
  * Banner promocional (popup) que se muestra una vez por pestaña al entrar al
- * sitio, si el dueño lo activó y cargó una imagen (ver `admin-config-section`,
- * sección "Sobre nosotros"). Se cierra con la X o tocando afuera, y no vuelve
+ * sitio, si el dueño lo activó y cargó una imagen (ver `admin-hero-slides`,
+ * pantalla "Carrusel y banner"). Se cierra con la X o tocando afuera, y no vuelve
  * a aparecer en esta pestaña hasta que se recargue desde cero (sessionStorage
  * — es sólo una comodidad de la visita, no hace falta que sea más persistente).
  */
