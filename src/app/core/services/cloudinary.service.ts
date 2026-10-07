@@ -16,8 +16,9 @@ export interface CloudinaryUploadOptions {
   folder?: string;
   /**
    * Nombre del archivo dentro de la carpeta, sin extensión (ej: `remera-bebe-1`).
-   * Si ya existe uno igual, Cloudinary le agrega un sufijo (no se puede
-   * sobrescribir con subida unsigned).
+   * Al subir se le agrega un sufijo único: con subida unsigned no se puede
+   * sobrescribir, y si el nombre ya existe Cloudinary no sube nada y devuelve
+   * la foto vieja.
    */
   publicId?: string;
 }
@@ -50,7 +51,7 @@ export class CloudinaryService {
     form.append('file', file);
     form.append('upload_preset', uploadPreset);
     if (options.folder) form.append('folder', options.folder);
-    if (options.publicId) form.append('public_id', options.publicId);
+    if (options.publicId) form.append('public_id', `${options.publicId}-${uniqueSuffix()}`);
 
     let res: Response;
     try {
@@ -70,4 +71,9 @@ export class CloudinaryService {
     const data = await res.json();
     return { secureUrl: data.secure_url as string, publicId: data.public_id as string };
   }
+}
+
+/** Sufijo corto e irrepetible para que cada subida tenga su propio public_id. */
+function uniqueSuffix(): string {
+  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 }
