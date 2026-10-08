@@ -1,0 +1,83 @@
+/* Hoja A4 con 10 mm de margen: en pantalla se dibuja como vista previa. */
+.sheet-scroll {
+  overflow-x: auto;
+}
+
+.sheet {
+  box-sizing: border-box;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 10mm;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08), 0 4px 16px rgb(0 0 0 / 0.08);
+}
+
+.labels {
+  display: grid;
+  justify-content: center;
+  align-content: start;
+}
+
+.label {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5mm;
+  overflow: hidden;
+  /* línea de corte */
+  outline: 0.2mm dashed #a8a29e;
+  color: #1c1917;
+  text-align: center;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.label-logo {
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.label-img {
+  flex-shrink: 0;
+  max-width: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.label-name {
+  max-width: 100%;
+  margin: 0;
+  font-weight: 800;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@page {
+  size: A4;
+  margin: 10mm;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .sheet-scroll {
+    overflow: visible;
+    margin: 0 !important;
+  }
+  /* El margen ya lo pone @page. */
+  .sheet {
+    width: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+}

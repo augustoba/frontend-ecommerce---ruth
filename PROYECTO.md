@@ -2519,6 +2519,61 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
         diseño (se probó con el que estaba activo en local); el link de
         WhatsApp abierto en un teléfono.
 
+69. **Planchas de etiquetas en A4 (QR y código de barras), sin precio y sin el menú al imprimir (2026-10-08).**
+    - **Qué se pidió:** al imprimir el QR de una prenda salía la barra lateral
+      del panel en el PDF y la etiqueta traía el precio (que cambia seguido por
+      la inflación). Además, que la dueña no tenga que editar el PDF para
+      juntar varias etiquetas en una hoja: elegir tamaño y cantidad y que salga
+      armado en A4, con el logo del negocio. Y que el código de barras se pueda
+      ver desde el listado igual que el QR.
+    - **Causa de la barra lateral:** `/admin/qr-producto/:id` y
+      `/admin/codigo-barras/:id` son rutas hijas del layout del panel (los
+      recibos no: van aparte), y el `.no-print` de cada pantalla sólo ocultaba
+      su propia barra de botones. Ahora el menú lateral y las dos barras
+      superiores de `admin-layout`, más la franja "Conectado como…"
+      (`session-banner`), llevan `print:hidden!`, y el contenedor de la página
+      pierde el padding al imprimir. Vale para cualquier pantalla del panel.
+    - **`AdminLabelSheetComponent` (`features/admin/admin-label-sheet/`):** la
+      plancha, compartida por las dos etiquetas. Recibe el nombre, la imagen
+      (data URL) y la lista de tamaños (`LabelSize`, todo en milímetros).
+      Muestra: tamaño (tres botones), cantidad (1 a 300, con "Llenar una hoja"),
+      tilde "Con el logo", y la vista previa de la hoja. La grilla usa columnas
+      fijas en mm, 2 mm de separación y borde punteado como línea de corte;
+      `@page { size: A4; margin: 10mm }` y `break-inside: avoid` en cada
+      etiqueta, así una cantidad mayor a la que entra sigue en la hoja
+      siguiente. La cantidad arranca en "una hoja llena" y sigue al tamaño
+      mientras no se escriba otra.
+    - **Etiqueta:** logo del negocio (`SettingsService.logoSrc`), imagen y
+      nombre. **Sin precio**, en las dos.
+    - **Tamaños:**
+
+      | Etiqueta | Chica | Mediana | Grande |
+      | --- | --- | --- | --- |
+      | QR | 3,5 × 4,4 cm (30 por hoja) | 5 × 6,5 cm (12) | 7 × 9 cm (6) |
+      | Código de barras (apaisada) | 5 × 2,5 cm (30) | 6,2 × 3,2 cm (24) | 9 × 4,5 cm (10) |
+
+      Si se cambian las medidas hay que recalcular `cols`/`rows` a mano: el
+      área útil de la A4 es 190 × 277 mm.
+    - **Código de barras desde el listado:** el link "📊 Código" de
+      `/admin/productos` aparecía sólo si la prenda ya tenía código, y ninguna
+      lo tenía. Ahora está siempre; si la prenda no tiene código la pantalla
+      ofrece **"Generar código de barras"** (`ProductService.generateBarcode`,
+      pide `PRODUCTS_MANAGE`) y al generarlo aparece la plancha. El código de
+      fábrica, si la prenda trae uno, se sigue cargando en su ficha.
+    - **Verificación (Playwright, backend local, generando el PDF de impresión
+      real con `page.pdf`):** hoja llena de cada tamaño = 1 página, en las dos
+      etiquetas; 20 QR medianos = 2 páginas; nombres largos no desbordan (dos
+      renglones en QR, uno con "…" en código de barras); el PDF no trae menú,
+      barra ni franja de sesión; en el listado los 10 productos muestran el
+      link "Código"; generar el código desde la pantalla funciona.
+      **Ojo al repetir la prueba:** `page.emulateMedia({ media: 'screen' })`
+      hace que `page.pdf` use los estilos de pantalla y dé una hoja de más;
+      hay que dejarlo en `null`.
+    - **No verificado:** impresión en una impresora física (márgenes mínimos
+      de cada impresora, escala distinta de 100%); lectura real de un código de
+      barras impreso en tamaño chico; cómo queda el logo real de producción
+      (el de prueba tiene mucho margen blanco y se ve chico).
+
 ## 12. Backend (`../backend/`) — resumen
 
 > **Ruta real:** en esta máquina la carpeta del backend es `../backend/` (el
