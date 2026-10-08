@@ -103,6 +103,7 @@ export class PromosPageComponent {
   private readonly settingsService = inject(SettingsService);
 
   readonly storeName = computed(() => this.settingsService.settings().storeName);
+  readonly onlineSalesEnabled = computed(() => this.settingsService.settings().onlineSalesEnabled);
   readonly cardVariant = computed<ProductCardVariant>(
     () => VARIANT_BY_LAYOUT[this.settingsService.layout()] ?? 'classic'
   );

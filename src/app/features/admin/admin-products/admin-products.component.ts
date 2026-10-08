@@ -49,7 +49,7 @@ export class AdminProductsComponent {
   readonly totalElements = this.productService.adminTotalElements;
   readonly goToPage = (n: number) => this.productService.loadAdminPage(n);
 
-  readonly paramGroups = this.paramService.groups;
+  readonly paramGroups = this.paramService.productGroups;
   readonly suppliers = this.supplierService.suppliers;
 
   // --- filtros ---
@@ -204,7 +204,7 @@ export class AdminProductsComponent {
   /** Etiquetas de todas las parametrías del producto, ej: "Bebé · Body · Verano" */
   paramLabels(product: Product): string {
     const labels: string[] = [];
-    for (const group of this.paramService.groups()) {
+    for (const group of this.paramService.productGroups()) {
       for (const optId of product.params?.[group.id] ?? []) {
         const label = this.paramService.labelFor(group.id, optId);
         if (label) labels.push(label);

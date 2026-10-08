@@ -896,7 +896,8 @@ src/app/
   (`/config/whatsapp`), **medios de pago** (`/config/pagos`: transferencia por
   alias, QR de transferencia, QR/link de tarjeta, efectivo — cada uno con un
   **tilde de activar/desactivar** aparte del dato; aparece en el checkout si está
-  tildado *y* tiene su dato), **redes sociales** (`/config/redes`), **sobre
+  tildado *y* tiene su dato; arriba de todo, el tilde **"Venta online
+  habilitada"** que prende o apaga el carrito — ver #68), **redes sociales** (`/config/redes`), **sobre
   nosotros** (`/config/nosotros`) y **carrusel** (`/admin/carrusel`).
   Los cambios se aplican al instante para todos, sin redesplegar. `/admin/ajustes`
   redirige a `/admin/config`.
@@ -2450,6 +2451,73 @@ Propuestas de la 4ª revisión (2026-09-08, más de nicho):
       uno.
     - **Costo:** el bundle inicial pasó de 670,6 kB a 784,4 kB (155,6 → 167,6 kB comprimido); `styles.css` ya pesa 352 kB sin comprimir (46 kB comprimido). Supera el aviso de 550 kB por 234 kB; el límite de error es 1 MB y quedan unos 215 kB de margen. **Antes de sumar otra tanda hay que partir la hoja de estilos por diseño** (cargar el CSS de cada uno a demanda, como ya se hace con las fuentes): hoy toda tienda baja el CSS de los 55.
     - La tienda quedó en **Pop**, como estaba.
+
+68. **Interruptor de venta online (modo vidriera), parametrías de prenda sin "Categoría de gasto" y escáner con código de barras (2026-10-08).**
+    - **Venta online prendida/apagada por la dueña.**
+      - **Dónde:** `/admin/config/pagos` → tilde **"Venta online habilitada"**,
+        arriba de los medios de pago. Usa el permiso `PAYMENTS_MANAGE`, que
+        la cuenta de Ruth ya tiene (a diferencia de `PLATFORM_SETTINGS_MANAGE`).
+        El dato es `SiteSettings.onlineSalesEnabled` y viaja en
+        `updatePayments`. **Arranca apagado.**
+      - **Apagado (vidriera):** el encabezado no muestra el botón Carrito;
+        `/carrito` redirige al catálogo (`onlineSalesGuard`, que espera a que
+        llegue `/api/settings` para no decidir con el default); en la ficha
+        del producto desaparecen "Cantidad" y "Agregar al carrito" y aparece
+        **"Consultar por WhatsApp"**, un link a `wa.me` con el nombre de la
+        prenda, el talle si eligió uno y el link a la ficha; `/como-comprar`
+        muestra un aviso de "por ahora se coordina por WhatsApp" en vez de los
+        pasos del carrito (las preguntas frecuentes siguen); `/promos` no dice
+        "se aplica en el carrito"; y la línea "cómo se compra" de **todos** los
+        diseños (`compraLine` en las plantillas, más el texto fijo de Ruth,
+        Pop y Ofertas) pasa a "Mirá las prendas y consultanos por WhatsApp."
+      - **Prendido:** todo como antes.
+      - **No se toca:** el POS, "Mis pedidos" (sigue entrando por link
+        directo) ni el carrito guardado en `localStorage` (si alguien tenía
+        uno, lo vuelve a ver cuando se prenda).
+      - **Al sumar un diseño nuevo:** su texto de "cómo se compra" tiene que
+        mirar primero `onlineSalesEnabled` y recién después
+        `mercadoPagoAvailable`.
+    - **"Mercadería / insumos" aparecía como etiqueta de una prenda.**
+      "Categoría de gasto" (`grp-categoria-gasto`) es una parametría de
+      Gastos que vive en la misma tabla que Público / Tipo de prenda /
+      Estación, y como es `system` el formulario de prenda la mostraba **y la
+      pedía como obligatoria**; después la ficha pública la dibujaba como chip.
+      Ahora `ParamService.productGroups` deja ese grupo afuera y lo usan la
+      ficha, el formulario de prenda, el listado de productos, los descuentos
+      por parametría y Métricas. `groups` (todos) queda sólo para
+      `/admin/parametrias` y Gastos. Las prendas ya cargadas conservan el
+      valor en `params`, pero no se muestra en ningún lado.
+    - **Escáner de la venta en el local (`AdminPosScannerComponent`).**
+      - **Antes:** sólo QR (`BrowserQRCodeReader`), y cualquier problema de
+        cámara daba el mismo mensaje.
+      - **Ahora:** `BrowserMultiFormatReader` con QR + CODE 128 / CODE 39 /
+        EAN-13 / EAN-8 / UPC-A, cámara pedida a 1920×1080 (a baja resolución
+        las líneas de un código de barras no se leen). Si lo leído es un link
+        `/producto/:id` busca por id; si no, lo toma como código de barras
+        (primero en la lista ya cargada, después `GET
+        /api/admin/products/by-barcode`). Mensajes distintos para cámara
+        bloqueada, sin cámara, cámara en uso, código sin producto y producto
+        sin stock o pausado.
+      - El buscador del POS ya matcheaba por código de barras exacto (sirve
+        con un lector USB, que tipea el código); sólo se aclaró en el
+        placeholder.
+      - **Dato:** al 2026-10-08 ninguna prenda de producción tiene código de
+        barras cargado; se carga o se genera desde el formulario de cada
+        prenda ("Generar código interno") y se imprime desde el listado.
+    - **Verificación.**
+      - `ng build` sin errores (sigue el aviso de presupuesto del bundle).
+      - **Probado en el navegador (Playwright, backend local):** con la venta
+        apagada, `/carrito` redirige a `/`, no hay botón Carrito, la ficha
+        muestra "Consultar por WhatsApp" con el mensaje armado y sin
+        "Mercadería / insumos", y `POST /api/orders` devuelve 400; entrando
+        con la cuenta de Ruth el tilde aparece en `/admin/config/pagos` y
+        guarda; con la venta prendida vuelven el carrito y "Agregar al
+        carrito".
+      - **No verificado:** el escáner leyendo un QR o un código de barras con
+        una cámara real (el navegador de prueba no tiene cámara), ni por qué
+        fallaba la lectura de QR que se reportó; el modo vidriera diseño por
+        diseño (se probó con el que estaba activo en local); el link de
+        WhatsApp abierto en un teléfono.
 
 ## 12. Backend (`../backend/`) — resumen
 

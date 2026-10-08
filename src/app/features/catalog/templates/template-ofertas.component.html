@@ -45,7 +45,11 @@
         </p>
         <!-- UNA línea, y factual: dice el camino de compra que la tienda tiene
              configurado de verdad (`/api/settings`), no una promesa ni un adorno. -->
-        @if (v.settings().mercadoPagoAvailable) {
+        @if (!v.settings().onlineSalesEnabled) {
+          <p class="mt-1 text-[13px] leading-snug text-stone-500">
+            Mirá las prendas y consultanos por WhatsApp.
+          </p>
+        } @else if (v.settings().mercadoPagoAvailable) {
           <p class="mt-1 text-[13px] leading-snug text-stone-500">
             Sumás las prendas al carrito y pagás online con Mercado Pago.
           </p>

@@ -58,9 +58,11 @@ export class TemplateCoheteComponent {
    * los dos ni inventa envíos, cuotas o plazos.
    */
   readonly compraLine = computed(() =>
-    this.vm().settings().mercadoPagoAvailable
-      ? 'Cargá el tanque: sumás las prendas al carrito y pagás online con Mercado Pago.'
-      : 'Cargá el tanque: sumás las prendas al carrito y coordinamos la compra por WhatsApp.'
+    !this.vm().settings().onlineSalesEnabled
+      ? 'Mirá las prendas y consultanos por WhatsApp.'
+      : this.vm().settings().mercadoPagoAvailable
+        ? 'Cargá el tanque: sumás las prendas al carrito y pagás online con Mercado Pago.'
+        : 'Cargá el tanque: sumás las prendas al carrito y coordinamos la compra por WhatsApp.'
   );
 
   /**

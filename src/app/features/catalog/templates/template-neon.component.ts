@@ -62,9 +62,11 @@ export class TemplateNeonComponent {
    * lugar para inventar envíos.
    */
   readonly compraLine = computed(() =>
-    this.vm().settings().mercadoPagoAvailable
-      ? 'Sumás las prendas al carrito y pagás online con Mercado Pago.'
-      : 'Sumás las prendas al carrito y coordinamos la compra por WhatsApp.'
+    !this.vm().settings().onlineSalesEnabled
+      ? 'Mirá las prendas y consultanos por WhatsApp.'
+      : this.vm().settings().mercadoPagoAvailable
+        ? 'Sumás las prendas al carrito y pagás online con Mercado Pago.'
+        : 'Sumás las prendas al carrito y coordinamos la compra por WhatsApp.'
   );
 
   /**

@@ -52,9 +52,11 @@ export class TemplateMosaicoComponent {
    * promesa de marketing, así que no se inventa nada más.
    */
   readonly compraLine = computed(() =>
-    this.vm().settings().mercadoPagoAvailable
-      ? 'Elegí tus prendas, agregalas al carrito y pagá con Mercado Pago.'
-      : 'Elegí tus prendas, agregalas al carrito y coordinamos la compra por WhatsApp.'
+    !this.vm().settings().onlineSalesEnabled
+      ? 'Mirá las prendas y consultanos por WhatsApp.'
+      : this.vm().settings().mercadoPagoAvailable
+        ? 'Elegí tus prendas, agregalas al carrito y pagá con Mercado Pago.'
+        : 'Elegí tus prendas, agregalas al carrito y coordinamos la compra por WhatsApp.'
   );
 
   /** Las 2 primeras categorías reales del grupo "Público" (Bebé, Nena, Nene…). */

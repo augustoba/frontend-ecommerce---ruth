@@ -40,7 +40,7 @@ export class AdminProductFormComponent {
   /** true si se puede subir fotos del disco (Cloudinary configurado en site-config.ts). */
   readonly canUploadFiles = this.cloudinary.configured;
 
-  readonly paramGroups = this.paramService.groups;
+  readonly paramGroups = this.paramService.productGroups;
   readonly suppliers = this.supplierService.suppliers;
   readonly sizeScales = this.sizeScaleService.scales;
   readonly saving = this.productService.saving;

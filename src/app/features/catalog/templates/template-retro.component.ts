@@ -39,8 +39,10 @@ export class TemplateRetroComponent {
 
   /** Cómo se compra de verdad, según el camino configurado en el local. */
   readonly compraLine = computed(() =>
-    this.vm().settings().mercadoPagoAvailable
-      ? 'Mandás las prendas al carrito y pagás con Mercado Pago.'
-      : 'Mandás las prendas al carrito y coordinamos por WhatsApp.'
+    !this.vm().settings().onlineSalesEnabled
+      ? 'Mirá las prendas y consultanos por WhatsApp.'
+      : this.vm().settings().mercadoPagoAvailable
+        ? 'Mandás las prendas al carrito y pagás con Mercado Pago.'
+        : 'Mandás las prendas al carrito y coordinamos por WhatsApp.'
   );
 }

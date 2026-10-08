@@ -1,6 +1,7 @@
 import { Injectable, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ParamGroup, ParamOption } from '../models/param.model';
+import { EXPENSE_CATEGORY_GROUP_ID } from '../models/expense.model';
 import { CollectionStore } from '../state/collection-store';
 import { apiUrl } from '../config/site-config';
 
@@ -29,8 +30,17 @@ export class ParamService {
     this.store.ensureLoaded();
   }
 
+  /**
+   * Grupos que clasifican prendas (Público, Tipo de prenda, Estación, los que
+   * agregue el dueño). Deja afuera "Categoría de gasto", que vive en la misma
+   * tabla pero es de Gastos: no se le asigna a una prenda ni la ve el cliente.
+   */
+  readonly productGroups = computed(() =>
+    this.groups().filter((g) => g.id !== EXPENSE_CATEGORY_GROUP_ID)
+  );
+
   /** Grupos que se muestran como filtro en el catálogo público */
-  readonly catalogGroups = computed(() => this.groups().filter((g) => g.showInCatalog));
+  readonly catalogGroups = computed(() => this.productGroups().filter((g) => g.showInCatalog));
 
   getGroup(id: string): ParamGroup | undefined {
     return this.groups().find((g) => g.id === id);

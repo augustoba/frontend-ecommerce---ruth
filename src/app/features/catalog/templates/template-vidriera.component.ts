@@ -52,9 +52,11 @@ export class TemplateVidrieraComponent {
    * cargadas en el panel.
    */
   readonly compraLine = computed(() =>
-    this.vm().settings().mercadoPagoAvailable
-      ? 'Elegís las prendas, las agregás al carrito y pagás con Mercado Pago.'
-      : 'Elegís las prendas, las agregás al carrito y coordinamos la compra por WhatsApp.'
+    !this.vm().settings().onlineSalesEnabled
+      ? 'Mirá las prendas y consultanos por WhatsApp.'
+      : this.vm().settings().mercadoPagoAvailable
+        ? 'Elegís las prendas, las agregás al carrito y pagás con Mercado Pago.'
+        : 'Elegís las prendas, las agregás al carrito y coordinamos la compra por WhatsApp.'
   );
 
   /**

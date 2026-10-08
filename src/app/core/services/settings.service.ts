@@ -58,6 +58,12 @@ export interface SiteSettings {
   /** Habilita "efectivo al recibir/retirar". */
   paymentCashEnabled: boolean;
   /**
+   * Venta online (carrito + pedidos desde la tienda). La prende/apaga la dueña
+   * desde `/admin/config/pagos`. En false la tienda es vidriera: se ven las
+   * prendas y precios, y en vez del carrito se ofrece consultar por WhatsApp.
+   */
+  onlineSalesEnabled: boolean;
+  /**
    * Cuenta de Cloudinary usada para subir fotos desde el panel. Sólo lectura acá
    * (se editan desde `/admin/superadmin/cloudinary`, solo superadmin — ver
    * `updateCloudinaryConfig`). null = la subida de imágenes queda deshabilitada.
@@ -130,6 +136,7 @@ const DEFAULTS: SiteSettings = {
   paymentQrCardImage: null,
   paymentCardLink: null,
   paymentCashEnabled: false,
+  onlineSalesEnabled: false,
   // Cuenta actual (fallback si el backend todavía no tiene la fila con estos
   // campos, ej. justo después de deployar esta migración).
   cloudinaryCloudName: 'jitutkbc',
@@ -256,12 +263,12 @@ export class SettingsService {
     const {
       paymentTransferEnabled, paymentTransferAlias, paymentQrTransferEnabled,
       paymentQrTransferImage, paymentQrCardEnabled, paymentQrCardImage,
-      paymentCardLink, paymentCashEnabled,
+      paymentCardLink, paymentCashEnabled, onlineSalesEnabled,
     } = full;
     return this.putMerged('/admin/settings/payments', {
       paymentTransferEnabled, paymentTransferAlias, paymentQrTransferEnabled,
       paymentQrTransferImage, paymentQrCardEnabled, paymentQrCardImage,
-      paymentCardLink, paymentCashEnabled,
+      paymentCardLink, paymentCashEnabled, onlineSalesEnabled,
     });
   }
 

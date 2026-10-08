@@ -3,7 +3,15 @@
 
   <h1 class="font-display font-extrabold text-2xl sm:text-3xl text-stone-800 mt-3 mb-6">Cómo comprar</h1>
 
-  @if (helpText()) {
+  @if (!onlineSalesEnabled()) {
+    <div class="bg-white rounded-2xl ring-1 ring-black/5 p-5 sm:p-6 text-stone-700 leading-relaxed">
+      <p>Por ahora la compra se coordina por WhatsApp: mirá las prendas en el catálogo y escribinos por la que te guste.</p>
+      <a [href]="whatsappUrl()" target="_blank" rel="noopener"
+        class="inline-block mt-4 bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 px-6 rounded-full transition-colors">
+        Escribinos por WhatsApp
+      </a>
+    </div>
+  } @else if (helpText()) {
     <div class="bg-white rounded-2xl ring-1 ring-black/5 p-5 sm:p-6 text-stone-700 leading-relaxed whitespace-pre-line">{{ helpText() }}</div>
   } @else {
     <ol class="flex flex-col gap-3">

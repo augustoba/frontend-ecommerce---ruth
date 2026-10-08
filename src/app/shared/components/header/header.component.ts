@@ -20,6 +20,7 @@ export class HeaderComponent {
   readonly totalItems = this.cartService.totalItems;
   readonly storeName = computed(() => this.settingsService.settings().storeName);
   readonly logoSrc = this.settingsService.logoSrc;
+  readonly onlineSalesEnabled = computed(() => this.settingsService.settings().onlineSalesEnabled);
 
   private readonly currentPath = toSignal(
     this.router.events.pipe(

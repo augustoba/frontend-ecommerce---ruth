@@ -23,8 +23,10 @@ export class TemplatePlayaComponent {
 
   /** Línea de compra: el camino real configurado en /api/settings. */
   readonly compraLine = computed(() =>
-    this.vm().settings().mercadoPagoAvailable
-      ? 'Elegís las prendas, las sumás al carrito y pagás con Mercado Pago.'
-      : 'Elegís las prendas, las sumás al carrito y las coordinamos por WhatsApp.'
+    !this.vm().settings().onlineSalesEnabled
+      ? 'Mirá las prendas y consultanos por WhatsApp.'
+      : this.vm().settings().mercadoPagoAvailable
+        ? 'Elegís las prendas, las sumás al carrito y pagás con Mercado Pago.'
+        : 'Elegís las prendas, las sumás al carrito y las coordinamos por WhatsApp.'
   );
 }

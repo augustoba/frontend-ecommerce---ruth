@@ -40,8 +40,10 @@ export class TemplateFeriaComponent {
    * Cómo se compra de verdad, según el camino configurado en el local.
    */
   readonly compraLine = computed(() =>
-    this.vm().settings().mercadoPagoAvailable
-      ? 'Elegís, cargás el carrito y pagás con Mercado Pago.'
-      : 'Elegís, cargás el carrito y cerramos por WhatsApp.'
+    !this.vm().settings().onlineSalesEnabled
+      ? 'Mirá las prendas y consultanos por WhatsApp.'
+      : this.vm().settings().mercadoPagoAvailable
+        ? 'Elegís, cargás el carrito y pagás con Mercado Pago.'
+        : 'Elegís, cargás el carrito y cerramos por WhatsApp.'
   );
 }

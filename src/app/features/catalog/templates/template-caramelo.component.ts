@@ -54,9 +54,11 @@ export class TemplateCarameloComponent {
    * lugar para inventar envíos, cuotas ni promesas.
    */
   readonly compraLine = computed(() =>
-    this.vm().settings().mercadoPagoAvailable
-      ? 'Sumás las prendas al carrito y pagás online con Mercado Pago.'
-      : 'Sumás las prendas al carrito y coordinamos la compra por WhatsApp.'
+    !this.vm().settings().onlineSalesEnabled
+      ? 'Mirá las prendas y consultanos por WhatsApp.'
+      : this.vm().settings().mercadoPagoAvailable
+        ? 'Sumás las prendas al carrito y pagás online con Mercado Pago.'
+        : 'Sumás las prendas al carrito y coordinamos la compra por WhatsApp.'
   );
 
   /**

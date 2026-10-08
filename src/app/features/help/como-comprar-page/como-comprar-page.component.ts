@@ -20,6 +20,8 @@ export class ComoComprarPageComponent {
   private readonly settingsService = inject(SettingsService);
 
   readonly storeName = computed(() => this.settingsService.settings().storeName);
+  readonly onlineSalesEnabled = computed(() => this.settingsService.settings().onlineSalesEnabled);
+  readonly whatsappUrl = this.settingsService.whatsappUrl;
   readonly helpText = computed(() => this.settingsService.settings().helpText?.trim() || '');
 
   readonly faq = computed<FaqItem[]>(() => {

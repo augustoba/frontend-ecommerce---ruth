@@ -37,7 +37,7 @@ export class AdminMetricsComponent {
   })();
 
   /** Grupos de parametría para el selector del desglose. */
-  readonly groups = this.paramService.groups;
+  readonly groups = this.paramService.productGroups;
 
   readonly preset = signal<Preset>('trimestre');
   readonly from = signal<string>('');

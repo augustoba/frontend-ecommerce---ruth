@@ -135,6 +135,25 @@
         </div>
       }
       @case ('pagos') {
+        <!-- Venta online: el interruptor general del carrito -->
+        <div class="rounded-xl p-4 mb-6 ring-1"
+          [ngClass]="draft().onlineSalesEnabled ? 'ring-mint-300 bg-mint-50' : 'ring-amber-300 bg-amber-50'">
+          <label class="flex items-center gap-2">
+            <input type="checkbox" class="w-4 h-4 accent-brand-500"
+              [ngModel]="draft().onlineSalesEnabled" [ngModelOptions]="{ standalone: true }"
+              (ngModelChange)="patch('onlineSalesEnabled', $event)" />
+            <span class="text-sm font-bold text-stone-800">Venta online habilitada</span>
+          </label>
+          <p class="text-xs text-stone-600 mt-2">
+            @if (draft().onlineSalesEnabled) {
+              Los clientes pueden armar el carrito y hacer pedidos desde la tienda.
+            } @else {
+              La tienda funciona como vidriera: se ven las prendas y los precios, pero no hay carrito.
+              En cada prenda aparece un botón para consultar por WhatsApp. La venta en el local no cambia.
+            }
+          </p>
+        </div>
+
         <p class="text-xs text-stone-400 mb-5">
           Tildá los medios que querés ofrecer. Cada uno aparece en el checkout sólo si está tildado
           <em>y</em> tiene su dato cargado.

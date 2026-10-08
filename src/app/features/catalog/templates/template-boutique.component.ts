@@ -40,8 +40,10 @@ export class TemplateBoutiqueComponent {
    * que tenga configurado el local (`/api/settings`).
    */
   readonly compraLine = computed(() =>
-    this.vm().settings().mercadoPagoAvailable
-      ? 'Se eligen acá y se compran online con Mercado Pago.'
-      : 'Se eligen acá y la compra se coordina por WhatsApp.'
+    !this.vm().settings().onlineSalesEnabled
+      ? 'Mirá las prendas y consultanos por WhatsApp.'
+      : this.vm().settings().mercadoPagoAvailable
+        ? 'Se eligen acá y se compran online con Mercado Pago.'
+        : 'Se eligen acá y la compra se coordina por WhatsApp.'
   );
 }

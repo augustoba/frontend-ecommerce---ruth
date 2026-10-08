@@ -39,8 +39,10 @@ export class TemplateSuizoComponent {
 
   /** Cómo se compra de verdad, según el camino configurado en el local. */
   readonly compraLine = computed(() =>
-    this.vm().settings().mercadoPagoAvailable
-      ? 'Compra online, con pago por Mercado Pago.'
-      : 'Compra online, con coordinación por WhatsApp.'
+    !this.vm().settings().onlineSalesEnabled
+      ? 'Mirá las prendas y consultanos por WhatsApp.'
+      : this.vm().settings().mercadoPagoAvailable
+        ? 'Compra online, con pago por Mercado Pago.'
+        : 'Compra online, con coordinación por WhatsApp.'
   );
 }

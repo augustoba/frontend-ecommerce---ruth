@@ -13,7 +13,7 @@
       <p class="mt-2 text-sm opacity-70">Las prendas que el local eligió destacar.</p>
     } @else {
       <p class="mt-2 text-sm opacity-70">
-        Prendas con descuento vigente — el % se aplica solo en el carrito.
+        Prendas con descuento vigente@if (onlineSalesEnabled()) { — el % se aplica solo en el carrito }.
       </p>
     }
   </header>

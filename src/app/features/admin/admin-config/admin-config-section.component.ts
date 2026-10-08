@@ -187,6 +187,7 @@ export class AdminConfigSectionComponent {
             paymentQrCardImage: d.paymentQrCardImage || null,
             paymentCardLink: d.paymentCardLink?.trim() || null,
             paymentCashEnabled: d.paymentCashEnabled,
+            onlineSalesEnabled: d.onlineSalesEnabled,
           })
         : this.settingsService.updatePlatform({
             storeName: d.storeName.trim(),

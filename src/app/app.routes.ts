@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { adminGuard, permissionGuard, superAdminGuard } from './core/guards/admin.guard';
+import { onlineSalesGuard } from './core/guards/online-sales.guard';
 import { productResolver } from './features/admin/admin-product-form/product.resolver';
 import { orderResolver } from './features/admin/admin-order-detail/order.resolver';
 
@@ -25,6 +26,7 @@ export const routes: Routes = [
   },
   {
     path: 'carrito',
+    canActivate: [onlineSalesGuard],
     loadComponent: () =>
       import('./features/cart/cart-page/cart-page.component').then((m) => m.CartPageComponent),
     title: 'Carrito',

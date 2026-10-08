@@ -6,6 +6,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 import { ParamService } from '../../../core/services/param.service';
+import { SettingsService } from '../../../core/services/settings.service';
 import { ProductSize, stockForSize, totalStock } from '../../../core/models/product.model';
 import { youtubeEmbedUrl } from '../../../core/utils/youtube';
 import { QuantityStepperComponent } from '../../../shared/components/quantity-stepper/quantity-stepper.component';
@@ -23,6 +24,7 @@ export class ProductDetailPageComponent {
   private readonly productService = inject(ProductService);
   private readonly cartService = inject(CartService);
   private readonly paramService = inject(ParamService);
+  private readonly settingsService = inject(SettingsService);
   private readonly sanitizer = inject(DomSanitizer);
 
   /** Se actualiza cada vez que cambia el :id de la ruta (navegación entre fichas) */
@@ -37,6 +39,9 @@ export class ProductDetailPageComponent {
     const id = this.routeParamMap().get('id') ?? '';
     return this.productService.getById(id);
   });
+
+  /** false = tienda en modo vidriera: sin carrito, se consulta por WhatsApp. */
+  readonly onlineSalesEnabled = computed(() => this.settingsService.settings().onlineSalesEnabled);
 
   readonly selectedSize = signal<ProductSize | null>(null);
   readonly quantity = signal(1);
@@ -84,7 +89,7 @@ export class ProductDetailPageComponent {
     const p = this.product();
     if (!p) return [] as string[];
     const chips: string[] = [];
-    for (const group of this.paramService.groups()) {
+    for (const group of this.paramService.productGroups()) {
       if (group.id === 'grp-publico') continue;
       for (const optId of p.params?.[group.id] ?? []) {
         const label = this.paramService.labelFor(group.id, optId);
@@ -157,6 +162,18 @@ export class ProductDetailPageComponent {
     this.cartService.add(product, size, this.quantity());
     this.justAdded.set(true);
   }
+
+  /** Link a WhatsApp con la consulta por esta prenda ya escrita (modo vidriera). */
+  readonly whatsappInquiryUrl = computed(() => {
+    const p = this.product();
+    if (!p) return this.settingsService.whatsappUrl();
+    const size = this.selectedSize();
+    const text =
+      `¡Hola! Quiero consultar por *${p.name}*` +
+      (size ? ` (talle ${size})` : '') +
+      `.\n${window.location.origin}/producto/${p.id}`;
+    return `${this.settingsService.whatsappUrl()}?text=${encodeURIComponent(text)}`;
+  });
 
   goToCart(): void {
     this.router.navigate(['/carrito']);

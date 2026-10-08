@@ -24,7 +24,7 @@ export class AdminPromosComponent {
   readonly paramDiscounts = this.discountService.paramDiscounts;
   readonly paymentDiscounts = this.discountService.paymentDiscounts;
   readonly freeShippingDiscounts = this.discountService.freeShippingDiscounts;
-  readonly groups = this.paramService.groups;
+  readonly groups = this.paramService.productGroups;
   readonly status = this.discountService.status;
   readonly saving = this.discountService.saving;
   readonly reload = () => this.discountService.reload();

@@ -21,9 +21,11 @@ export abstract class MotionTemplateBase {
    * excluyentes (lo decide el backend con `mercadoPagoAvailable`).
    */
   readonly compraLine = computed(() =>
-    this.vm().settings().mercadoPagoAvailable
-      ? 'Sumás las prendas al carrito y pagás online con Mercado Pago.'
-      : 'Sumás las prendas al carrito y coordinamos la compra por WhatsApp.'
+    !this.vm().settings().onlineSalesEnabled
+      ? 'Mirá las prendas y consultanos por WhatsApp.'
+      : this.vm().settings().mercadoPagoAvailable
+        ? 'Sumás las prendas al carrito y pagás online con Mercado Pago.'
+        : 'Sumás las prendas al carrito y coordinamos la compra por WhatsApp.'
   );
 
   /** Categorías reales del grupo "Público" (Bebé, Nena, Nene…). Vacío = la sección no se dibuja. */

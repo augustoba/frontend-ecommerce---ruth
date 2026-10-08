@@ -55,8 +55,10 @@ export class TemplatePeriodicoComponent {
 
   /** Cómo se compra de verdad, según el camino configurado en el local. */
   readonly compraLine = computed(() =>
-    this.vm().settings().mercadoPagoAvailable
-      ? 'La compra se hace online y se paga con Mercado Pago.'
-      : 'La compra se hace online y se coordina por WhatsApp.'
+    !this.vm().settings().onlineSalesEnabled
+      ? 'Mirá las prendas y consultanos por WhatsApp.'
+      : this.vm().settings().mercadoPagoAvailable
+        ? 'La compra se hace online y se paga con Mercado Pago.'
+        : 'La compra se hace online y se coordina por WhatsApp.'
   );
 }
